@@ -3,14 +3,15 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 
-class StartScreen extends Component {
+import { withAuthorization } from './Session';
 
+class StartScreen extends Component {
   render() {
     return (
       <div className="start-screen-wrapper">
         <Form>
-          <h1>UPE Technical Interview</h1>
-
+          <h1>Begin an Interview</h1>
+          
           <InputGroup>
             <InputGroup.Prepend>
               <InputGroup.Text id="interviewee">Interviewee</InputGroup.Text>
@@ -56,4 +57,5 @@ class StartScreen extends Component {
   }
 }
 
-export default StartScreen;
+const condition = authUser => !!authUser;
+export default withAuthorization(condition)(StartScreen);
