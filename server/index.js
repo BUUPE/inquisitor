@@ -10,7 +10,7 @@ const socketPort = process.env.REACT_APP_SOCKET_PORT;
 
 const app = express();
 app.use(express.static(path.join(__dirname, '../build')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../build/index.html')));
+app.get('/*', (req, res) => res.sendFile(path.join(__dirname, '../build/index.html')));
 app.listen(serverPort, () => console.log(`Listening on port ${serverPort}`));
 
 io.on('connection', (client) => {
