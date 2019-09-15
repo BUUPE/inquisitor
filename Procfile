@@ -1,0 +1,1 @@
+web: react-scripts build && node ./server/index.js
