@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 const express = require('express');
-const io = require('socket.io')();
+const socketIO = require('socket.io');
 const path = require("path");
 
 
@@ -11,7 +11,9 @@ const socketPort = process.env.REACT_APP_SOCKET_PORT;
 const app = express();
 app.use(express.static(path.join(__dirname, '../build')));
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname, '../build/index.html')));
-app.listen(serverPort, () => console.log(`Listening on port ${serverPort}`));
+const server = app.listen(serverPort, () => console.log(`Listening on port ${serverPort}`));
+
+const io = socketIO(server);
 
 io.on('connection', (client) => {
   client.on('wave', msg => client.emit('waveback', msg));
@@ -23,4 +25,4 @@ io.on('connection', (client) => {
   });
 
 });
-io.listen(socketPort);
+//io.listen(socketPort);

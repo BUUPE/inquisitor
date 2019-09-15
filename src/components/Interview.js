@@ -19,6 +19,7 @@ const Interview = ({ match, formFields }) => {
     // check if id is valid in firebase first, otherwise show error
     // make sure only one authed user and one unauthed user is inside the room
     // add a way to show interviewer which problem the interviewee is on
+    // add a way for user to enter interview room code (so we email them the interview link and they wait for code)
     joinInterview(match.params.id)
   });
     
