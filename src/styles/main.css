@@ -3,6 +3,22 @@ html, body, .App, #root {
   width: 100%;
 }
 
+.loader {
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 10;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.note-wrapper {
+  display: flex;
+  margin-bottom: 20px;
+}
+
 .start-screen-wrapper, .signin-form-wrapper, .landing {
   width: 100%;
   height: 100%;
@@ -16,8 +32,8 @@ html, body, .App, #root {
   margin: 10px 0 10px;
 }
 
-.input-group > .input-group-prepend > .input-group-text {
-    width: 100px;
+.start-screen-wrapper .input-group > .input-group-prepend > .input-group-text {
+    width: 125px;
 }
 
 .landing p {

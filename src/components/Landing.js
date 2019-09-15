@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { AuthUserContext } from './Session';
 
@@ -7,8 +7,10 @@ import logo from '../assets/img/logo.png';
 
 const Landing = ({ history }) => {
   const authUser = useContext(AuthUserContext);
-  if (authUser) history.push(ROUTES.CREATE);
-
+  useEffect(() => {
+    if (authUser) history.push(ROUTES.CREATE);
+  });
+  
   return (
     <div className="landing">
       <img src={logo} alt="UPE Logo" height="128" width="128" />

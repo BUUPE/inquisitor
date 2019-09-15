@@ -1,19 +1,26 @@
+require('dotenv').config()
+
 const express = require('express');
 const io = require('socket.io')();
 const path = require("path");
 
+
+const serverPort = process.env.PORT || 3030;
+const socketPort = process.env.REACT_APP_SOCKET_PORT;
+
 const app = express();
-const serverPort = 3030;
-const socketPort = 8000;
-
 app.use(express.static(path.join(__dirname, '../build')));
-
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../build/index.html')));
-
-app.listen(serverPort, () => console.log(`Server listening on localhost:${serverPort}!`));
+app.listen(serverPort, () => console.log(`Listening on port ${serverPort}`));
 
 io.on('connection', (client) => {
-  // here you can start emitting events to the client 
-});
+  client.on('wave', msg => client.emit('waveback', msg));
 
+  client.on('joinInterview', interviewId => {
+    client.join(interviewId);
+    client.emit('joinConfirmation', `you've joined room ${interviewId}`)
+    io.to(interviewId).emit('joinNotification', `client: ${client.id} has joined room ${interviewId}`);
+  });
+
+});
 io.listen(socketPort);
