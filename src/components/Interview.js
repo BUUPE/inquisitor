@@ -4,6 +4,7 @@ import Tab from 'react-bootstrap/Tab';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
+import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
 import { Link } from 'react-router-dom';
@@ -15,7 +16,8 @@ import {
   joinInterview,
   emitProblemChange,
   subscribeToProblemChange,
-  closeInterview
+  closeInterview,
+  saveComments
 } from '../util/api';
 import * as ROUTES from '../constants/routes';
 
@@ -24,13 +26,19 @@ import Advanced from '../config/questions.advanced';
 import QuestionNotes from './QuestionNotes';
 import Loader from './Loader';
 
+// next question button
+// load notes on refresh if theyre there
+// add overview page
+
 const Interview = ({ match, firebase }) => {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [formFields, setFormFields] = useState({});
-  const [inRoom, setInRoom] = useState(false);
-  const [intervieweeOn, setIntervieweeOn] = useState(null);
   const [closed, setClosed] = useState(false);
+  const [inRoom, setInRoom] = useState(false);
+  const [validated, setValidated] = useState(false);
+  const [error, setError] = useState(null);
+  const [intervieweeOn, setIntervieweeOn] = useState(null);
+  const [formFields, setFormFields] = useState({});
+  const [generalComments, setGeneralComments] = useState('');
 
   const authUser = useContext(AuthUserContext);
   const interviewId = match.params.id;
@@ -43,7 +51,7 @@ const Interview = ({ match, firebase }) => {
       } else {
         joinInterview(interviewId, 
           () => setInRoom(true), 
-          () => { if (authUser) setIntervieweeOn('problem-1') },
+          () => { if (authUser) setIntervieweeOn('resume') },
           () => setClosed(true));
         getInterviewData(firebase, interviewId).then(data => {
           setLoading(false);
@@ -58,7 +66,7 @@ const Interview = ({ match, firebase }) => {
   useEffect(() => {
     if (authUser) {
       subscribeToProblemChange(intervieweeSelectedProblem);
-      setIntervieweeOn('problem-1');
+      setIntervieweeOn('resume');
     }
   }, [authUser]);
 
@@ -72,12 +80,24 @@ const Interview = ({ match, firebase }) => {
     setIntervieweeOn(problemKey);
   }
 
-  const submitInterview = () => {
-    setLoading(true);
-    closeInterview(firebase, interviewId).then(() => {
-      setLoading(false);
-      setClosed(true);
-    });
+  const submitInterview = event => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
+      setValidated(true);
+    } else {
+      setValidated(false);
+      setLoading(true);
+
+      saveComments(firebase, { interviewId, dataKey: 'general-comments', notes: generalComments }).then(() => {
+        closeInterview(firebase, interviewId).then(() => {
+          setLoading(false);
+          setClosed(true);
+        });
+      });
+    }
   }
     
   const {
@@ -97,10 +117,16 @@ const Interview = ({ match, firebase }) => {
           {(!authUser && intervieweeName) && <h3>Welcome, {intervieweeName.split(" ")[0]}!</h3>}
           {authUser && <h3>Welcome, interviewer!</h3>}
           <hr/>
-          <Tab.Container defaultActiveKey="problem-1" onSelect={notifyChange}>
+          <Tab.Container defaultActiveKey="resume" onSelect={notifyChange}>
             <Row>
               <Col sm={3}>
                 <Nav variant="pills" className="flex-column">
+                  <Nav.Item>
+                    <Nav.Link 
+                      eventKey="resume"
+                      className={(intervieweeOn === `resume` && authUser) ? 'interviewee-on' : ''}
+                    >Resume Review</Nav.Link>
+                  </Nav.Item>
                   {questions.map((question, i) => (
                     <Nav.Item key={`problem-${i+1}-link`}>
                       <Nav.Link 
@@ -120,6 +146,13 @@ const Interview = ({ match, firebase }) => {
               </Col>
               <Col sm={9}>
                 <Tab.Content>
+                  <Tab.Pane eventKey="resume">
+                    <h3>Resume Review</h3>
+                    <p>
+                      Go over the resume with them.
+                    </p>
+                    {authUser && <QuestionNotes interviewId={interviewId} commentsOnly={true} dataKey="resume" />}
+                  </Tab.Pane>
                   {questions.map((question, i) => (
                     <Tab.Pane key={`problem-${i+1}-body`} eventKey={`problem-${i+1}`}>
                       <h3>{question.title}</h3>
@@ -133,11 +166,28 @@ const Interview = ({ match, firebase }) => {
                     <Tab.Pane eventKey="submit">
                       <h3>Submit Interview</h3>
                       <p>
-                        Pressing submit on this page will end the interview. <strong>Make sure to save notes/scores for all questions first.</strong>&nbsp;
+                        Pressing submit on this page will end the interview. <strong>Make sure to save notes/scores for all sections first.</strong>&nbsp;
                         Submitting will permanently close <strong>Interview {match.params.id}</strong> with <strong>{intervieweeName}</strong>,
                         and this action cannot be undone. <strong>ONLY PRESS SUBMIT WHEN THE INTERVIEW IS COMPLETE!</strong>
                       </p>
-                      <Button onClick={submitInterview}>Submit</Button>
+
+                      <Form noValidate validated={validated} onSubmit={submitInterview}>
+                        <Form.Group>
+                          <Form.Label><strong>General Comments</strong></Form.Label>
+                          <Form.Control 
+                            as="textarea" 
+                            rows="10" 
+                            placeholder="Enter comments here..."
+                            value={generalComments}
+                            onChange={event => setGeneralComments(event.target.value)}
+                            required
+                          />
+                        </Form.Group>
+
+                        <Button type="submit">Submit</Button>
+                      </Form>
+
+                      
                     </Tab.Pane>
                   )}
                 </Tab.Content>
@@ -157,7 +207,14 @@ const Interview = ({ match, firebase }) => {
       {(!loading && closed) &&
         <div className="closed-wrapper">
           <h1>This interview is now closed.</h1>
-          <Link to={ROUTES.LANDING}>Go to Home</Link>
+          <div>
+            {(!authUser && intervieweeName) &&
+              <p>Thanks for interviewing, {intervieweeName.split(" ")[0]}!</p>
+            }
+            <Link to={ROUTES.LANDING}>Go to Home</Link>
+          </div>
+            
+          
         </div>
       }
     </div>

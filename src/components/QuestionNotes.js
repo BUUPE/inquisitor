@@ -5,9 +5,9 @@ import Form from 'react-bootstrap/Form';
 import Toast from 'react-bootstrap/Toast';
 
 import { withFirebase } from './Firebase';
-import { saveQuestionNotes } from '../util/api';
+import { saveQuestionNotes, saveComments } from '../util/api';
 
-const QuestionNotes = ({ interviewId, problemNum, firebase }) => {
+const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebase }) => {
   const [validated, setValidated] = useState(false);
   const [notes, setNotes] = useState('');
   const [score, setScore] = useState(1);
@@ -21,49 +21,68 @@ const QuestionNotes = ({ interviewId, problemNum, firebase }) => {
       event.stopPropagation();
       setValidated(true);
     } else {
-      saveQuestionNotes(firebase, { interviewId, problemNum, notes, score }).then(() => {
-        setShowToast(true);
-        setValidated(false);
-      });
+      setValidated(false);
+      if (!commentsOnly) {
+        saveQuestionNotes(firebase, { interviewId, problemNum, notes, score }).then(() => setShowToast(true));
+      } else {
+        saveComments(firebase, { interviewId, dataKey, notes }).then(() => setShowToast(true));
+      }
     }
   };
 
   const onNotesChange = event => setNotes(event.target.value);
-  const onScoreChange = event => setScore(event.target.value)
+  const onScoreChange = event => setScore(event.target.value);
 
   return (
     <Form noValidate validated={validated} onSubmit={handleSubmit}>
-      <div className="note-wrapper">
-        <Col sm={9}>
-          <Form.Group controlId="formBasicEmail">
-            <Form.Label><strong>Notes</strong></Form.Label>
-            <Form.Control 
-              as="textarea" 
-              rows="10" 
-              placeholder="Enter notes here..." 
-              name={`problem-${problemNum}-notes`}
-              value={notes}
-              onChange={onNotesChange}
-              required
-            />
-          </Form.Group>
-        </Col>
-        <Col sm={3}>
-          <strong>Score</strong>
+      {!commentsOnly &&
+        <div className="note-wrapper">
+          <Col sm={9}>
+            <Form.Group controlId="formBasicEmail">
+              <Form.Label><strong>Notes</strong></Form.Label>
+              <Form.Control 
+                as="textarea" 
+                rows="10" 
+                placeholder="Enter notes here..." 
+                name={`problem-${problemNum}-notes`}
+                value={notes}
+                onChange={onNotesChange}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col sm={3}>
+            <strong>Score</strong>
 
-          {[1,2,3,4,5].map(s => (
-            <Form.Check 
-              type="radio"
-              key={`problem-${problemNum}-score-${s}`}
-              name={`problem-${problemNum}-score`}
-              label={s}
-              value={score}
-              onChange={onScoreChange}
-              required
-            />
-          ))}
-        </Col>
-      </div>
+            {[1,2,3,4,5].map(s => (
+              <Form.Check 
+                type="radio"
+                key={`problem-${problemNum}-score-${s}`}
+                name={`problem-${problemNum}-score`}
+                label={s}
+                value={s}
+                onChange={onScoreChange}
+                required
+              />
+            ))}
+          </Col>
+        </div>
+      }
+
+      {commentsOnly &&
+        <Form.Group controlId="formBasicEmail">
+          <Form.Label><strong>Comments</strong></Form.Label>
+          <Form.Control 
+            as="textarea" 
+            rows="10" 
+            placeholder="Enter comments here..." 
+            name={dataKey}
+            value={notes}
+            onChange={onNotesChange}
+            required
+          />
+        </Form.Group>
+      }
       
       <Button type="submit">Save</Button>
 
@@ -73,7 +92,15 @@ const QuestionNotes = ({ interviewId, problemNum, firebase }) => {
         delay={3000}
         autohide
       >
-        <Toast.Body><strong>Question notes saved!</strong></Toast.Body>
+        <Toast.Body>
+          {commentsOnly &&
+            <strong>Comments saved!</strong>
+          }
+
+          {!commentsOnly &&
+            <strong>Question notes saved!</strong>
+          }
+        </Toast.Body>
       </Toast>
     </Form>
   );
