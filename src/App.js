@@ -14,6 +14,7 @@ import StartScreen from './components/StartScreen';
 import SignInForm from './components/Signin';
 import Signout from './components/Signout';
 import Landing from './components/Landing';
+import JoinRoom from './components/JoinRoom';
 import Interview from './components/Interview';
 import NotFound from './components/404';
 
@@ -27,6 +28,7 @@ const AppBase = () => {
         <Route path={ROUTES.SIGNIN} component={SignInForm} />
         <Route path={ROUTES.SIGNOUT} component={Signout} />
         <Route path={ROUTES.CREATE} render={routeProps  => <StartScreen setParentFields={setFormFields} {...routeProps} />} />
+        <Route exact path={ROUTES.JOIN} component={JoinRoom} />
         <Route path={ROUTES.INTERVIEW} render={routeProps  => <Interview formFields={formFields} {...routeProps} />} />
         <Route component={NotFound} />
       </Switch>

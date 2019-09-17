@@ -5,11 +5,12 @@ import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 
 import { withRouter } from 'react-router-dom';
+import { withFirebase } from './Firebase';
 import { withAuthorization } from './Session';
 import { compose } from 'recompose';
 import * as ROUTES from '../constants/routes';
 
-const StartScreenBase = ({ history, setParentFields }) => {
+const StartScreenBase = ({ history, setParentFields, firebase }) => {
   const [validated, setValidated] = useState(false);
   const [formFields, setFormFields] = useState({
     intervieweeName: '',
@@ -28,10 +29,11 @@ const StartScreenBase = ({ history, setParentFields }) => {
       const interviewId = crypto.randomBytes(3).toString('hex').toUpperCase();
 
       setParentFields({...formFields});
+      firebase.interview(interviewId).get().then(doc => console.log(doc.data()));
 
       // save to firebase (make sure interviewId has no collisions first so you dont overwrite anything)
 
-      history.push(ROUTES.INTERVIEW.replace(':id', interviewId));
+      //history.push(ROUTES.INTERVIEW.replace(':id', interviewId));
     }
 
     setValidated(true);
@@ -125,7 +127,8 @@ const StartScreenBase = ({ history, setParentFields }) => {
 const condition = authUser => !!authUser;
 const StartScreen = compose(
   withAuthorization(condition),
-  withRouter
+  withRouter,
+  withFirebase
 )(StartScreenBase);
 
 export default StartScreen;

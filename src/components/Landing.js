@@ -19,7 +19,7 @@ const Landing = ({ history }) => {
 
       <p>
         Hi there! If you've come across this page, you're probably interviewing with BU UPE (either that or you're just very curious)!
-        If you are here for an interview, hang tight, your interviewer will give you a link shortly! 
+        If you are here for an interview, hang tight, your interviewer will give you a link shortly! If you know your room code, enter it <Link to={ROUTES.JOIN}>here</Link>!
         If you're an interviewer, please <Link to={ROUTES.SIGNIN}>signin</Link> and get started!
       </p>
     </div>
