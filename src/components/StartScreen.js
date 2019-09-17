@@ -4,13 +4,15 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 
+import { isIdAvailable, initializeInterview } from '../util/api';
 import { withRouter } from 'react-router-dom';
 import { withFirebase } from './Firebase';
 import { withAuthorization } from './Session';
 import { compose } from 'recompose';
 import * as ROUTES from '../constants/routes';
 
-const StartScreenBase = ({ history, setParentFields, firebase }) => {
+const StartScreenBase = ({ history, firebase }) => {
+  const [error, setError] = useState(null);
   const [validated, setValidated] = useState(false);
   const [formFields, setFormFields] = useState({
     intervieweeName: '',
@@ -21,19 +23,21 @@ const StartScreenBase = ({ history, setParentFields, firebase }) => {
 
   const handleSubmit = event => {
     event.preventDefault();
+    setError(null);
+
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
-      console.log(formFields)
       const interviewId = crypto.randomBytes(3).toString('hex').toUpperCase();
-
-      setParentFields({...formFields});
-      firebase.interview(interviewId).get().then(doc => console.log(doc.data()));
-
-      // save to firebase (make sure interviewId has no collisions first so you dont overwrite anything)
-
-      //history.push(ROUTES.INTERVIEW.replace(':id', interviewId));
+      isIdAvailable(firebase, interviewId).then(available => {
+        if (available) {
+          initializeInterview(firebase, interviewId, {...formFields, open: true})
+          .then(() => history.push(ROUTES.INTERVIEW.replace(':id', interviewId)));
+        } else {
+          setError({ message: "Something went wrong! Please try submitting again." });
+        }
+      });
     }
 
     setValidated(true);
@@ -119,6 +123,8 @@ const StartScreenBase = ({ history, setParentFields, firebase }) => {
         <Button variant="primary" type="submit">
           Begin
         </Button>
+
+        {error && <p className="error-msg">{error.message}</p>}
       </Form>
     </div>
   );

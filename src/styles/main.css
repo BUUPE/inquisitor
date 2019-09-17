@@ -1,6 +1,19 @@
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 html, body, .App, #root {
   height: 100%;
   width: 100%;
+}
+
+p.error-msg {
+  color: red;
 }
 
 .loader {
@@ -8,10 +21,40 @@ html, body, .App, #root {
   height: 100%;
   background: white;
   z-index: 10;
-  position: absolute;
+  position: fixed;
+  top: 0;
+  left: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.lds-dual-ring {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+}
+
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin: 1px;
+  border-radius: 50%;
+  border: 5px solid #333;
+  border-color: #333 transparent #333 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+
+.toast {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.toast-body {
+  color: green;
 }
 
 .note-wrapper {
@@ -19,7 +62,17 @@ html, body, .App, #root {
   margin-bottom: 20px;
 }
 
-.start-screen-wrapper, .signin-form-wrapper, .join-form-wrapper, .landing {
+.interview-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.start-screen-wrapper,
+.signin-form-wrapper,
+.join-form-wrapper,
+.landing,
+.error-wrapper,
+.closed-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
@@ -28,18 +81,36 @@ html, body, .App, #root {
   flex-direction: column;
 }
 
+.closed-wrapper {
+  z-index: 10;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: white;
+}
+
 .start-screen-wrapper .input-group, .signin-form-wrapper .input-group {
   margin: 10px 0 10px;
 }
 
 .start-screen-wrapper .input-group > .input-group-prepend > .input-group-text {
-    width: 125px;
+  width: 125px;
+}
+
+.interviewee-on.nav-link:after, .interviewee-on.nav-link.active:after {
+  content: "\21D2" !important;
+  position: absolute !important;
+  left: 0 !important;
 }
 
 .landing p {
-  width: 500px;
+  max-width: 500px;
 }
 
 .join-form-wrapper form {
-  width: 300px;
+  max-width: 300px;
+}
+
+#root {
+  padding: 25px;
 }

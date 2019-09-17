@@ -26,7 +26,8 @@ class Firebase {
   doSignOut = () => this.auth.signOut();
 
   // *** Interview API ***
-  interview = uid => this.firestore.collection(`interview`).doc(uid);
+  interview = uid => this.firestore.collection('interview').doc(uid);
+  interviewNotes = uid => this.firestore.collection('interview').doc(uid).collection('notes').doc(uid);
   interviews = () => this.firestore.collection('interview');
 }
 export default Firebase;

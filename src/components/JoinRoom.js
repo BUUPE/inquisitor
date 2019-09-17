@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+
 import { withRouter } from 'react-router-dom';
+import { withFirebase } from './Firebase';
+import { compose } from 'recompose';
+import { isInterviewOpen } from '../util/api';
 import * as ROUTES from '../constants/routes';
 
-const JoinRoom = ({ history }) => {
+const JoinRoomBase = ({ history, firebase }) => {
   const [validated, setValidated] = useState(false);
   const [roomCode, setRoomCode] = useState('');
+  const [error, setError] = useState(null);
 
   const handleSubmit = event => {
     event.preventDefault();
+    setError(null);
 
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
-      history.push(ROUTES.INTERVIEW.replace(':id', roomCode));
+      isInterviewOpen(firebase, roomCode).then(isOpen => {
+        if (isOpen) {
+          history.push(ROUTES.INTERVIEW.replace(':id', roomCode));
+        } else {
+          setError({ message: "The room code you entered is invalid or closed, please try again!" });
+        }
+      });
     }
 
     setValidated(true);
@@ -42,9 +54,16 @@ const JoinRoom = ({ history }) => {
         </Form.Group>
         
         <Button type="submit">Join</Button>
+
+        {error && <p className="error-msg">{error.message}</p>}
       </Form>
     </div>
   );
 }
 
-export default withRouter(JoinRoom);
+const JoinRoom = compose(
+  withRouter,
+  withFirebase
+)(JoinRoomBase);
+
+export default JoinRoom;

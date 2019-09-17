@@ -17,4 +17,10 @@ io.on('connection', (client) => {
     client.emit('joinConfirmation', `you've joined room ${interviewId}`)
     client.broadcast.to(interviewId).emit('joinNotification', `client: ${client.id} has joined room ${interviewId}`);
   });
+
+  client.on('problemChange', ({ interviewId, problemKey }) =>
+    client.broadcast.to(interviewId).emit('problemChange', problemKey));
+
+  client.on('interviewClosed', interviewId =>
+    client.broadcast.to(interviewId).emit('interviewClosed', true));
 });
