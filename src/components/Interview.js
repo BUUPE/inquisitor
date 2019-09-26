@@ -28,7 +28,9 @@ import Loader from './Loader';
 
 // next question button
 // load notes on refresh if theyre there
-// add overview page
+// add overview page (different for each level)
+// timer for interviewer view
+// image support
 
 const Interview = ({ match, firebase }) => {
   const [loading, setLoading] = useState(true);
