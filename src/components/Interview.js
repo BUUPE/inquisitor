@@ -222,6 +222,14 @@ const Interview = ({ match, firebase }) => {
                           />
                         </Form.Group>
 
+                        <Form.Group>
+                          <Form.Label><strong>Interviewer 1 Score</strong></Form.Label>
+                          <Form.Control 
+                            as="slider"
+                            required
+                          />
+                        </Form.Group>
+
                         <Button type="submit">Submit</Button>
                       </Form>
 
