@@ -137,6 +137,10 @@ p.error-msg {
   text-decoration: underline;
 }
 
+.tab-pane p {
+    white-space: pre-wrap;
+}
+
 #root {
   padding: 25px;
 }

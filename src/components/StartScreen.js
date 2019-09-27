@@ -32,6 +32,7 @@ const StartScreenBase = ({ history, firebase }) => {
       const interviewId = crypto.randomBytes(3).toString('hex').toUpperCase();
       isIdAvailable(firebase, interviewId).then(available => {
         if (available) {
+          window.localStorage.removeItem('current-tab-key');
           initializeInterview(firebase, interviewId, {...formFields, open: true})
           .then(() => history.push(ROUTES.INTERVIEW.replace(':id', interviewId)));
         } else {

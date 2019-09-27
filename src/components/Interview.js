@@ -6,7 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Stopwatch from './Stopwatch';
+//import Stopwatch from './Stopwatch';
 
 import { Link } from 'react-router-dom';
 import { withFirebase } from './Firebase';
@@ -38,7 +38,7 @@ const Interview = ({ match, firebase }) => {
   const [intervieweeOn, setIntervieweeOn] = useState(null);
   const [formFields, setFormFields] = useState({ intervieweeName: 'Interviewee', level: 'Intermediate' });
   const [generalComments, setGeneralComments] = useState('');
-  const [tabKey, setTabKey] = useState(initialTabKey);
+  const [tabKey, setTabKey] = useState(window.localStorage.getItem('current-tab-key') || initialTabKey);
   const [savedNotes, setSavedNotes] = useState({});
 
   const authUser = useContext(AuthUserContext);
@@ -59,10 +59,8 @@ const Interview = ({ match, firebase }) => {
           setFormFields(data);
         });
         getInterviewNotes(firebase, interviewId).then(data => setSavedNotes(data || {}));
-        const localTabKey = window.localStorage.getItem('current-tab-key') || initialTabKey;
-        setTabKey(localTabKey);
       }
-    });
+    }, [match]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interviewId]);
@@ -102,6 +100,7 @@ const Interview = ({ match, firebase }) => {
         closeInterview(firebase, interviewId).then(() => {
           setLoading(false);
           setClosed(true);
+          window.localStorage.removeItem('current-tab-key');
         });
       });
     }
