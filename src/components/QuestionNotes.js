@@ -38,7 +38,7 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
   };
 
   const onNotesChange = event => setNotes(event.target.value);
-  const onScoreChange = event => {setScore(event.target.value);console.log(typeof event.target.value)}
+  const onScoreChange = event => setScore(event.target.value);
 
   return (
     <Form noValidate validated={validated} onSubmit={handleSubmit}>

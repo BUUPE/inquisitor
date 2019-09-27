@@ -126,6 +126,8 @@ p.error-msg {
   position: fixed;
   top: 10px;
   right: 10px;
+  z-index: 9;
+  opacity: 0.5;
 }
 
 .overtime {

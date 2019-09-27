@@ -23,9 +23,7 @@ import {
 } from '../util/api';
 import * as ROUTES from '../constants/routes';
 
-import Intermediate from '../config/questions.intermediate';
-import Advanced from '../config/questions.advanced';
-
+import CONFIG from '../config';
 import QuestionNotes from './QuestionNotes';
 import Loader from './Loader';
 
@@ -38,7 +36,7 @@ const Interview = ({ match, firebase }) => {
   const [validated, setValidated] = useState(false);
   const [error, setError] = useState(null);
   const [intervieweeOn, setIntervieweeOn] = useState(null);
-  const [formFields, setFormFields] = useState({});
+  const [formFields, setFormFields] = useState({ intervieweeName: 'Interviewee', level: 'Intermediate' });
   const [generalComments, setGeneralComments] = useState('');
   const [tabKey, setTabKey] = useState(initialTabKey);
   const [savedNotes, setSavedNotes] = useState({});
@@ -60,7 +58,7 @@ const Interview = ({ match, firebase }) => {
           setLoading(false);
           setFormFields(data);
         });
-        getInterviewNotes(firebase, interviewId).then(data => setSavedNotes(data));
+        getInterviewNotes(firebase, interviewId).then(data => setSavedNotes(data || {}));
         const localTabKey = window.localStorage.getItem('current-tab-key') || initialTabKey;
         setTabKey(localTabKey);
       }
@@ -85,6 +83,7 @@ const Interview = ({ match, firebase }) => {
   }
 
   const intervieweeSelectedProblem = problemKey => {
+    console.log('user picked', problemKey)
     setIntervieweeOn(problemKey);
   }
 
@@ -113,23 +112,8 @@ const Interview = ({ match, firebase }) => {
     level
   } = formFields;
 
-  let questions = [];
-  let overview = '';
-  switch(level) {
-    case 'Intermediate':
-      questions = Intermediate.questions;
-      overview = Intermediate.overview;
-      break;
-    case 'Advanced':
-      questions = Advanced.questions;
-      overview = Advanced.overview;
-      break;
-    default:
-      questions = Intermediate.questions;
-      overview = Intermediate.overview;
-  }
-
-  console.log("saved", savedNotes)
+  let questions = CONFIG[level].questions;
+  let overview = CONFIG[level].overview;
 
   return (
     <div className="interview-wrapper">
@@ -140,7 +124,7 @@ const Interview = ({ match, firebase }) => {
           <h1>UPE Technical Interview</h1>
           {(!authUser && intervieweeName) && <h3>Welcome, {intervieweeName.split(" ")[0]}!</h3>}
           {authUser && <h3>Welcome, interviewer!</h3>}
-          {authUser && <Stopwatch />}
+          {/*authUser && <Stopwatch />*/}
           <hr/>
           <Tab.Container activeKey={tabKey} onSelect={notifyChange}>
             <Row>
@@ -186,7 +170,7 @@ const Interview = ({ match, firebase }) => {
                     <p>{overview}</p>
                     <hr/>
                     <div className="switch-question-button-group">
-                      <Button onClick={() => setTabKey('resume')}>Next</Button>
+                      <Button onClick={() => notifyChange('resume')}>Next</Button>
                     </div>
                   </Tab.Pane>
                   <Tab.Pane eventKey="resume">
@@ -194,11 +178,11 @@ const Interview = ({ match, firebase }) => {
                     <p>
                       Go over the resume with them.
                     </p>
-                    {authUser && <QuestionNotes interviewId={interviewId} commentsOnly={true} dataKey="resume" />}
+                    {authUser && <QuestionNotes interviewId={interviewId} commentsOnly={true} dataKey="resume" savedNotes={savedNotes['resume']} />}
                     <hr/>
                     <div className="switch-question-button-group">
-                      <Button onClick={() => setTabKey('overview')}>Previous</Button>
-                      <Button onClick={() => setTabKey('problem-1')}>Next</Button>
+                      <Button onClick={() => notifyChange('overview')}>Previous</Button>
+                      <Button onClick={() => notifyChange('problem-1')}>Next</Button>
                     </div>
                   </Tab.Pane>
                   {questions.map((question, i) => (
@@ -208,12 +192,12 @@ const Interview = ({ match, firebase }) => {
                       {question.img && <img className="question-img" src={question.img} alt={`Problem ${i+1}`} />}
                       <hr/>
                       {authUser && <p>{question.answer}</p>}
-                      {authUser && <QuestionNotes interviewId={interviewId} problemNum={i+1} savedNotes={savedNotes[`problem-${i+1}`]}/>}
+                      {authUser && <QuestionNotes interviewId={interviewId} problemNum={i+1} savedNotes={savedNotes[`problem-${i+1}`]} />}
                       {authUser && <hr/>}
                       <div className="switch-question-button-group">
-                        {(i > 0) && <Button onClick={() => setTabKey(`problem-${i}`)}>Previous</Button>}
-                        {(i === 0) && <Button onClick={() => setTabKey('resume')}>Previous</Button>}
-                        {(i < questions.length - 1) && <Button onClick={() => setTabKey(`problem-${i+2}`)}>Next</Button>}
+                        {(i > 0) && <Button onClick={() => notifyChange(`problem-${i}`)}>Previous</Button>}
+                        {(i === 0) && <Button onClick={() => notifyChange('resume')}>Previous</Button>}
+                        {(i < questions.length - 1) && <Button onClick={() => notifyChange(`problem-${i+2}`)}>Next</Button>}
                       </div>
                     </Tab.Pane>
                   ))}
