@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Stopwatch from './Stopwatch';
 
 import { Link } from 'react-router-dom';
 import { withFirebase } from './Firebase';
@@ -13,6 +14,7 @@ import { AuthUserContext } from './Session';
 import { 
   isInterviewOpen,
   getInterviewData, 
+  getInterviewNotes,
   joinInterview,
   emitProblemChange,
   subscribeToProblemChange,
@@ -23,16 +25,13 @@ import * as ROUTES from '../constants/routes';
 
 import Intermediate from '../config/questions.intermediate';
 import Advanced from '../config/questions.advanced';
+
 import QuestionNotes from './QuestionNotes';
 import Loader from './Loader';
 
-// next question button
-// load notes on refresh if theyre there
-// add overview page (different for each level)
-// timer for interviewer view
-// image support
-
 const Interview = ({ match, firebase }) => {
+  const initialTabKey = 'overview';
+
   const [loading, setLoading] = useState(true);
   const [closed, setClosed] = useState(false);
   const [inRoom, setInRoom] = useState(false);
@@ -41,6 +40,8 @@ const Interview = ({ match, firebase }) => {
   const [intervieweeOn, setIntervieweeOn] = useState(null);
   const [formFields, setFormFields] = useState({});
   const [generalComments, setGeneralComments] = useState('');
+  const [tabKey, setTabKey] = useState(initialTabKey);
+  const [savedNotes, setSavedNotes] = useState({});
 
   const authUser = useContext(AuthUserContext);
   const interviewId = match.params.id;
@@ -53,12 +54,15 @@ const Interview = ({ match, firebase }) => {
       } else {
         joinInterview(interviewId, 
           () => setInRoom(true), 
-          () => { if (authUser) setIntervieweeOn('resume') },
+          () => { if (authUser) setIntervieweeOn(initialTabKey) },
           () => setClosed(true));
         getInterviewData(firebase, interviewId).then(data => {
           setLoading(false);
           setFormFields(data);
         });
+        getInterviewNotes(firebase, interviewId).then(data => setSavedNotes(data));
+        const localTabKey = window.localStorage.getItem('current-tab-key') || initialTabKey;
+        setTabKey(localTabKey);
       }
     });
 
@@ -68,7 +72,7 @@ const Interview = ({ match, firebase }) => {
   useEffect(() => {
     if (authUser) {
       subscribeToProblemChange(intervieweeSelectedProblem);
-      setIntervieweeOn('resume');
+      setIntervieweeOn(initialTabKey);
     }
   }, [authUser]);
 
@@ -76,6 +80,8 @@ const Interview = ({ match, firebase }) => {
     if (!authUser && inRoom) {
       emitProblemChange(interviewId, key);
     }
+    setTabKey(key);
+    window.localStorage.setItem('current-tab-key', key);
   }
 
   const intervieweeSelectedProblem = problemKey => {
@@ -107,7 +113,23 @@ const Interview = ({ match, firebase }) => {
     level
   } = formFields;
 
-  const questions = level === "Intermediate" ? Intermediate : Advanced;
+  let questions = [];
+  let overview = '';
+  switch(level) {
+    case 'Intermediate':
+      questions = Intermediate.questions;
+      overview = Intermediate.overview;
+      break;
+    case 'Advanced':
+      questions = Advanced.questions;
+      overview = Advanced.overview;
+      break;
+    default:
+      questions = Intermediate.questions;
+      overview = Intermediate.overview;
+  }
+
+  console.log("saved", savedNotes)
 
   return (
     <div className="interview-wrapper">
@@ -118,16 +140,27 @@ const Interview = ({ match, firebase }) => {
           <h1>UPE Technical Interview</h1>
           {(!authUser && intervieweeName) && <h3>Welcome, {intervieweeName.split(" ")[0]}!</h3>}
           {authUser && <h3>Welcome, interviewer!</h3>}
+          {authUser && <Stopwatch />}
           <hr/>
-          <Tab.Container defaultActiveKey="resume" onSelect={notifyChange}>
+          <Tab.Container activeKey={tabKey} onSelect={notifyChange}>
             <Row>
               <Col sm={3}>
                 <Nav variant="pills" className="flex-column">
                   <Nav.Item>
                     <Nav.Link 
+                      eventKey="overview"
+                      className={(intervieweeOn === `overview` && authUser) ? 'interviewee-on' : ''}
+                    >
+                      Overview
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link 
                       eventKey="resume"
                       className={(intervieweeOn === `resume` && authUser) ? 'interviewee-on' : ''}
-                    >Resume Review</Nav.Link>
+                    >
+                      Resume Review
+                    </Nav.Link>
                   </Nav.Item>
                   {questions.map((question, i) => (
                     <Nav.Item key={`problem-${i+1}-link`}>
@@ -148,20 +181,40 @@ const Interview = ({ match, firebase }) => {
               </Col>
               <Col sm={9}>
                 <Tab.Content>
+                  <Tab.Pane eventKey="overview">
+                    <h3>Overview</h3>
+                    <p>{overview}</p>
+                    <hr/>
+                    <div className="switch-question-button-group">
+                      <Button onClick={() => setTabKey('resume')}>Next</Button>
+                    </div>
+                  </Tab.Pane>
                   <Tab.Pane eventKey="resume">
                     <h3>Resume Review</h3>
                     <p>
                       Go over the resume with them.
                     </p>
                     {authUser && <QuestionNotes interviewId={interviewId} commentsOnly={true} dataKey="resume" />}
+                    <hr/>
+                    <div className="switch-question-button-group">
+                      <Button onClick={() => setTabKey('overview')}>Previous</Button>
+                      <Button onClick={() => setTabKey('problem-1')}>Next</Button>
+                    </div>
                   </Tab.Pane>
                   {questions.map((question, i) => (
                     <Tab.Pane key={`problem-${i+1}-body`} eventKey={`problem-${i+1}`}>
                       <h3>{question.title}</h3>
                       <p>{question.description}</p>
+                      {question.img && <img className="question-img" src={question.img} alt={`Problem ${i+1}`} />}
                       <hr/>
                       {authUser && <p>{question.answer}</p>}
-                      {authUser && <QuestionNotes interviewId={interviewId} problemNum={i+1} />}
+                      {authUser && <QuestionNotes interviewId={interviewId} problemNum={i+1} savedNotes={savedNotes[`problem-${i+1}`]}/>}
+                      {authUser && <hr/>}
+                      <div className="switch-question-button-group">
+                        {(i > 0) && <Button onClick={() => setTabKey(`problem-${i}`)}>Previous</Button>}
+                        {(i === 0) && <Button onClick={() => setTabKey('resume')}>Previous</Button>}
+                        {(i < questions.length - 1) && <Button onClick={() => setTabKey(`problem-${i+2}`)}>Next</Button>}
+                      </div>
                     </Tab.Pane>
                   ))}
                   {authUser && (

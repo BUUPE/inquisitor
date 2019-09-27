@@ -48,7 +48,7 @@ p.error-msg {
 }
 
 .toast {
-  position: absolute;
+  position: fixed;
   bottom: 10px;
   right: 10px;
 }
@@ -109,6 +109,30 @@ p.error-msg {
 
 .join-form-wrapper form {
   max-width: 300px;
+}
+
+.switch-question-button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.question-img {
+  width: 100%;
+}
+
+.stopwatch {
+  font-size: 2rem;
+  display: flex;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
+.overtime {
+  color: red;
+  border: 2px solid red;
+  padding: 5px;
+  text-decoration: underline;
 }
 
 #root {

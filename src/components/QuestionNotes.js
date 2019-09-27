@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -7,11 +7,18 @@ import Toast from 'react-bootstrap/Toast';
 import { withFirebase } from './Firebase';
 import { saveQuestionNotes, saveComments } from '../util/api';
 
-const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebase }) => {
+const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebase, savedNotes }) => {
   const [validated, setValidated] = useState(false);
   const [notes, setNotes] = useState('');
   const [score, setScore] = useState(1);
   const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    if (savedNotes) {
+      setNotes(savedNotes.notes);
+      setScore(savedNotes.score);
+    }
+  }, [savedNotes])
 
   const handleSubmit = event => {
     event.preventDefault();
@@ -31,7 +38,7 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
   };
 
   const onNotesChange = event => setNotes(event.target.value);
-  const onScoreChange = event => setScore(event.target.value);
+  const onScoreChange = event => {setScore(event.target.value);console.log(typeof event.target.value)}
 
   return (
     <Form noValidate validated={validated} onSubmit={handleSubmit}>
@@ -54,7 +61,7 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
           <Col sm={3}>
             <strong>Score</strong>
 
-            {[1,2,3,4,5].map(s => (
+            {['1','2','3','4','5'].map(s => (
               <Form.Check 
                 type="radio"
                 key={`problem-${problemNum}-score-${s}`}
@@ -62,6 +69,7 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
                 label={s}
                 value={s}
                 onChange={onScoreChange}
+                checked={s === score}
                 required
               />
             ))}

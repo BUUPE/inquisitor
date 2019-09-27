@@ -29,11 +29,9 @@ const isInterviewOpen = (firebase, interviewId) => {
   })
 }
 
-const getInterviewData = (firebase, interviewId) => {
-  return firebase.interview(interviewId).get().then(doc => {
-    return doc.data();
-  });
-}
+const getInterviewData = (firebase, interviewId) => firebase.interview(interviewId).get().then(doc => doc.data());
+
+const getInterviewNotes = (firebase, interviewId) => firebase.interviewNotes(interviewId).get().then(doc => doc.data());
 
 const saveQuestionNotes = (firebase, { interviewId, problemNum, notes, score }) => {
   const data = {};
@@ -73,6 +71,7 @@ export {
   isInterviewOpen, 
   joinInterview,
   getInterviewData,
+  getInterviewNotes,
   emitProblemChange,
   subscribeToProblemChange,
   saveQuestionNotes,
