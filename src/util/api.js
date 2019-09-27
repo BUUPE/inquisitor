@@ -45,6 +45,12 @@ const saveComments = (firebase, { interviewId, dataKey, notes }) => {
   return firebase.interviewNotes(interviewId).set(data, { merge: true });
 }
 
+const saveFinalComments = (firebase, { interviewId, dataKey, notes, interviewer1Score, interviewer2Score }) => {
+  const data = {};
+  data[dataKey] = { notes, interviewer1Score, interviewer2Score };
+  return firebase.interviewNotes(interviewId).set(data, { merge: true });
+}
+
 const closeInterview = (firebase, interviewId) => {
   return firebase.interview(interviewId).set({ open: false }, { merge: true }).then(() => {
     socket.emit('interviewClosed', interviewId);
@@ -76,5 +82,6 @@ export {
   subscribeToProblemChange,
   saveQuestionNotes,
   saveComments,
+  saveFinalComments,
   closeInterview
 };
