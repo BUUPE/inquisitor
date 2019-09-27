@@ -116,8 +116,10 @@ const StartScreenBase = ({ history, firebase }) => {
             value={formFields.level}
             required>
             <option value="">--Select a Level--</option>
+            <option>Beginner</option>
             <option>Intermediate</option>
             <option>Advanced</option>
+            <option>Grad</option>
           </Form.Control>
         </InputGroup>
 

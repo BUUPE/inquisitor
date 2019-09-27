@@ -6,7 +6,6 @@ import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-//import Stopwatch from './Stopwatch';
 
 import { Link } from 'react-router-dom';
 import { withFirebase } from './Firebase';
@@ -23,11 +22,17 @@ import {
 } from '../util/api';
 import * as ROUTES from '../constants/routes';
 
-import CONFIG from '../config';
+import { 
+  Overview,
+  InterviewerNotes,
+  CONFIG 
+} from '../config';
 import QuestionNotes from './QuestionNotes';
 import Loader from './Loader';
 
-const showResume = false;
+const showResume = true;
+// make next button press save
+// make switching save (if possible)
 
 const Interview = ({ match, firebase }) => {
   const initialTabKey = 'overview';
@@ -38,7 +43,7 @@ const Interview = ({ match, firebase }) => {
   const [validated, setValidated] = useState(false);
   const [error, setError] = useState(null);
   const [intervieweeOn, setIntervieweeOn] = useState(null);
-  const [formFields, setFormFields] = useState({ intervieweeName: 'Interviewee', level: 'Intermediate' });
+  const [formFields, setFormFields] = useState({ intervieweeName: 'Interviewee', level: 'Beginner' });
   const [generalComments, setGeneralComments] = useState('');
   const [tabKey, setTabKey] = useState(window.localStorage.getItem('current-tab-key') || initialTabKey);
   const [savedNotes, setSavedNotes] = useState({});
@@ -122,8 +127,7 @@ const Interview = ({ match, firebase }) => {
     level
   } = formFields;
 
-  let questions = CONFIG[level].questions;
-  let overview = CONFIG[level].overview;
+  const questions = CONFIG[level];
 
   return (
     <div className="interview-wrapper">
@@ -134,7 +138,6 @@ const Interview = ({ match, firebase }) => {
           <h1>UPE Technical Interview</h1>
           {(!authUser && intervieweeName) && <h3>Welcome, {intervieweeName.split(" ")[0]}!</h3>}
           {authUser && <h3>Welcome, interviewer!</h3>}
-          {/*authUser && <Stopwatch />*/}
           <hr/>
           <Tab.Container activeKey={tabKey} onSelect={notifyChange}>
             <Row>
@@ -162,7 +165,7 @@ const Interview = ({ match, firebase }) => {
                         eventKey={`problem-${i+1}`}
                         className={(intervieweeOn === `problem-${i+1}` && authUser) ? 'interviewee-on' : ''}
                       >
-                        Problem {i+1}
+                        Problem {i+1} {question.isBonus && <span role="img" aria-label="Star">⭐</span>}
                       </Nav.Link>
                     </Nav.Item>
                   ))}
@@ -177,10 +180,16 @@ const Interview = ({ match, firebase }) => {
                 <Tab.Content>
                   <Tab.Pane eventKey="overview">
                     <h3>Overview</h3>
-                    <p>{overview}</p>
+                    <p>{Overview}</p>
                     <hr/>
+                    {authUser && (
+                      <div>
+                        <p>{InterviewerNotes}</p>
+                        <hr/>
+                      </div>
+                    )}
                     <div className="switch-question-button-group">
-                      <Button onClick={() => notifyChange('problem-1')}>Next</Button>
+                      <Button onClick={() => notifyChange('resume')}>Next</Button>
                     </div>
                   </Tab.Pane>
                   {showResume && <Tab.Pane eventKey="resume">
@@ -197,7 +206,7 @@ const Interview = ({ match, firebase }) => {
                   </Tab.Pane>}
                   {questions.map((question, i) => (
                     <Tab.Pane key={`problem-${i+1}-body`} eventKey={`problem-${i+1}`}>
-                      <h3>{question.title}</h3>
+                      <h3>{question.title} {question.isBonus && <span>(BONUS)</span>}</h3>
                       <p>{question.description}</p>
                       {question.img && <img className="question-img" src={question.img} alt={`Problem ${i+1}`} />}
                       <hr/>
@@ -206,7 +215,7 @@ const Interview = ({ match, firebase }) => {
                       {authUser && <hr/>}
                       <div className="switch-question-button-group">
                         {(i > 0) && <Button onClick={() => notifyChange(`problem-${i}`)}>Previous</Button>}
-                        {(i === 0) && <Button onClick={() => notifyChange('overview')}>Previous</Button>}
+                        {(i === 0) && <Button onClick={() => notifyChange('resume')}>Previous</Button>}
                         {(i < questions.length - 1) && <Button onClick={() => notifyChange(`problem-${i+2}`)}>Next</Button>}
                       </div>
                     </Tab.Pane>
