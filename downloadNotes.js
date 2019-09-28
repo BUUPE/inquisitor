@@ -35,7 +35,6 @@ class Firebase {
 }
 
 var stream = fs.createWriteStream(`${moment().format('hh-mm-ss')}.dump.json`, {flags:'a'});
-stream.write('[');
 const firebase = new Firebase();
 firebase.signIn('upe@bu.edu', 'Interviewer2019').then(auth => {
   firebase.interviews().get().then(snapshot => snapshot.forEach(doc => {
@@ -45,7 +44,7 @@ firebase.signIn('upe@bu.edu', 'Interviewer2019').then(auth => {
         details: doc.data(),
         notes: notes.data()
       };
-      stream.write(JSON.stringify(temp, null, 4) + ",\n");
+      stream.write(JSON.stringify(temp) + "\n");
       console.log(`Processed doc: ${doc.id}`);
     });
   }));
