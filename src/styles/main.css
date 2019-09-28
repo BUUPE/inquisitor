@@ -145,6 +145,10 @@ p.error-msg {
     white-space: pre-wrap;
 }
 
+a.nav-link.unsaved {
+  color: red;
+}
+
 #root {
   padding: 25px;
 }

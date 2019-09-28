@@ -16,9 +16,14 @@ Here is the expected time breakdown for the interview (but feel free to spend mo
 - Math/Reasoning Questions: 8 minutes
 - Coding Questions: 15 minutes`;
 
-const InterviewerNotes = `
-Read this.
-`;
+const InterviewerNotes = `Note for Interviewers: 
+Read the above section (treat it like a script).
+
+One person should handle administering the questions, while the other pays attention to timekeeping. However, both should pay attention to the interviewee so you can both provide feedback at the end.
+
+For the resume review section, ask about their most recent work experience or project they are most proud of (choose based on what you see on the resume). Point out anything you find interesting/stands out.
+
+For bonus questions, even if they don't get to it/don't have time, write down that they didn't reach it and put a score of 1 (just to keep it standardized among interviews).`;
 
 const Beginner = [
   Questions.timedRope,
@@ -38,15 +43,16 @@ const Intermediate = [
 const Advanced = [
   Questions.timedRope,
   Questions.clubDice,
-  Questions.sumLeftLeaves,
-  Questions.aiGame
+  Questions.slidingWindow,
+  Questions.aiGame,
+  {...Questions.cows, isBonus: true}
 ];
 
 const Grad = [
   Questions.timedRope,
   Questions.clubDice,
   Questions.numberGame,
-  Questions.sumLeftLeaves,
+  Questions.zigZag,
   Questions.aiGame
 ];
 

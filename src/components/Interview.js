@@ -31,8 +31,6 @@ import QuestionNotes from './QuestionNotes';
 import Loader from './Loader';
 
 const showResume = true;
-// make next button press save
-// make switching save (if possible)
 
 const Interview = ({ match, firebase }) => {
   const initialTabKey = 'overview';
@@ -94,40 +92,55 @@ const Interview = ({ match, firebase }) => {
   }
 
   const submitInterview = event => {
+    event.persist();
     event.preventDefault();
-
     const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.stopPropagation();
-      setValidated(true);
-    } else {
-      setValidated(false);
-      setLoading(true);
 
-      const finalCommentsObject = { 
-        interviewId, 
-        dataKey: 'final-comments', 
-        notes: generalComments, 
-        interviewer1Score, 
-        interviewer2Score 
-      };
+    document.querySelectorAll('.nav-link').forEach(element => element.classList.remove('unsaved'));
 
-      saveFinalComments(firebase, finalCommentsObject).then(() => {
-        closeInterview(firebase, interviewId).then(() => {
-          setLoading(false);
-          setClosed(true);
-          window.localStorage.removeItem('current-tab-key');
-        });
-      });
-    }
+    getInterviewNotes(firebase, interviewId).then(data => {
+      const saved = data === undefined ? [] : Object.keys(data);
+      const unsaved = keyCheck.filter(key => !saved.includes(key));
+      if (unsaved.length > 0) {
+        unsaved.forEach(key => document.querySelector(`.nav-link[data-rb-event-key="${key}"]`).classList.add('unsaved'));
+        event.stopPropagation();
+        setValidated(true);
+      } else {
+        if (form.checkValidity() === false) {
+          event.stopPropagation();
+          setValidated(true);
+        } else {
+          setValidated(false);
+          setLoading(true);
+
+          const finalCommentsObject = { 
+            interviewId, 
+            dataKey: 'final-comments', 
+            notes: generalComments, 
+            interviewer1Score, 
+            interviewer2Score 
+          };
+
+          saveFinalComments(firebase, finalCommentsObject).then(() => {
+            closeInterview(firebase, interviewId).then(() => {
+              setLoading(false);
+              setClosed(true);
+              window.localStorage.removeItem('current-tab-key');
+            });
+          });
+        }
+      }
+    });
   }
-    
+
   const {
     intervieweeName,
     level
   } = formFields;
 
   const questions = CONFIG[level];
+  const keyCheck = questions.map((_, i) => `problem-${i+1}`);
+  keyCheck.push('resume');
 
   return (
     <div className="interview-wrapper">
