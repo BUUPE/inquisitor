@@ -75,7 +75,7 @@ Solution: Yes. Mod 11 and pigeon hole principle.`
   longestPrefix: {
     title: 'Pretty Prefix',
     description: 'Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string.',
-    answer: 'Solution: Scan and maintain longest prefix.'
+    answer: 'Solution: Scan and maintain longest prefix. A more efficient solution would be to sort the array and then find longest common prefix between first and last string.'
   },
   stackQueue: {
     title: 'Stack-2-Queue',

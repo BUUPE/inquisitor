@@ -60,7 +60,10 @@ const Interview = ({ match, firebase }) => {
         joinInterview(interviewId, 
           () => setInRoom(true), 
           () => { if (authUser) setIntervieweeOn(initialTabKey) },
-          () => setClosed(true));
+          () => {
+            setClosed(true);
+            window.localStorage.removeItem('current-tab-key');
+          });
         getInterviewData(firebase, interviewId).then(data => {
           setLoading(false);
           setFormFields(data);
