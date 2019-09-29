@@ -41,12 +41,12 @@ Solution: Each trailing zero can be thought of as having a 10 as a factor. So 10
   },
   clubDice: {
     title: 'Club UPE',
-    description: 'You are trying to get into a club. The way the club charges the entrance fee is as follows: first select either the sequence 5, 5 or 5, 6. Then repeatedly role a single dice until you get the selected sequence. You are charged $1 per roll. Which sequence should you pick?',
+    description: 'You are trying to get into a club. The way the club charges the entrance fee is as follows: first select either the sequence 5, 5 or 5, 6. Then repeatedly roll a single die until you get the selected sequence. You are charged $1 per roll. Which sequence should you pick?',
     answer: `Notes/Hints:
 - They are not the same, what could be the difference?
 - If you roll a 5 which sequence would you rather have.
 
-Solution: 56. Consider rolling a 5 first. With 55 you win 1/6 and restart 5/6. With 56 you win 1/6, redo 1/6, and restart 4/6. It is better.`
+Solution: 56. Consider rolling a 5 first. With 5 5 you win 1/6 and restart 5/6. With 5 6 you win 1/6, redo 1/6, and restart 4/6. It is better.`
   },
   numberGame: {
     title: 'Gambler\'s Game',
