@@ -53,6 +53,20 @@ const Interview = ({ match, firebase }) => {
   const interviewId = match.params.id;
 
   useEffect(() => {
+    window.onbeforeunload = function (e) {
+      e = e || window.event;
+
+      // For IE and Firefox prior to version 4
+      if (e) {
+          e.returnValue = 'Any string';
+      }
+
+      // For Safari
+      return 'Any string';
+    };
+  });
+
+  useEffect(() => {
     isInterviewOpen(firebase, interviewId).then(isOpen => {
       if (!isOpen) {
       setLoading(false);
