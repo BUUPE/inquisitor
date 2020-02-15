@@ -25,6 +25,7 @@ import * as ROUTES from '../constants/routes';
 import { 
   Overview,
   InterviewerNotes,
+  ResumeNotes,
   CONFIG 
 } from '../config';
 import QuestionNotes from './QuestionNotes';
@@ -215,6 +216,12 @@ const Interview = ({ match, firebase }) => {
                     </p>
                     {authUser && <QuestionNotes interviewId={interviewId} commentsOnly={true} dataKey="resume" savedNotes={savedNotes['resume']} />}
                     <hr/>
+                    {authUser && (
+                      <div>
+                        <p>{ResumeNotes}</p>
+                        <hr/>
+                      </div>
+                    )}
                     <div className="switch-question-button-group">
                       <Button onClick={() => notifyChange('overview')}>Previous</Button>
                       <Button onClick={() => notifyChange('problem-1')}>Next</Button>
