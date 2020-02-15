@@ -283,7 +283,7 @@ Start with each of the digits in the queue, create their “offspring” and add
   },
   peakedInterest: {
     title: 'Peaked Interest',
-    description: `Given a list of elements, find a peak element. A peak element is one where the adjacent elements are both smaller.`,
+    description: `Given a list of unique integers, find a peak integer. A peak integer is one where both of the adjacent elements are not larger than it. For example, in [1 3 4 2], 4 is a peak integer. In [5 3 2 1 0], 5 is also a peak integer.`,
     answer: `Hints:
 - They better get the naive solution
 - Check follow ups
@@ -291,7 +291,7 @@ Start with each of the digits in the queue, create their “offspring” and add
 
 Answer:
 Use binary search
-Check middle element, if it is a peak then return it
+Check middle integer, if it is a peak then return it
 If one is bigger than check that half
 O(Log(N))
 
