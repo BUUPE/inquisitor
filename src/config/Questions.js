@@ -121,8 +121,8 @@ Can also be done using 2 stacks, one when adding left child first and another fo
     title: 'Speed Racer',
     description: `In a competition with 25 racers, what is the minimum number of races needed to identify the 3 fastest racers? The track can only race 5 people at a time and you do not have a way to measure time.`,
     answer: `Hints:
--Try drawing the “heats”
--Who can you eliminate?
+- Try drawing the “heats”
+- Who can you eliminate?
 
 Answer:
 5+1+1 = 7
@@ -148,9 +148,9 @@ Neighbor B says that the youngest has blue eyes.
 Now, Neighbor A knows their ages.
 What is the youngest daughter’s age?`,
     answer: `Hints:
--Each clue has some information
--Not knowing after the second hint is important
--What are all the possibilities
+- Each clue has some information
+- Not knowing after the second hint is important
+- What are all the possibilities
 
 Answer:
 1
@@ -170,11 +170,11 @@ Since there is a youngest daughter, it must be 1,6,6`
     title: 'Blind as a Bat',
     description: `You walk into a dark room with a table of quarters on it. There are exactly 25 heads up quarters and 75 tails up quarters, but you can’t see which are which. Your goal is to split the quarters into two groups where each group has the exact same number of heads up quarters. You can only flip coins and move them into groups. How do you do it and why?`,
     answer: `Hints:
--The groups don’t need to be the same size and there can be a new number of heads
--You have to do 2 things, divide the coins and flip some over
--Try with 1 coin heads and 99 tails
--What are some logical divisions of the coins (50,50 and 1,99 are reasonable)
--If its 1 and 99 what can you flip?
+- The groups don’t need to be the same size and there can be a new number of heads
+- You have to do 2 things, divide the coins and flip some over
+- Try with 1 coin heads and 99 tails
+- What are some logical divisions of the coins (50,50 and 1,99 are reasonable)
+- If its 1 and 99 what can you flip?
 
 Answer:
 Divide into 2 groups, 25 and 75
@@ -186,7 +186,7 @@ If we flip the 25 there are 25-x heads in the left pile. Thus, both groups have 
     title: 'Pro Punch',
     description: `100 people are sitting around a table. All of a sudden, everyone randomly either punches the person to the left or right. How many people are expected to be punched?`,
     answer: `Hints:
--Focus on the individual
+- Focus on the individual
 
 Answer:
 75
@@ -200,7 +200,7 @@ Is the fact that it’s not independent matter? [no linearity of expectation]`
     title: 'Higher Powers',
     description: `Write a program to check if an input number is a perfect power of 2.`,
     answer: `Hints:
--What is a power of 2 (2*2*2….), try reversing that
+- What is a power of 2 (2*2*2….), try reversing that
 
 Answer:
 Either take log (If they do this, ask for recursive solution)
@@ -211,7 +211,7 @@ Divide by 2 repeatedly, if you reach 1 it works, if any number is odd, other tha
     title: 'Last but Least',
     description: `Write a program to find the 3 smallest numbers in an array.`,
     answer: `Hints: 
--What information do you need to keep track of and how do you update it
+- What information do you need to keep track of and how do you update it
 
 Answer:
 Iterate over the array and store the 3 smallest values
@@ -226,8 +226,8 @@ Running time: [This solution is O(N)]`
     title: 'A Stressed Dessert',
     description: `Write a program to check whether two input strings are anagrams of one another.`,
     answer: `Hints: 
--How could you tell if two strings are anagrams? (all the same letters)
--Dictionary or HashTable
+- How could you tell if two strings are anagrams? (all the same letters)
+- Dictionary or HashTable
 
 Answer:
 Convert the first string to hashtable letter:count
@@ -241,8 +241,8 @@ Running time: [This solution is O(N)]`
     title: 'Get Away From Me',
     description: `Find the diameter of a binary tree. The diameter is defined as the longest path between any two nodes. For example:`,
     answer: `Hints:
--Notice that it must be between two leaf nodes
--Traverse the tree
+- Notice that it must be between two leaf nodes
+- Traverse the tree
 
 Answer:
 Recursive solution,
@@ -258,7 +258,7 @@ Running time: [This solution is O(N)]`,
     title: 'You got the Stones?',
     description: `In a game, there is a pile of n stones and 2 players. Each turn a player can take 1, 2, or 3 stones from the pile. The game ends when no stones remain. Write a program to count the total number of different games that can occur.`,
     answer: `Hints:
--Think about it recursively
+- Think about it recursively
 
 Answer:
 Dynamic Programming
@@ -272,8 +272,8 @@ Answer[i] = answer[i-1]+answer[i-2]+answer[i-3]`
     title: 'Calm Down',
     description: `A relaxing number is one where adjacent digits are within 2 of one another. For example, 246, 424, and 123 are relaxing while 219 is not. Write a program to find all relaxing numbers between two input numbers.`,
     answer: `Hints:
--Brute force?
--How can you generate new numbers from old numbers
+- Brute force?
+- How can you generate new numbers from old numbers
 
 Answer:
 Think about it as a queue system
@@ -285,8 +285,9 @@ Start with each of the digits in the queue, create their “offspring” and add
     title: 'Peaked Interest',
     description: `Given a list of elements, find a peak element. A peak element is one where the adjacent elements are both smaller.`,
     answer: `Hints:
--They better get the naive solution
--Check follow ups
+- They better get the naive solution
+- Check follow ups
+- First/last digit can be a peak
 
 Answer:
 Use binary search
