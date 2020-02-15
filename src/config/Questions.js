@@ -119,7 +119,7 @@ Can also be done using 2 stacks, one when adding left child first and another fo
   },
   speedRacer: {
     title: 'Speed Racer',
-    description: `In a competition with 25 racers. What is the minimum number of races needed to identify the 3 fastest racers? The track can only race 5 people at a time and you do not have a way to measure time.`,
+    description: `In a competition with 25 racers, what is the minimum number of races needed to identify the 3 fastest racers? The track can only race 5 people at a time and you do not have a way to measure time.`,
     answer: `Hints:
 -Try drawing the “heats”
 -Who can you eliminate?
@@ -141,9 +141,9 @@ Visually, you need to race the 5 bracketed people after the first 6 races:
     description: `Two neighbors are chatting.
 Neighbor A asks, "What are the ages of your three daughters?"
 Neighbor B replies that the product of their ages is 36.
-Neighbor A can't figure it out and asks for a hint
+Neighbor A can't figure it out and asks for a hint.
 Neighbor B says that the sum of their ages is your house number.
-Neighbor A still can't figure it out and asks for another hint
+Neighbor A still can't figure it out and asks for another hint.
 Neighbor B says that the youngest has blue eyes. 
 Now, Neighbor A knows their ages.
 What is the youngest daughter’s age?`,
@@ -168,7 +168,7 @@ Since there is a youngest daughter, it must be 1,6,6`
   },
   blindAsABat: {
     title: 'Blind as a Bat',
-    description: `You walk into a dark room with a table of quarters on it. There are exactly 25 heads up quarters and 75 tails up quarters, but you can’t see which are which. Your goal is to split the quarters into two groups where each group has the exact same number of heads up quarters. You can flip coins. How do you do it and why?`,
+    description: `You walk into a dark room with a table of quarters on it. There are exactly 25 heads up quarters and 75 tails up quarters, but you can’t see which are which. Your goal is to split the quarters into two groups where each group has the exact same number of heads up quarters. You can only flip coins and move them into groups. How do you do it and why?`,
     answer: `Hints:
 -The groups don’t need to be the same size and there can be a new number of heads
 -You have to do 2 things, divide the coins and flip some over
@@ -256,7 +256,7 @@ Running time: [This solution is O(N)]`,
   },
   youGotTheStones: {
     title: 'You got the Stones?',
-    description: `In a game, there is a pile of n stones and 2 players. Each turn a player can take 1, 2, or 3 stones from the pile. Write a program to count the total number of different games that can occur.`,
+    description: `In a game, there is a pile of n stones and 2 players. Each turn a player can take 1, 2, or 3 stones from the pile. The game ends when no stones remain. Write a program to count the total number of different games that can occur.`,
     answer: `Hints:
 -Think about it recursively
 
@@ -270,7 +270,7 @@ Answer[i] = answer[i-1]+answer[i-2]+answer[i-3]`
   },
   calmDown: {
     title: 'Calm Down',
-    description: `A relaxing number is one where adjacent digits are within 2 of one another. For example, 246 and 123 are relaxing while 219 is not. Write a program to find all relaxing numbers between two input numbers.`,
+    description: `A relaxing number is one where adjacent digits are within 2 of one another. For example, 246, 424, and 123 are relaxing while 219 is not. Write a program to find all relaxing numbers between two input numbers.`,
     answer: `Hints:
 -Brute force?
 -How can you generate new numbers from old numbers

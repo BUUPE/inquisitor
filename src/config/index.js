@@ -13,8 +13,8 @@ Please solve all questions on paper or whiteboard (pseudo-code is acceptable for
 Here is the expected time breakdown for the interview (but feel free to spend more/less time per section as you please):
 Intro: 2 minutes
 Resume Review: 5 minutes
-Math/Reasoning Questions: 15 to 25 minutes
-Coding Questions: 15 to 25 minutes
+Math/Reasoning Questions: 15 minutes (Intermediate/Advanced) or 25 minutes (Beginner)
+Coding Questions: 15 minutes (Beginner) or 25 minutes (Intermediate/Advanced)
 
 Lastly, please remember that these questions are confidential during the interview period. You may only share them with others next week.`;
 
