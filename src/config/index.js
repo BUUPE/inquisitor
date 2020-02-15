@@ -51,27 +51,27 @@ Wrap Up:
 const Beginner = [
   Questions.speedRacer,
   Questions.howOldIsShe,
-  Questions.blindAsABat,
-  Questions.proPunch,
   Questions.higherPowers,
+  Questions.blindAsABat,
   Questions.lastButLeast,
+  Questions.proPunch,
 ];
 
 const Intermediate = [
   Questions.speedRacer,
-  Questions.howOldIsShe,
-  Questions.blindAsABat,
   Questions.aStressedDessert,
+  Questions.howOldIsShe,
   Questions.peakedInterest,
+  Questions.blindAsABat,
   Questions.getAwayFromMe,
 ];
 
 const Advanced = [
   Questions.speedRacer,
-  Questions.howOldIsShe,
-  Questions.blindAsABat,
   Questions.getAwayFromMe,
+  Questions.howOldIsShe,
   Questions.youGotTheStones,
+  Questions.blindAsABat,
   Questions.calmDown,
 ];
 
