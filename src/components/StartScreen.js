@@ -119,7 +119,6 @@ const StartScreenBase = ({ history, firebase }) => {
             <option>Beginner</option>
             <option>Intermediate</option>
             <option>Advanced</option>
-            <option>Grad</option>
           </Form.Control>
         </InputGroup>
 

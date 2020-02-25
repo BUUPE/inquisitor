@@ -25,6 +25,7 @@ import * as ROUTES from '../constants/routes';
 import { 
   Overview,
   InterviewerNotes,
+  ResumeNotes,
   CONFIG 
 } from '../config';
 import QuestionNotes from './QuestionNotes';
@@ -50,6 +51,20 @@ const Interview = ({ match, firebase }) => {
 
   const authUser = useContext(AuthUserContext);
   const interviewId = match.params.id;
+
+  useEffect(() => {
+    window.onbeforeunload = function (e) {
+      e = e || window.event;
+
+      // For IE and Firefox prior to version 4
+      if (e) {
+          e.returnValue = 'Any string';
+      }
+
+      // For Safari
+      return 'Any string';
+    };
+  });
 
   useEffect(() => {
     isInterviewOpen(firebase, interviewId).then(isOpen => {
@@ -215,6 +230,12 @@ const Interview = ({ match, firebase }) => {
                     </p>
                     {authUser && <QuestionNotes interviewId={interviewId} commentsOnly={true} dataKey="resume" savedNotes={savedNotes['resume']} />}
                     <hr/>
+                    {authUser && (
+                      <div>
+                        <p>{ResumeNotes}</p>
+                        <hr/>
+                      </div>
+                    )}
                     <div className="switch-question-button-group">
                       <Button onClick={() => notifyChange('overview')}>Previous</Button>
                       <Button onClick={() => notifyChange('problem-1')}>Next</Button>
