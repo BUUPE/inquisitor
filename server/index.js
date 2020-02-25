@@ -5,6 +5,25 @@ const socketIO = require('socket.io');
 const path = require("path");
 const serverPort = process.env.PORT || 3030;
 
+const passport = require('passport');
+const SamlStrategy = require('passport-saml').Strategy;
+
+passport.use(new SamlStrategy(
+  {
+    path: '/login/callback',
+    entryPoint: 'https://openidp.feide.no/simplesaml/saml2/idp/SSOService.php',
+    issuer: 'passport-saml'
+  },
+  function(profile, done) {
+    findByEmail(profile.email, function(err, user) {
+      if (err) {
+        return done(err);
+      }
+      return done(null, user);
+    });
+  })
+);
+
 const app = express();
 app.use(express.static(path.join(__dirname, '../build')));
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname, '../build/index.html')));
