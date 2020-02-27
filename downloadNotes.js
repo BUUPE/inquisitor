@@ -12,8 +12,8 @@ const config = {
   projectId: process.env.REACT_APP_PROJECT_ID,
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  firebaseEmail: process.env.DOWNLOAD_NOTES_FIREBASE_EMAIL,
-  firebasePassword: process.env.DOWNLOAD_NOTES_FIREBASE_PASS,
+  interviewerEmail: process.env.DOWNLOAD_NOTES_INTERVIEWER_EMAIL,
+  interviewerPassword: process.env.DOWNLOAD_NOTES_INTERVIEWER_PASS,
 };
 
 class Firebase {
@@ -38,7 +38,7 @@ class Firebase {
 
 var stream = fs.createWriteStream(`${moment().format('hh-mm-ss')}.dump.json`, {flags:'a'});
 const firebase = new Firebase();
-firebase.signIn(config.firebaseEmail, config.firebasePassword).then(auth => {
+firebase.signIn(config.interviewerEmail, config.interviewerPassword).then(auth => {
   firebase.interviews().get().then(snapshot => snapshot.forEach(doc => {
     firebase.notes(doc.id).get().then(notes => {
       const temp = {
