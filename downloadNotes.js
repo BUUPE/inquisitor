@@ -12,8 +12,8 @@ const config = {
   projectId: process.env.REACT_APP_PROJECT_ID,
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  interviewerEmail: process.env.DOWNLOAD_NOTES_INTERVIEWER_EMAIL,
-  interviewerPassword: process.env.DOWNLOAD_NOTES_INTERVIEWER_PASS,
+  interviewerEmail: process.env.INTERVIEWER_EMAIL,
+  interviewerPassword: process.env.INTERVIEWER_PASS,
 };
 
 class Firebase {
