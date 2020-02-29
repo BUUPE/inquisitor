@@ -17,6 +17,7 @@ import Landing from './components/Landing';
 import JoinRoom from './components/JoinRoom';
 import Interview from './components/Interview';
 import NotFound from './components/404';
+import Application from './components/Application';
 
 const AppBase = () => (
   <Router className="App">
@@ -26,6 +27,7 @@ const AppBase = () => (
       <Route path={ROUTES.SIGNOUT} component={Signout} />
       <Route path={ROUTES.CREATE} component={StartScreen} />
       <Route exact path={ROUTES.JOIN} component={JoinRoom} />
+	  <Route exact path={ROUTES.APPLICATION} component={Application} />
       <Route path={ROUTES.INTERVIEW} component={Interview} />
       <Route component={NotFound} />
     </Switch>
