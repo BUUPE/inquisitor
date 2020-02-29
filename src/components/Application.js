@@ -18,6 +18,8 @@ const INITIAL_STATE = {
   taken330: '',
   q1: '',
   q2: '',
+  time1: '',
+  time2: '',
   error: null,
 };
 
@@ -36,10 +38,10 @@ class ApplicationFormBase extends Component {
   };
 
   render() {
-    const { email, applicantName, classYear, major, taken112, taken330, resume, q1, q2, error } = this.state;
-    const isInvalid = applicantName === '' || email === '' || classYear === '' || major === '' || taken112 === '' || taken112 === '' || resume === '' || q1 === '' || q2 === '';
+    const { email, applicantName, classYear, major, taken112, taken330, resume, q1, q2, time1, time2, error } = this.state;
+    const isInvalid = applicantName === '' || email === '' || classYear === '' || major === '' || taken112 === '' || taken112 === '' || resume === '' || q1 === '' || q2 === '' ||(time1 === '' && time2 === '');
     return (
-      <div className="signin-form-wrapper">
+      <div className="application-form-wrapper">
         <Form onSubmit={this.onSubmit}>
 		  <h1>UPE Application Form</h1>
 		  <p> </p>
@@ -63,7 +65,7 @@ class ApplicationFormBase extends Component {
               <InputGroup>
                 <Form.Control 
                   name="name"
-                  type="name" 
+                  type="text" 				  
                   placeholder="Adam Smith" 
                   value={applicantName}
                   onChange={this.onChange}
@@ -71,17 +73,21 @@ class ApplicationFormBase extends Component {
               </InputGroup>
 		    </div>
 		  </div>
-		 
-		  <h5>Resume</h5>
-          <InputGroup>
-            <Form.Control 
-              name="resume"
-              type="file" 
-              placeholder="Resume" 
-              value={resume}
-             onChange={this.onChange}
-            />
-          </InputGroup>
+		  
+		  <div className="row">
+		    <div className="col-md-12">
+			  <h5>Resume</h5>
+              <InputGroup>
+                <Form.Control 
+                  name="resume"
+                  type="file" 
+                  placeholder="Resume" 
+                  value={resume}
+                  onChange={this.onChange}
+                />
+              </InputGroup>
+		    </div>
+		  </div>
 		 
 		  <div className="row">
 		    <div className="col-md-6">
@@ -145,35 +151,79 @@ class ApplicationFormBase extends Component {
 		    </div>
 		  </div>
 		  
-		  <h5>Why do you want to join UPE?</h5>
-		  <p>Around 100 Words</p>
-          <InputGroup>
-            <Form.Control 
-              name="q1"
-              as="textarea" 
-              rows="10" 
-              placeholder="..." 
-              value={q1}
-              onChange={this.onChange}
-            />
-          </InputGroup>
+		  <div className="row">
+		    <div className="col-md-12">
+		      <h5>Why do you want to join UPE?</h5>
+		      <p>Around 100 Words</p>
+              <InputGroup>
+                <Form.Control 
+                  name="q1"
+				  as="textarea" 
+				  rows="7" 
+				  placeholder="..." 
+				  value={q1}
+				  onChange={this.onChange}
+				/>
+              </InputGroup>
+		    </div>
+		  </div>
 		  
-		  <h5>What do you hope to gain from UPE</h5>
-		  <p>Around 100 Words</p>
-          <InputGroup>
-            <Form.Control 
-              name="q2"
-              as="textarea" 
-              rows="10" 
-              placeholder="..." 
-              value={q2}
-              onChange={this.onChange}
-            />
-          </InputGroup>
-
-          <Button disabled={isInvalid} type="submit">
-            Submit Application
-          </Button>
+		  <div className="row">
+		    <div className="col-md-12">
+		      <h5>What do you hope to gain from joining UPE?</h5>
+		      <p>Around 100 Words</p>
+              <InputGroup>
+                <Form.Control 
+                  name="q2"
+				  as="textarea" 
+				  rows="7" 
+				  placeholder="..." 
+				  value={q2}
+				  onChange={this.onChange}
+				/>
+              </InputGroup>
+		    </div>
+		  </div>
+		  
+		  <div className="row">
+		    <div className="col-md-12">
+			  <h5>When are you available for interviews?</h5>
+			</div>
+			<div className="col-md-6">
+			  <h6> Saturday - 01/01/20 </h6>
+              <div key={time1}>
+			    <Form.Check type="checkbox" id={"d1t1"} label={"09:00 am - 10:00 am"}/>
+				<Form.Check type="checkbox" id={"d1t2"} label={"10:00 am - 11:00 am"}/>
+				<Form.Check type="checkbox" id={"d1t3"} label={"11:00 am - 12:00 pm"}/>
+				<Form.Check type="checkbox" id={"d1t4"} label={"12:00 pm - 01:00 pm"}/>
+				<Form.Check type="checkbox" id={"d1t5"} label={"01:00 pm - 02:00 pm"}/>
+				<Form.Check type="checkbox" id={"d1t6"} label={"02:00 pm - 03:00 pm"}/>
+				<Form.Check type="checkbox" id={"d1t7"} label={"03:00 pm - 04:00 pm"}/>
+				<Form.Check type="checkbox" id={"d1t8"} label={"04:00 pm - 05:00 pm"}/>
+			  </div>
+            </div>
+			<div className="col-md-6">
+			  <h6> Sunday - 01/02/20 </h6>
+              <div key={time2}>
+			    <Form.Check type="checkbox" id={"d2t1"} label={"09:00 am - 10:00 am"}/>
+				<Form.Check type="checkbox" id={"d2t2"} label={"10:00 am - 11:00 am"}/>
+				<Form.Check type="checkbox" id={"d2t3"} label={"11:00 am - 12:00 pm"}/>
+				<Form.Check type="checkbox" id={"d2t4"} label={"12:00 pm - 01:00 pm"}/>
+				<Form.Check type="checkbox" id={"d2t5"} label={"01:00 pm - 02:00 pm"}/>
+				<Form.Check type="checkbox" id={"d2t6"} label={"02:00 pm - 03:00 pm"}/>
+				<Form.Check type="checkbox" id={"d2t7"} label={"03:00 pm - 04:00 pm"}/>
+				<Form.Check type="checkbox" id={"d2t8"} label={"04:00 pm - 05:00 pm"}/>
+			  </div>
+            </div>
+		  </div>
+		  
+		  <div className="row-button">
+		    <div className="col-md-12">
+              <Button disabled={isInvalid} type="submit">
+                Submit Application
+              </Button>
+		    </div>
+		  </div>
 
           {error && <p className="error-msg">{error.message}</p>}
         </Form>
