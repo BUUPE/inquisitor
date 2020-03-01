@@ -74,6 +74,29 @@ p.error-msg {
   align-items: center;
   padding-left: 250px;
   padding-right: 250px;
+  font-family: Andale Mono, monospace;
+}
+
+.application-form {
+  background-color:	#f0f0f0
+}
+
+.application-form-wrapper h1 {
+  font-weight: 600;
+}
+
+.application-form-wrapper h5 {
+  font-weight: 600;
+  color: #910000;
+}
+
+.application-form-wrapper h6 {
+  font-weight: 600;
+  color: #910000;
+}
+
+.application-form-wrapper p {
+  font-size: 12px;
 }
 
 .application-form-wrapper .row {
@@ -84,6 +107,20 @@ p.error-msg {
 	padding-top: 50px;
 	padding-bottom: 50px;
 	text-align: center;
+}
+
+.application-form-wrapper .row-button .btn {
+  font-size: 20px;
+  background-color: #910000;
+  outline-color: #910000;
+  outline-width: 1px;
+}
+
+.application-form-wrapper .row-button .btn:hover {
+  font-size: 20px;
+  background-color: #a80000;
+  outline-color: #a80000;
+  outline-width: 1px;
 }
 
 .start-screen-wrapper,
