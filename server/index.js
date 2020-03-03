@@ -10,25 +10,6 @@ const session = require('express-session');
 const passport = require('passport');
 const SamlStrategy = require('passport-saml').Strategy;
 
-const passport = require('passport');
-const SamlStrategy = require('passport-saml').Strategy;
-
-passport.use(new SamlStrategy(
-  {
-    path: '/login/callback',
-    entryPoint: 'https://openidp.feide.no/simplesaml/saml2/idp/SSOService.php',
-    issuer: 'passport-saml'
-  },
-  function(profile, done) {
-    findByEmail(profile.email, function(err, user) {
-      if (err) {
-        return done(err);
-      }
-      return done(null, user);
-    });
-  })
-);
-
 const app = express();
 const samlStrategy = new SamlStrategy(
   {
@@ -60,7 +41,6 @@ passport.deserializeUser(function(user, done) {
 });
 
 passport.use(samlStrategy);
-
 app.use(express.static(path.join(__dirname, '../build')));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -73,15 +53,15 @@ app.use(session({
   saveUninitialized: true
 }));
 
-app.post('/login/callback',
-  bodyParser.urlencoded({ extended: false }),
+app.get('/login',
   passport.authenticate('saml', { failureRedirect: '/', failureFlash: true }),
   function(req, res) {
     res.redirect('/secret');
   }
 );
 
-app.get('/login',
+app.post('/login/callback',
+  bodyParser.urlencoded({ extended: false }),
   passport.authenticate('saml', { failureRedirect: '/', failureFlash: true }),
   function(req, res) {
     res.redirect('/secret');
@@ -95,7 +75,7 @@ app.get('/secret',
   }
 );
 
-app.get('/shibboleth/metadata', 
+app.get('/shibboleth/metadata',
   function(req, res) {
     res.type('application/xml');
     const cert = fs.readFileSync(path.join(__dirname, '/cert/cert.pem'), 'utf8');
