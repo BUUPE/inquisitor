@@ -18,4 +18,6 @@ Before contributing, note that we use the [Git Flow](https://nvie.com/posts/a-su
 
 As a reminder, this project uses the [React Bootstrap](https://react-bootstrap.github.io/) design library, so try to use it as much as possible to ensure a uniform look throughout the app and to prevent reinventing the wheel too often. Reading through the list of available components would be a good first step.
 
+To work with the Heroku PostgreSQL database, run the server with the following command: `DATABASE_URL=$(heroku config:get DATABASE_URL -a upe-inquisitor) node server/index.js`. You will however have to be added to the Heroku application as a collaborator (ask someone on E-Board to add you).
+
 Otherwise, check out the issues and take one that's unassigned! If you have any questions, please reach out to @ROODAY or @Warren-Partridge.
