@@ -11,6 +11,8 @@ import { withFirebase } from './Firebase';
 import * as ROUTES from '../constants/routes';
 import logo from '../assets/img/logo.png';
 
+const axios = require('axios')
+
 const INITIAL_STATE = {
   email: '',
   applicantName: '',
@@ -50,6 +52,44 @@ class ApplicationFormBase extends Component {
   onSubmit = event => {
     event.preventDefault();
 	console.log(this.state);
+
+    axios.post('http://http://upe-interview.bu.edu/api/saveApplication', {
+		email: this.state.email,
+		name: this.state.applicantName,
+		resume: this.state.resume,
+		classYear: this.state.classYear,
+		major: this.state.major,
+		taken112: this.state.taken112,
+		taken330: this.state.taken330,
+		q1: this.state.q1,
+		q2: this.state.q2,
+		d1t1: this.state.d1t1,
+		d1t2: this.state.d1t2,
+		d1t3: this.state.d1t3,
+		d1t4: this.state.d1t4,
+		d1t5: this.state.d1t5,
+		d1t6: this.state.d1t6,
+		d1t7: this.state.d1t7,
+		d1t8: this.state.d1t8,
+		d2t1: this.state.d2t1,
+		d2t2: this.state.d2t2,
+		d2t3: this.state.d2t3,
+		d2t4: this.state.d2t4,
+		d2t5: this.state.d2t5,
+		d2t6: this.state.d2t6,
+		d2t7: this.state.d2t7,
+		d2t8: this.state.d2t8
+	})
+	.then((res) => {
+		console.log(`statusCode: ${res.statusCode}`)
+		console.log(res)
+	})
+	.catch((error) => {
+		console.error(error)
+	});
+	
+    this.props.history.push('/appsubmitted');
+	
   };
 
   onChange = event => {

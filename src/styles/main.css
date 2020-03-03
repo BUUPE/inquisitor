@@ -99,6 +99,10 @@ p.error-msg {
   font-size: 12px;
 }
 
+.application-form-wrapper .thanks-text p {
+  font-size: 20px;
+}
+
 .application-form-wrapper .row {
 	padding-top: 50px;
 }
