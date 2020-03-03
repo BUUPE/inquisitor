@@ -17,9 +17,9 @@ const samlStrategy = new SamlStrategy(
     entryPoint: 'https://shib-test.bu.edu/idp/profile/SAML2/Redirect/SSO',
     issuer: 'http://upe-interview.bu.edu/bushibboleth/sp',
     identifierFormat: null,
-    decryptionPvk: fs.readFileSync(path.join(__dirname, '/cert/key.pem'), 'utf8'),
-    privateCert: fs.readFileSync(path.join(__dirname, '/cert/key.pem'), 'utf8'),
-    cert: fs.readFileSync(path.join(__dirname, '/cert/cert_idp.pem'), 'utf8'),
+    decryptionPvk: JSON.parse(`"${process.env.SHIBBOLETH_KEY}"`),
+    privateCert: JSON.parse(`"${process.env.SHIBBOLETH_KEY}"`),
+    cert: JSON.parse(`"${process.env.SHIBBOLETH_IDP_CERT}"`),
     validateInResponseTo: false,
     disableRequestedAuthnContext: true
   },
@@ -78,7 +78,7 @@ app.get('/secret',
 app.get('/shibboleth/metadata',
   function(req, res) {
     res.type('application/xml');
-    const cert = fs.readFileSync(path.join(__dirname, '/cert/cert.pem'), 'utf8');
+    const cert = JSON.parse(`"${process.env.SHIBBOLETH_CERT}"`);
     res.status(200).send(samlStrategy.generateServiceProviderMetadata(cert, cert));
   }
 );
