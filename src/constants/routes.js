@@ -4,5 +4,4 @@ export const SIGNOUT = '/signout';
 export const CREATE = '/create';
 export const JOIN = '/room';
 export const INTERVIEW = '/room/:id';
-export const APPLICATION = '/application';
-export const APPSUBMITTED = '/appsubmitted';
+export const APPLICATION = '/apply';
