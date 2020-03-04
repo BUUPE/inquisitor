@@ -115,7 +115,7 @@ class ApplicationForm extends React.Component {
         </Row>
         <Row className="thanks-text">
           <Col className="col-md-12 text-center">
-            <p>Thank you for applying to join UPE, we will be getting back to you by Friday the XX with a timeslot for your interview. </p>
+            <p>Thank you for applying to join UPE. We will be getting back to you by Friday the XX with a timeslot for your interview. </p>
             <p>Additional details will be sent to you via the email address you provided in your application!</p>
           </Col>
         </Row>

@@ -102,13 +102,13 @@ p.error-msg {
 }
 
 .application-form-wrapper .row {
-	padding-top: 50px;
+  padding-top: 50px;
 }
 
 .application-form-wrapper .row-button {
-	padding-top: 50px;
-	padding-bottom: 50px;
-	text-align: center;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  text-align: center;
 }
 
 .application-form-wrapper .row-button .btn {
