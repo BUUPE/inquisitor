@@ -23,22 +23,28 @@ const INITIAL_STATE = {
   taken330: '',
   q1: '',
   q2: '',
-  d1t1: false,
-  d1t2: false,
-  d1t3: false,
-  d1t4: false,
-  d1t5: false,
-  d1t6: false,
-  d1t7: false,
-  d1t8: false,
-  d2t1: false,
-  d2t2: false,
-  d2t3: false,
-  d2t4: false,
-  d2t5: false,
-  d2t6: false,
-  d2t7: false,
-  d2t8: false,
+  saturday: {
+	"9am": false,
+	"10am": false,
+	"11am": false,
+	"12pm": false,
+	"1pm": false,
+	"2pm": false,
+	"3pm": false,
+	"4pm": false,
+	"5pm": false
+  },
+  sunday: {
+	"9am": false,
+	"10am": false,
+	"11am": false,
+	"12pm": false,
+	"1pm": false,
+	"2pm": false,
+	"3pm": false,
+	"4pm": false,
+	"5pm": false
+  },
   error: null,
 };
 
@@ -63,22 +69,8 @@ class ApplicationFormBase extends Component {
 		taken330: this.state.taken330,
 		q1: this.state.q1,
 		q2: this.state.q2,
-		d1t1: this.state.d1t1,
-		d1t2: this.state.d1t2,
-		d1t3: this.state.d1t3,
-		d1t4: this.state.d1t4,
-		d1t5: this.state.d1t5,
-		d1t6: this.state.d1t6,
-		d1t7: this.state.d1t7,
-		d1t8: this.state.d1t8,
-		d2t1: this.state.d2t1,
-		d2t2: this.state.d2t2,
-		d2t3: this.state.d2t3,
-		d2t4: this.state.d2t4,
-		d2t5: this.state.d2t5,
-		d2t6: this.state.d2t6,
-		d2t7: this.state.d2t7,
-		d2t8: this.state.d2t8
+		saturday: this.state.saturday,
+		sunday: this.state.sunday
 	})
 	.then((res) => {
 		console.log(`statusCode: ${res.statusCode}`)
@@ -88,6 +80,8 @@ class ApplicationFormBase extends Component {
 		console.error(error)
 	});
 	
+	console.log(this.state);
+	
     this.props.history.push('/appsubmitted');
 	
   };
@@ -96,61 +90,22 @@ class ApplicationFormBase extends Component {
     this.setState({ [event.target.name]: event.target.value });
   };
   
-  handleCheckBoxChange = x => {
-	  switch(x) {
-		  case 1:
-			this.state.d1t1 = true;
-			break;
-		  case 2:
-			this.state.d1t2 = true;
-			break;
-		  case 3:
-			this.state.d1t3 = true;
-			break;
-		  case 4:
-			this.state.d1t4 = true;
-			break;
-		  case 5:
-			this.state.d1t5 = true;
-			break;
-		  case 6:
-			this.state.d1t6 = true;
-			break;
-	      case 7:
-			this.state.d1t7 = true;
-			break;
-	      case 8:
-			this.state.d1t8 = true;
-			break;
-		  case 9:
-			this.state.d2t1 = true;
-			break;
-		  case 10:
-			this.state.d2t2 = true;
-			break;
-		  case 11:
-			this.state.d2t3 = true;
-			break;
-		  case 12:
-			this.state.d2t4 = true;
-			break;
-		  case 13:
-			this.state.d2t5 = true;
-			break;
-		  case 14:
-			this.state.d2t6 = true;
-			break;
-	      case 15:
-			this.state.d2t7 = true;
-			break;
-	      case 16:
-			this.state.d2t8 = true;
-			break;
-	  } 
-  };
+  checkboxVerify1 = event => {
+    const { saturday } = this.state;
+    const checked = saturday[event.target.value];
+    saturday[event.target.value] = !checked;
+    this.setState({saturday});
+  }
+  
+  checkboxVerify2 = event => {
+    const { sunday } = this.state;
+    const checked = sunday[event.target.value];
+    sunday[event.target.value] = !checked;
+    this.setState({sunday});
+  }
 
   render() {
-    const { email, applicantName, classYear, major, taken112, taken330, resume, q1, q2, d1t1, d1t2, d1t3, d1t4, d1t5, d1t6, d1t7, d1t8, d2t1, d2t2, d2t3, d2t4, d2t5, d2t6, d2t7, d2t8, error } = this.state;
+    const { email, applicantName, classYear, major, taken112, taken330, resume, q1, q2, saturday, sunday, error } = this.state;
     const isInvalid = applicantName === '' || email === '' || classYear === '' || major === '' || taken112 === '' || taken112 === '' || resume === '' || q1 === '' || q2 === '';
     return (
       <div className="application-form-wrapper">
@@ -308,27 +263,21 @@ class ApplicationFormBase extends Component {
 			<Col>
 			  <h6> Saturday - 01/01/20 </h6>
               <div>
-			    <Form.Check onChange={this.handleCheckBoxChange(1)} type="checkbox" label={"09:00 am - 10:00 am"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(2)} type="checkbox" label={"10:00 am - 11:00 am"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(3)} type="checkbox" label={"11:00 am - 12:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(4)} type="checkbox" label={"12:00 pm - 01:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(5)} type="checkbox" label={"01:00 pm - 02:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(6)} type="checkbox" label={"02:00 pm - 03:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(7)} type="checkbox" label={"03:00 pm - 04:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(8)} type="checkbox" label={"04:00 pm - 05:00 pm"}/>
+			    {
+				 Object.keys(saturday).map(time => 
+											<Form.Check key={time} type="checkbox" onChange={this.checkboxVerify1} value={time} label={time}/>
+				 )
+				}
 			  </div>
             </Col>
 			<Col>
 			  <h6> Sunday - 01/02/20 </h6>
               <div>
-			    <Form.Check onChange={this.handleCheckBoxChange(9)} type="checkbox" label={"09:00 am - 10:00 am"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(10)} type="checkbox" label={"10:00 am - 11:00 am"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(11)} type="checkbox" label={"11:00 am - 12:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(12)} type="checkbox" label={"12:00 pm - 01:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(13)} type="checkbox" label={"01:00 pm - 02:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(14)} type="checkbox" label={"02:00 pm - 03:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(15)} type="checkbox" label={"03:00 pm - 04:00 pm"}/>
-				<Form.Check onChange={this.handleCheckBoxChange(16)} type="checkbox" label={"04:00 pm - 05:00 pm"}/>
+			    {
+				 Object.keys(sunday).map(time => 
+											<Form.Check key={time} type="checkbox" onChange={this.checkboxVerify2} value={time} label={time}/>
+				 )
+				}
 			  </div>
             </Col>
 		  </Row>
