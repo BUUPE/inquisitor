@@ -56,6 +56,9 @@ app.use(session({
 }));
 
 const ensureAuthenticated = (req, res, next) => {
+  console.log("request:", req);
+  console.log("user:", req.user);
+  console.log('authed:', req.isAuthenticated());
   if (req.isAuthenticated())
     return next();
   else
