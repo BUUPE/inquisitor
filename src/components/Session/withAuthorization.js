@@ -9,11 +9,7 @@ const withAuthorization = condition => Component => {
   class WithAuthorization extends React.Component {
     componentDidMount() {
       axios.get('/api/getAuthUser')
-      .then(authUser => {
-        if (!condition(authUser)) {
-          this.props.history.push(ROUTES.LOGIN);
-        }
-      })
+      .then(res => { if (!condition(res.data)) window.location.replace(ROUTES.LOGIN); })
       .catch(err => console.error(err));
     }
 

@@ -12,10 +12,7 @@ const withAuthentication = Component => class WithAuthentication extends React.C
 
   componentDidMount() {
     axios.get('/api/getAuthUser')
-      .then(authUser => {
-        console.log('received user:', authUser);
-        this.setState({ authUser });
-      })
+      .then(res => this.setState({ authUser: res.data }))
       .catch(err => console.error(err));
   }
 

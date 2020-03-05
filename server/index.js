@@ -98,7 +98,7 @@ app.get('/shibboleth/metadata',
 app.get('/api/getAuthUser',
   (req, res) => {
     if (req.user === undefined) {
-      res.json({});
+      res.json(null);
     } else {
       res.json(req.user);
     }
