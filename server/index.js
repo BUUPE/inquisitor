@@ -63,22 +63,16 @@ const ensureAuthenticated = (req, res, next) => {
 
 app.get('/login',
   passport.authenticate('saml', { failureRedirect: '/login/fail' }),
-  function(req, res) {
-    res.redirect('/secret');
-  }
+  (req, res) => res.redirect('/secret')
 );
 
 app.post('/login/callback',
   passport.authenticate('saml', { failureRedirect: '/login/fail' }),
-  function(req, res) {
-    res.redirect('/secret');
-  }
+  (req, res) => res.redirect('/secret')
 );
 
 app.get('/login/fail',
-  function(req, res) {
-    res.status(401).send('Login failed');
-  }
+  (req, res) => res.status(401).send('Login failed')
 );
 
 app.get('/secret',
@@ -94,10 +88,20 @@ app.get('/secret',
 );
 
 app.get('/shibboleth/metadata',
-  function(req, res) {
+  (req, res) => {
     res.type('application/xml');
     const cert = JSON.parse(`"${process.env.SHIBBOLETH_CERT}"`);
     res.status(200).send(samlStrategy.generateServiceProviderMetadata(cert, cert));
+  }
+);
+
+app.get('/api/getAuthUser',
+  (req, res) => {
+    if (req.user === undefined) {
+      res.json({});
+    } else {
+      res.json(req.user);
+    }
   }
 );
 

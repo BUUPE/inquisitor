@@ -10,9 +10,9 @@ import Button from 'react-bootstrap/Button';
 import { Link } from 'react-router-dom';
 import { withFirebase } from './Firebase';
 import { AuthUserContext } from './Session';
-import { 
+import {
   isInterviewOpen,
-  getInterviewData, 
+  getInterviewData,
   getInterviewNotes,
   joinInterview,
   emitProblemChange,
@@ -22,11 +22,11 @@ import {
 } from '../util/api';
 import * as ROUTES from '../constants/routes';
 
-import { 
+import {
   Overview,
   InterviewerNotes,
   ResumeNotes,
-  CONFIG 
+  CONFIG
 } from '../config';
 import QuestionNotes from './QuestionNotes';
 import Loader from './Loader';
@@ -50,6 +50,7 @@ const Interview = ({ match, firebase }) => {
   const [interviewer2Score, setInterviewer2Score] = useState(1);
 
   const authUser = useContext(AuthUserContext);
+  console.log('interview authUser:', authUser);
   const interviewId = match.params.id;
 
   useEffect(() => {
@@ -72,8 +73,8 @@ const Interview = ({ match, firebase }) => {
       setLoading(false);
         setError({ message: "The interview you're trying to join is either closed or doesn't exist!" });
       } else {
-        joinInterview(interviewId, 
-          () => setInRoom(true), 
+        joinInterview(interviewId,
+          () => setInRoom(true),
           () => { if (authUser) setIntervieweeOn(initialTabKey) },
           () => {
             setClosed(true);
@@ -131,12 +132,12 @@ const Interview = ({ match, firebase }) => {
           setValidated(false);
           setLoading(true);
 
-          const finalCommentsObject = { 
-            interviewId, 
-            dataKey: 'final-comments', 
-            notes: generalComments, 
-            interviewer1Score, 
-            interviewer2Score 
+          const finalCommentsObject = {
+            interviewId,
+            dataKey: 'final-comments',
+            notes: generalComments,
+            interviewer1Score,
+            interviewer2Score
           };
 
           saveFinalComments(firebase, finalCommentsObject).then(() => {
@@ -175,7 +176,7 @@ const Interview = ({ match, firebase }) => {
               <Col sm={3}>
                 <Nav variant="pills" className="flex-column">
                   <Nav.Item>
-                    <Nav.Link 
+                    <Nav.Link
                       eventKey="overview"
                       className={(intervieweeOn === `overview` && authUser) ? 'interviewee-on' : ''}
                     >
@@ -183,7 +184,7 @@ const Interview = ({ match, firebase }) => {
                     </Nav.Link>
                   </Nav.Item>
                   {showResume && <Nav.Item>
-                    <Nav.Link 
+                    <Nav.Link
                       eventKey="resume"
                       className={(intervieweeOn === `resume` && authUser) ? 'interviewee-on' : ''}
                     >
@@ -192,7 +193,7 @@ const Interview = ({ match, firebase }) => {
                   </Nav.Item>}
                   {questions.map((question, i) => (
                     <Nav.Item key={`problem-${i+1}-link`}>
-                      <Nav.Link 
+                      <Nav.Link
                         eventKey={`problem-${i+1}`}
                         className={(intervieweeOn === `problem-${i+1}` && authUser) ? 'interviewee-on' : ''}
                       >
@@ -269,9 +270,9 @@ const Interview = ({ match, firebase }) => {
                       <Form noValidate validated={validated} onSubmit={submitInterview}>
                         <Form.Group>
                           <Form.Label><strong>General Comments</strong></Form.Label>
-                          <Form.Control 
-                            as="textarea" 
-                            rows="10" 
+                          <Form.Control
+                            as="textarea"
+                            rows="10"
                             placeholder="Enter comments here..."
                             value={generalComments}
                             onChange={event => setGeneralComments(event.target.value)}
@@ -293,9 +294,9 @@ const Interview = ({ match, firebase }) => {
 
                         <Form.Group>
                           <Form.Label><strong>Interviewer 1 Score:</strong> {interviewer1Score}</Form.Label>
-                          <Form.Control 
+                          <Form.Control
                             type="range"
-                            min="1" 
+                            min="1"
                             max="5"
                             step="0.5"
                             value={interviewer1Score}
@@ -307,9 +308,9 @@ const Interview = ({ match, firebase }) => {
 
                         <Form.Group>
                           <Form.Label><strong>Interviewer 2 Score:</strong> {interviewer2Score}</Form.Label>
-                          <Form.Control 
+                          <Form.Control
                             type="range"
-                            min="1" 
+                            min="1"
                             max="5"
                             step="0.5"
                             value={interviewer2Score}
@@ -322,7 +323,7 @@ const Interview = ({ match, firebase }) => {
                         <Button type="submit">Submit</Button>
                       </Form>
 
-                      
+
                     </Tab.Pane>
                   )}
                 </Tab.Content>
@@ -348,8 +349,8 @@ const Interview = ({ match, firebase }) => {
             }
             <Link to={ROUTES.LANDING}>Go to Home</Link>
           </div>
-            
-          
+
+
         </div>
       }
     </div>
