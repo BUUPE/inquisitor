@@ -13,7 +13,7 @@ const SamlStrategy = require('passport-saml').Strategy;
 const app = express();
 const samlStrategy = new SamlStrategy(
   {
-    path: 'http://upe-interview.bu.edu/login/callback',
+    path: '/login/callback',
     entryPoint: 'https://shib-test.bu.edu/idp/profile/SAML2/Redirect/SSO',
     issuer: 'http://upe-interview.bu.edu/bushibboleth/sp',
     identifierFormat: null,
