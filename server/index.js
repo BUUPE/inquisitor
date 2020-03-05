@@ -13,7 +13,7 @@ const SamlStrategy = require('passport-saml').Strategy;
 const app = express();
 const samlStrategy = new SamlStrategy(
   {
-    path: '/login/callback',
+    path: 'http://upe-interview.bu.edu/login/callback',
     entryPoint: 'https://shib-test.bu.edu/idp/profile/SAML2/Redirect/SSO',
     issuer: 'http://upe-interview.bu.edu/bushibboleth/sp',
     identifierFormat: null,
@@ -24,12 +24,14 @@ const samlStrategy = new SamlStrategy(
     disableRequestedAuthnContext: true
   },
   (profile, done) => {
-    findByEmail(profile.email, function(err, user) {
+    console.log(profile);
+    return done(null, profile);
+    /*findByEmail(profile.email, function(err, user) {
       if (err) {
         return done(err);
       }
       return done(null, user);
-    });
+    });*/
   });
 
 passport.serializeUser(function(user, done) {
