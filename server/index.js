@@ -24,7 +24,6 @@ const samlStrategy = new SamlStrategy(
     disableRequestedAuthnContext: true
   },
   (profile, done) => {
-    console.log(profile);
     return done(null, profile);
     /*findByEmail(profile.email, function(err, user) {
       if (err) {
@@ -56,8 +55,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const ensureAuthenticated = (req, res, next) => {
-  console.log("user:", req.user);
-  console.log('authed:', req.isAuthenticated());
   if (req.isAuthenticated())
     return next();
   else
@@ -87,6 +84,7 @@ app.get('/login/fail',
 app.get('/secret',
   ensureAuthenticated,
   (req, res) => {
+    console.log(req.user);
     res.send(`hi there ${req.user}`);
   }
 );
