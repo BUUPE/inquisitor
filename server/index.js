@@ -48,7 +48,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
   secret: 'testtest',
   resave: true,
@@ -56,7 +56,6 @@ app.use(session({
 }));
 
 const ensureAuthenticated = (req, res, next) => {
-  console.log("request:", req);
   console.log("user:", req.user);
   console.log('authed:', req.isAuthenticated());
   if (req.isAuthenticated())
@@ -66,15 +65,14 @@ const ensureAuthenticated = (req, res, next) => {
 }
 
 app.get('/login',
-  passport.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true }),
+  passport.authenticate('saml', { failureRedirect: '/login/fail' }),
   function(req, res) {
     res.redirect('/secret');
   }
 );
 
 app.post('/login/callback',
-  bodyParser.urlencoded({ extended: false }),
-  passport.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true }),
+  passport.authenticate('saml', { failureRedirect: '/login/fail' }),
   function(req, res) {
     res.redirect('/secret');
   }
