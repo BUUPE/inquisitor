@@ -84,8 +84,12 @@ app.get('/login/fail',
 app.get('/secret',
   ensureAuthenticated,
   (req, res) => {
-    console.log(req.user);
-    res.send(`hi there ${req.user}`);
+    const name = `${req.user['urn:oid:2.5.4.42']} ${req.user['urn:oid:2.5.4.4']}`;
+    const email = req.user['urn:oid:1.3.6.1.4.1.5923.1.1.1.6'];
+    const role = req.user['urn:oid:1.3.6.1.4.1.5923.1.1.1.5'];
+    const roleSpecification = req.user['urn:oid:2.5.4.12'];
+    const organization = req.user['urn:oid:2.5.4.10'];
+    res.send(`Hello ${name} (${email})! You are a ${role} (${roleSpecification}) in ${organization}.`);
   }
 );
 
