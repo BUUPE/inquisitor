@@ -44,8 +44,6 @@ passport.deserializeUser(function(user, done) {
 
 passport.use(samlStrategy);
 app.use(express.static(path.join(__dirname, '../build')));
-app.use(passport.initialize());
-app.use(passport.session());
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -54,6 +52,8 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 const ensureAuthenticated = (req, res, next) => {
   console.log("user:", req.user);
