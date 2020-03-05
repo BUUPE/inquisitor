@@ -55,8 +55,15 @@ app.use(session({
   saveUninitialized: true
 }));
 
+const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated())
+    return next();
+  else
+    return res.redirect('/login');
+}
+
 app.get('/login',
-  passport.authenticate('saml', { failureRedirect: '/', failureFlash: true }),
+  passport.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true }),
   function(req, res) {
     res.redirect('/secret');
   }
@@ -64,14 +71,20 @@ app.get('/login',
 
 app.post('/login/callback',
   bodyParser.urlencoded({ extended: false }),
-  passport.authenticate('saml', { failureRedirect: '/', failureFlash: true }),
+  passport.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true }),
   function(req, res) {
     res.redirect('/secret');
   }
 );
 
+app.get('/login/fail',
+  function(req, res) {
+    res.status(401).send('Login failed');
+  }
+);
+
 app.get('/secret',
-  passport.authenticate('saml', { failureRedirect: '/', failureFlash: true }),
+  ensureAuthenticated,
   (req, res) => {
     res.send(`hi there ${req.user}`);
   }
@@ -86,6 +99,11 @@ app.get('/shibboleth/metadata',
 );
 
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname, '../build/index.html')));
+
+app.use(function(err, req, res, next) {
+  console.error("Fatal error: " + JSON.stringify(err));
+  next(err);
+});
 
 const serverPort = process.env.PORT || 3030;
 const server = app.listen(serverPort, () => console.log(`Listening on port ${serverPort}`));
