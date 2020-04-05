@@ -18,6 +18,7 @@ import JoinRoom from './components/JoinRoom';
 import Interview from './components/Interview';
 import NotFound from './components/404';
 import Application from './components/Application';
+import CreateAccount from './components/CreateAccount';
 
 const AppBase = () => (
   <Router className="App">
@@ -30,6 +31,7 @@ const AppBase = () => (
 	    <Route path={ROUTES.APPLICATION} component={Application} />
       <Route path={ROUTES.INTERVIEW} component={Interview} />
       <Route component={NotFound} />
+      <Route path={ROUTES.CREATEACCOUNT} component={CreateAccount} />
     </Switch>
   </Router>
 );
