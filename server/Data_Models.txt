@@ -1,0 +1,35 @@
+Data Models
+
+
+question
+	id              | UUID, PRIMARY KEY, NOT NULL
+	title			| VARCHAR, NOT NULL
+	body			| VARCHAR, NOT NULL
+	hint			| VARCHAR
+	suggested_time  | INT, NOT NULL
+
+
+user
+	id   			| UUID, PRIMARY KEY, NOT NULL
+	email			| VARCHAR, NOT NULL
+	first_name 		| VARCHAR, NOT NULL
+	last_name		| VARCHAR, NOT NULL
+	class_year		| INT, NOT NULL
+	type 			| VARCHAR, NOT NULL, IN("current_member", "potential_member", "admin")
+	events_attended	| INT, NOT NULL
+
+
+event
+	id				| UUID, PRIMARY KEY, NOT NULL
+	title			| VARCHAR, NOT NULL
+	date			| DATE, NOT NULL
+	summary			| VARCHAR
+	attendees		| UUID[], (list of user.ids)
+
+
+
+interview
+	id          | UUID, PRIMARY KEY, NOT NULL
+	level		| VARCHAR, IN("Easy", "Medium", "Hard")
+	questions 	| INT[] (list of quesitons)
+
