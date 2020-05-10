@@ -28,10 +28,10 @@ const AppBase = () => (
       <Route path={ROUTES.SIGNOUT} component={Signout} />
       <Route path={ROUTES.CREATE} component={StartScreen} />
       <Route path={ROUTES.JOIN} component={JoinRoom} />
-	    <Route path={ROUTES.APPLICATION} component={Application} />
+	  <Route path={ROUTES.APPLICATION} component={Application} />
       <Route path={ROUTES.INTERVIEW} component={Interview} />
-      <Route component={NotFound} />
       <Route path={ROUTES.CREATEACCOUNT} component={CreateAccount} />
+	  <Route component={NotFound} />
     </Switch>
   </Router>
 );

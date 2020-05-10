@@ -7,7 +7,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 import logo from '../assets/img/logo.png';
-class CreateAnAccount extends React.Component {
+class CreateAccount extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -42,6 +42,7 @@ class CreateAnAccount extends React.Component {
 
     this.setState({ validated: true });
   };
+  
 
 render() {
     const {
@@ -70,6 +71,12 @@ render() {
         </Row>
       </Container>
     );
+	
+    const year = new Date().getFullYear();
+    const years= [];
+    for (let i = year; i <= year + 7; i++) {
+      years.push(i);
+    }
     
     return submitted ? successMessage : (
       <Container className="application-form-wrapper">
@@ -106,6 +113,7 @@ render() {
                   required
                 />
               </Form.Group>
+			  </Col>
 		      </Row>
 		      <Row>
 		        <Col>
@@ -152,3 +160,5 @@ render() {
   }
   
 }
+
+export default CreateAccount;
