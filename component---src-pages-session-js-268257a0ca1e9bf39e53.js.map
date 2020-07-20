@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack:///./src/pages/session.js"],"names":["SessionPage"],"mappings":"4FAAA,gCAIeA,UAFK,kBAAM","file":"component---src-pages-session-js-268257a0ca1e9bf39e53.js","sourcesContent":["import React from \"react\";\n\nconst SessionPage = () => <h1>Welcome to your Session</h1>;\n\nexport default SessionPage;\n"],"sourceRoot":""}

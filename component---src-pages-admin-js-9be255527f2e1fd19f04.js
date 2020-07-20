@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[9],{mR1u:function(n,e,t){"use strict";t.r(e);var u=t("q1tI"),l=t.n(u),r=t("CCtv"),a=t("7oih"),c=Object(r.b)((function(n){return!!n}))((function(){return l.a.createElement("h1",null,"Hullo Admins (must be logged in)")}));e.default=function(){return l.a.createElement(a.a,null,l.a.createElement(c,null))}}}]);
+//# sourceMappingURL=component---src-pages-admin-js-9be255527f2e1fd19f04.js.map
