@@ -1,33 +1,90 @@
-import app from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
+// eslint-disable-next-line no-unused-vars
+import app from "firebase/app";
+import "firebase/auth";
+import "firebase/firestore";
 
 const config = {
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-  databaseURL: process.env.REACT_APP_DATABASE_URL,
-  projectId: process.env.REACT_APP_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  apiKey: "AIzaSyBxBIbTYbRuqP1np-ri4YaJ0H6OYK4L46g",
+  authDomain: "upe-website-fa07a.firebaseapp.com",
+  databaseURL: "https://upe-website-fa07a.firebaseio.com",
+  projectId: "upe-website-fa07a",
+  storageBucket: "upe-website-fa07a.appspot.com",
+  messagingSenderId: "896060764020",
+  appId: "1:896060764020:web:331114a396e41adfa30621",
+  measurementId: "G-BV6VQMMSQ5",
 };
 
 class Firebase {
-  constructor() {
+  constructor(app) {
     app.initializeApp(config);
+
+    /* Firebase APIs */
 
     this.auth = app.auth();
     this.firestore = app.firestore();
   }
 
   // *** Auth API ***
+
   doSignInWithEmailAndPassword = (email, password) =>
     this.auth.signInWithEmailAndPassword(email, password);
 
   doSignOut = () => this.auth.signOut();
 
-  // *** Interview API ***
-  interview = uid => this.firestore.collection('interview').doc(uid);
-  interviewNotes = uid => this.firestore.collection('interview').doc(uid).collection('notes').doc(uid);
-  interviews = () => this.firestore.collection('interview');
+  // *** Merge Auth and DB User API *** //
+
+  onAuthUserListener = (next, fallback) =>
+    this.auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        /*this.user(authUser.uid) might need this to merge user info from db
+          .once('value')
+          .then(snapshot => {
+            const dbUser = snapshot.val();
+
+            // default empty roles
+            if (!dbUser.roles) {
+              dbUser.roles = {};
+            }
+
+            // merge auth and db user
+            authUser = {
+              uid: authUser.uid,
+              email: authUser.email,
+              emailVerified: authUser.emailVerified,
+              providerData: authUser.providerData,
+              ...dbUser,
+            };
+
+            next(authUser);
+          });*/
+
+        next(authUser);
+      } else {
+        fallback();
+      }
+    });
+
+  /*** User API *** use this as a reference for implementing firestore calls
+
+  user = uid => this.db.ref(`users/${uid}`);
+
+  users = () => this.db.ref('users');
+
+  // *** Message API ***
+
+  message = uid => this.db.ref(`messages/${uid}`);
+
+  messages = () => this.db.ref('messages');*/
 }
-export default Firebase;
+
+let firebase;
+
+function getFirebase(app, auth, database) {
+  if (!firebase) {
+    firebase = new Firebase(app, auth, database);
+  }
+
+  return firebase;
+}
+
+export default getFirebase;

@@ -1,7 +1,11 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, { Component, Fragment } from "react";
 import styled, { withTheme } from "styled-components";
 import Container from "react-bootstrap/Container";
+
+import getFirebase, { FirebaseContext } from "./Firebase";
+import withAuthentication from "./Session/withAuthentication";
+import Header from "./Header";
+import Footer from "./Footer";
 import { GlobalStyle } from "../styles/global";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -11,15 +15,43 @@ const ContentWrapper = styled(Container)`
   margin-top: 25px;
 `;
 
-const Layout = withTheme(props => (
-  <React.Fragment>
+class Layout extends Component {
+  state = {
+    firebase: null,
+  };
+
+  componentDidMount() {
+    const app = import("firebase/app");
+    const auth = import("firebase/auth");
+    const firestore = import("firebase/firestore");
+
+    Promise.all([app, auth, firestore]).then((values) => {
+      const firebase = getFirebase(values[0]);
+
+      this.setState({ firebase });
+    });
+  }
+
+  render() {
+    return (
+      <FirebaseContext.Provider value={this.state.firebase}>
+        <AppWithAuthentication {...this.props} />
+      </FirebaseContext.Provider>
+    );
+  }
+}
+
+const LayoutBase = withTheme((props) => (
+  <Fragment>
     <GlobalStyle theme={props.theme} />
+    <Header />
     <ContentWrapper>{props.children}</ContentWrapper>
-  </React.Fragment>
+    <Footer />
+  </Fragment>
 ));
 
-Layout.propTypes = {
-  children: PropTypes.node.isRequired,
-};
+const AppWithAuthentication = withAuthentication(({ children }) => (
+  <LayoutBase>{children}</LayoutBase>
+));
 
 export default Layout;

@@ -7,7 +7,7 @@ const reducer = (state, action) => {
     });
   }
   return state;
-}
+};
 
 const initialState = { count: 0 };
 

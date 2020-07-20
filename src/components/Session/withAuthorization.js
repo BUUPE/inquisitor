@@ -1,31 +1,44 @@
-import React from 'react';
-import { withRouter } from 'react-router-dom';
-import { compose } from 'recompose';
+import React from "react";
+import { navigate } from "gatsby";
 
-import AuthUserContext from './context';
-import { withFirebase } from '../Firebase';
-import * as ROUTES from '../../constants/routes';
+import AuthUserContext from "./context";
+import { withFirebase } from "../Firebase";
 
-const withAuthorization = condition => Component => {
+const withAuthorization = (condition) => (Component) => {
   class WithAuthorization extends React.Component {
+    _initFirebase = false;
+
+    firebaseInit = () => {
+      if (this.props.firebase && !this._initFirebase) {
+        this._initFirebase = true;
+
+        this.listener = this.props.firebase.onAuthUserListener(
+          (authUser) => {
+            if (!condition(authUser)) {
+              navigate("/login");
+            }
+          },
+          () => navigate("/login")
+        );
+      }
+    };
+
     componentDidMount() {
-      this.listener = this.props.firebase.auth.onAuthStateChanged(
-        authUser => {
-          if (!condition(authUser)) {
-            this.props.history.push(ROUTES.SIGNIN);
-          }
-        },
-      );
+      this.firebaseInit();
+    }
+
+    componentDidUpdate() {
+      this.firebaseInit();
     }
 
     componentWillUnmount() {
-      this.listener();
+      this.listener && this.listener();
     }
 
     render() {
       return (
         <AuthUserContext.Consumer>
-          {authUser =>
+          {(authUser) =>
             condition(authUser) ? <Component {...this.props} /> : null
           }
         </AuthUserContext.Consumer>
@@ -33,10 +46,7 @@ const withAuthorization = condition => Component => {
     }
   }
 
-  return compose(
-    withRouter,
-    withFirebase,
-  )(WithAuthorization);
+  return withFirebase(WithAuthorization);
 };
 
 export default withAuthorization;

@@ -1,22 +1,18 @@
-import React from 'react';
-import {
-  BrowserRouter as Router,
-  Route,
-  Switch
-} from 'react-router-dom';
+import React from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-import * as ROUTES from './constants/routes';
-import { withFirebase } from './components/Firebase';
-import { withAuthentication  } from './components/Session';
-import { compose } from 'recompose';
+import * as ROUTES from "./constants/routes";
+import { withFirebase } from "./components/Firebase";
+import { withAuthentication } from "./components/Session";
+import { compose } from "recompose";
 
-import StartScreen from './components/StartScreen';
-import SignInForm from './components/Signin';
-import Signout from './components/Signout';
-import Landing from './components/Landing';
-import JoinRoom from './components/JoinRoom';
-import Interview from './components/Interview';
-import NotFound from './components/404';
+import StartScreen from "./components/StartScreen";
+import SignInForm from "./components/Signin";
+import Signout from "./components/Signout";
+import Landing from "./components/Landing";
+import JoinRoom from "./components/JoinRoom";
+import Interview from "./components/Interview";
+import NotFound from "./components/404";
 
 const AppBase = () => (
   <Router className="App">
@@ -32,9 +28,6 @@ const AppBase = () => (
   </Router>
 );
 
-const App = compose(
-  withAuthentication,
-  withFirebase,
-)(AppBase);
+const App = compose(withAuthentication, withFirebase)(AppBase);
 
 export default App;

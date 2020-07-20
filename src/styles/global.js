@@ -1,4 +1,4 @@
-import styled, { createGlobalStyle } from "styled-components";
+import { createGlobalStyle } from "styled-components";
 
 export const GlobalStyle = createGlobalStyle`
   /* BOOTSTRAP OVERRIDES */
@@ -36,7 +36,7 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   .navbar, .navbar-nav .dropdown-menu {
-    background: ${props => props.theme.palette.mainBrand};
+    background: ${(props) => props.theme.palette.mainBrand};
     color: white;
     font-size: 1.25rem;
     padding: 5px;
@@ -75,16 +75,16 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   .modal-content {
-    background-color: ${props => props.theme.global.bg};
+    background-color: ${(props) => props.theme.global.bg};
 
     button.close {
-      color: ${props => props.theme.global.color};
+      color: ${(props) => props.theme.global.color};
     }
   }
 
   .btn.btn-primary {
-    background-color: ${props => props.theme.palette.mainBrand};
-    border-color: ${props => props.theme.palette.mainBrand};
+    background-color: ${(props) => props.theme.palette.mainBrand};
+    border-color: ${(props) => props.theme.palette.mainBrand};
   }
 
   /* CUSTOM STYLES */
@@ -99,21 +99,21 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    background-color: ${props => props.theme.global.bg};
-    color: ${props => props.theme.global.color};
+    background-color: ${(props) => props.theme.global.bg};
+    color: ${(props) => props.theme.global.color};
     transition: background 0.2s ease-out;
   }
 
   .text-muted {
-    color: ${props => props.theme.global.muted} !important;
+    color: ${(props) => props.theme.global.muted} !important;
   }
 
   a {
-    color: ${props => props.theme.global.link};
+    color: ${(props) => props.theme.global.link};
   }
 
   a:hover {
-    color: ${props => props.theme.global.linkHover};
+    color: ${(props) => props.theme.global.linkHover};
   }
 
   .swal-icon.swal-icon--custom {

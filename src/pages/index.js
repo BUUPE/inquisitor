@@ -1,10 +1,11 @@
-import React from 'react';
+import React from "react";
 import styled from "styled-components";
-
 
 import Layout from "../components/Layout";
 import SEO from "../components/SEO";
 import Logo from "../components/Logo";
+
+import { Link } from "gatsby";
 
 const Landing = styled.div`
   width: 100%;
@@ -13,6 +14,10 @@ const Landing = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
+  p {
+    max-width: 500px;
+  }
 `;
 
 const IndexPage = () => (
@@ -24,7 +29,11 @@ const IndexPage = () => (
       <h1>Welcome!</h1>
 
       <p>
-        This is BU UPE's interview application. Please login to get started, you will be redirected to the appropriate page based on your affiliation.
+        This is BU UPE's interview application. Please login to get started; you
+        will be redirected to the appropriate page based on your affiliation.{" "}
+        <br />
+        <Link to="/apply">Apply</Link> <br />
+        <Link to="/admin">Admin</Link> <br />
       </p>
     </Landing>
   </Layout>

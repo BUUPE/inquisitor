@@ -1,4 +1,4 @@
-import Questions from './Questions';
+import Questions from "./Questions";
 
 const Overview = `Hello and welcome to the UPE interview! 
 
@@ -78,12 +78,7 @@ const Advanced = [
 const CONFIG = {
   Beginner,
   Intermediate,
-  Advanced
+  Advanced,
 };
 
-export {
-  Overview,
-  InterviewerNotes,
-  ResumeNotes,
-  CONFIG
-} ;
+export { Overview, InterviewerNotes, ResumeNotes, CONFIG };
