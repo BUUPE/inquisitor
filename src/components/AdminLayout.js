@@ -1,8 +1,8 @@
 import React from "react";
-import { Link } from "gatsby"
+import { Link } from "gatsby";
 import Nav from "react-bootstrap/Nav";
 import Col from "react-bootstrap/Col";
-import {Container} from "../styles/global";
+import { Container } from "../styles/global";
 
 const Sidebar = () => (
   <Nav defaultActiveKey="link-2" className="flex-column">
@@ -15,12 +15,10 @@ const Sidebar = () => (
   </Nav>
 );
 
-const AdminLayout = ({children}) => (
+const AdminLayout = ({ children }) => (
   <Container fluid flexDirection="row">
     <Sidebar />
-    <Col>
-      {children}
-    </Col>
+    <Col>{children}</Col>
   </Container>
 );
 

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import InputGroup from "react-bootstrap/InputGroup";
@@ -94,8 +94,7 @@ export const FormExample = () => {
       <Button type="submit">Submit form</Button>
     </Form>
   );
-}
-
+};
 
 const GeneralSettings = () => (
   <AdminLayout>

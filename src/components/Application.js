@@ -1,26 +1,26 @@
-import React from 'react';
-import axios from 'axios';
-import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import React from "react";
+import axios from "axios";
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
-import logo from '../assets/img/logo.png';
+import logo from "../assets/img/logo.png";
 
 class ApplicationForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: '',
-      applicantName: '',
-      resume: '',
-      classYear: '',
-      major: '',
-      taken112: '',
-      taken330: '',
-      q1: '',
-      q2: '',
+      email: "",
+      applicantName: "",
+      resume: "",
+      classYear: "",
+      major: "",
+      taken112: "",
+      taken330: "",
+      q1: "",
+      q2: "",
       timeslots: {
         saturday: {
           "9 AM - 10 AM": false,
@@ -31,7 +31,7 @@ class ApplicationForm extends React.Component {
           "2 PM - 3 PM": false,
           "3 PM - 4 PM": false,
           "4 PM - 5 PM": false,
-          "5 PM - 6 PM": false
+          "5 PM - 6 PM": false,
         },
         sunday: {
           "9 AM - 10 AM": false,
@@ -42,44 +42,46 @@ class ApplicationForm extends React.Component {
           "2 PM - 3 PM": false,
           "3 PM - 4 PM": false,
           "4 PM - 5 PM": false,
-          "5 PM - 6 PM": false
-        }
+          "5 PM - 6 PM": false,
+        },
       },
       validated: false,
       error: null,
-      submitted: false
+      submitted: false,
     };
   }
 
-  onChange = event => this.setState({ [event.target.name]: event.target.value });
+  onChange = (event) =>
+    this.setState({ [event.target.name]: event.target.value });
 
-  onCheckboxChange = event => {
+  onCheckboxChange = (event) => {
     const { timeslots } = this.state;
     const checked = timeslots[event.target.name][event.target.value];
     timeslots[event.target.name][event.target.value] = !checked;
     this.setState({ timeslots });
-  }
+  };
 
-  onSubmit = event => {
+  onSubmit = (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
-      axios.post('/api/saveApplication', {
-        email: this.state.email,
-        name: this.state.applicantName,
-        resume: this.state.resume,
-        classYear: this.state.classYear,
-        major: this.state.major,
-        taken112: this.state.taken112,
-        taken330: this.state.taken330,
-        q1: this.state.q1,
-        q2: this.state.q2,
-        timeslots: this.state.timeslots
-      })
-      .then(res => console.log(res))
-      .catch(error => console.error(error));
+      axios
+        .post("/api/saveApplication", {
+          email: this.state.email,
+          name: this.state.applicantName,
+          resume: this.state.resume,
+          classYear: this.state.classYear,
+          major: this.state.major,
+          taken112: this.state.taken112,
+          taken330: this.state.taken330,
+          q1: this.state.q1,
+          q2: this.state.q2,
+          timeslots: this.state.timeslots,
+        })
+        .then((res) => console.log(res))
+        .catch((error) => console.error(error));
 
       this.setState({ submitted: true });
       console.log(this.state);
@@ -102,7 +104,7 @@ class ApplicationForm extends React.Component {
       timeslots,
       validated,
       submitted,
-      error
+      error,
     } = this.state;
 
     const successMessage = (
@@ -115,21 +117,28 @@ class ApplicationForm extends React.Component {
         </Row>
         <Row className="thanks-text">
           <Col className="col-md-12 text-center">
-            <p>Thank you for applying to join UPE. We will be getting back to you by Friday the XX with a timeslot for your interview. </p>
-            <p>Additional details will be sent to you via the email address you provided in your application!</p>
+            <p>
+              Thank you for applying to join UPE. We will be getting back to you
+              by Friday the XX with a timeslot for your interview.{" "}
+            </p>
+            <p>
+              Additional details will be sent to you via the email address you
+              provided in your application!
+            </p>
           </Col>
         </Row>
       </Container>
     );
 
-
     const year = new Date().getFullYear();
-    const years= [];
+    const years = [];
     for (let i = year; i <= year + 7; i++) {
       years.push(i);
     }
 
-    return submitted ? successMessage : (
+    return submitted ? (
+      successMessage
+    ) : (
       <Container className="application-form-wrapper">
         <Form noValidate validated={validated} onSubmit={this.onSubmit}>
           <div className="text-center">
@@ -204,7 +213,9 @@ class ApplicationForm extends React.Component {
                   required
                 >
                   <option value="">-</option>
-                  {years.map(year => <option key={year}>{year}</option>)}
+                  {years.map((year) => (
+                    <option key={year}>{year}</option>
+                  ))}
                 </Form.Control>
               </Form.Group>
             </Col>
@@ -213,7 +224,8 @@ class ApplicationForm extends React.Component {
             <Col>
               <h5>Taken CS 112?</h5>
               <Form.Group>
-                <Form.Control as="select"
+                <Form.Control
+                  as="select"
                   name="taken112"
                   value={taken112}
                   onChange={this.onChange}
@@ -229,7 +241,8 @@ class ApplicationForm extends React.Component {
             <Col>
               <h5>Taken CS 330?</h5>
               <Form.Group>
-                <Form.Control as="select"
+                <Form.Control
+                  as="select"
                   name="taken330"
                   value={taken330}
                   onChange={this.onChange}
@@ -286,35 +299,41 @@ class ApplicationForm extends React.Component {
             <Col>
               <h6>Saturday - 01/01/20</h6>
               <Form.Group>
-                {Object.keys(timeslots.saturday).map(time => (
+                {Object.keys(timeslots.saturday).map((time) => (
                   <Form.Check
                     key={time}
                     type="checkbox"
                     onChange={this.onCheckboxChange}
                     name="saturday"
                     value={time}
-                    label={time}/>
+                    label={time}
+                  />
                 ))}
               </Form.Group>
             </Col>
             <Col>
               <h6>Sunday - 01/02/20</h6>
               <Form.Group>
-                {Object.keys(timeslots.sunday).map(time => (
+                {Object.keys(timeslots.sunday).map((time) => (
                   <Form.Check
                     key={time}
                     type="checkbox"
                     onChange={this.onCheckboxChange}
                     name="sunday"
                     value={time}
-                    label={time}/>
+                    label={time}
+                  />
                 ))}
               </Form.Group>
             </Col>
           </Row>
           <Row className="row-button">
             <Col>
-              <Button type="submit" onSubmit={this.onSubmit} className="btn btn-danger">
+              <Button
+                type="submit"
+                onSubmit={this.onSubmit}
+                className="btn btn-danger"
+              >
                 Submit Application
               </Button>
             </Col>

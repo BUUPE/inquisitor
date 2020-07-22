@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { navigate } from "gatsby";
-//import firebase from "gatsby-plugin-firebase";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
+import { withFirebase } from "../components/Firebase";
 import Layout from "../components/Layout";
 import SEO from "../components/SEO";
-
-import { withFirebase } from "../components/Firebase";
+import { Container } from "../styles/global";
 
 const LoginPageBase = ({ firebase }) => {
   const [email, setEmail] = useState("");
@@ -22,7 +21,7 @@ const LoginPageBase = ({ firebase }) => {
   };
 
   return (
-    <React.Fragment>
+    <Container flexDirection="column">
       <h1>Login</h1>
 
       <Form onSubmit={handleSubmit}>
@@ -50,7 +49,7 @@ const LoginPageBase = ({ firebase }) => {
           Submit
         </Button>
       </Form>
-    </React.Fragment>
+    </Container>
   );
 };
 

@@ -1,9 +1,8 @@
 import React from "react";
 
 import AdminLayout from "./AdminLayout";
-import {FormExample} from "./GeneralSettings";
+import { FormExample } from "./GeneralSettings";
 import { withAuthorization } from "../components/Session";
-
 
 const ConfigureApplication = () => (
   <AdminLayout>
