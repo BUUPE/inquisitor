@@ -2,8 +2,10 @@ import styled, { createGlobalStyle } from "styled-components";
 import BootstrapContainer from "react-bootstrap/Container";
 
 export const Container = styled(BootstrapContainer)`
-  flex: 1 0 auto;
   margin-top: 25px;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: ${(props) => props.flexDirection};
 `;
 
 export default createGlobalStyle`
