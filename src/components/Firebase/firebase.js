@@ -1,8 +1,3 @@
-// eslint-disable-next-line no-unused-vars
-import app from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
-
 const config = {
   apiKey: "AIzaSyBxBIbTYbRuqP1np-ri4YaJ0H6OYK4L46g",
   authDomain: "upe-website-fa07a.firebaseapp.com",
@@ -21,7 +16,7 @@ class Firebase {
     /* Firebase APIs */
 
     this.auth = app.auth();
-    this.firestore = app.firestore();
+    this.firestore = app.firestore().collection("inquisitor");
   }
 
   // *** Auth API ***
@@ -75,13 +70,15 @@ class Firebase {
   message = uid => this.db.ref(`messages/${uid}`);
 
   messages = () => this.db.ref('messages');*/
+
+  applicationConfig = () => this.firestore.doc("applicationConfig");
 }
 
 let firebase;
 
-function getFirebase(app, auth, database) {
+function getFirebase(app, auth, firestore) {
   if (!firebase) {
-    firebase = new Firebase(app, auth, database);
+    firebase = new Firebase(app, auth, firestore);
   }
 
   return firebase;

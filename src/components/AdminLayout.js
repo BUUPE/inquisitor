@@ -5,18 +5,14 @@ import Col from "react-bootstrap/Col";
 import { Container } from "../styles/global";
 
 const Sidebar = () => (
-  <Nav defaultActiveKey="link-2" className="flex-column">
-    <Nav.Item eventKey="link-1">
-      <Link to="/admin">General Settings</Link>
-    </Nav.Item>
-    <Nav.Item eventKey="link-2">
-      <Link to="/admin/configure-application">Configure Application</Link>
-    </Nav.Item>
+  <Nav className="flex-column">
+    <Link to="/admin">General Settings</Link>
+    <Link to="/admin/configure-application">Configure Application</Link>
   </Nav>
 );
 
 const AdminLayout = ({ children }) => (
-  <Container fluid flexDirection="row">
+  <Container fluid flexdirection="row">
     <Sidebar />
     <Col>{children}</Col>
   </Container>

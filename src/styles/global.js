@@ -5,7 +5,7 @@ export const Container = styled(BootstrapContainer)`
   margin-top: 25px;
   display: flex;
   flex: 1 0 auto;
-  flex-direction: ${(props) => props.flexDirection};
+  flex-direction: ${(props) => props.flexdirection};
 `;
 
 export default createGlobalStyle`

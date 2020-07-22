@@ -21,7 +21,7 @@ const LoginPageBase = ({ firebase }) => {
   };
 
   return (
-    <Container flexDirection="column">
+    <Container flexdirection="column">
       <h1>Login</h1>
 
       <Form onSubmit={handleSubmit}>
