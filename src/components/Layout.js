@@ -1,19 +1,13 @@
 import React, { Component, Fragment } from "react";
-import styled, { withTheme } from "styled-components";
-import Container from "react-bootstrap/Container";
+import { withTheme } from "styled-components";
 
 import getFirebase, { FirebaseContext } from "./Firebase";
 import withAuthentication from "./Session/withAuthentication";
 import Header from "./Header";
 import Footer from "./Footer";
-import { GlobalStyle } from "../styles/global";
+import GlobalStyle from "../styles/global";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-
-const ContentWrapper = styled(Container)`
-  flex: 1 0 auto;
-  margin-top: 25px;
-`;
 
 class Layout extends Component {
   state = {
@@ -45,7 +39,7 @@ const LayoutBase = withTheme((props) => (
   <Fragment>
     <GlobalStyle theme={props.theme} />
     <Header />
-    <ContentWrapper>{props.children}</ContentWrapper>
+    {props.children}
     <Footer />
   </Fragment>
 ));

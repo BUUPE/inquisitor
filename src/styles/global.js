@@ -1,6 +1,12 @@
-import { createGlobalStyle } from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
+import BootstrapContainer from "react-bootstrap/Container";
 
-export const GlobalStyle = createGlobalStyle`
+export const Container = styled(BootstrapContainer)`
+  flex: 1 0 auto;
+  margin-top: 25px;
+`;
+
+export default createGlobalStyle`
   /* BOOTSTRAP OVERRIDES */
 
   nav.navbar {
