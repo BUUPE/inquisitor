@@ -90,8 +90,8 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
 };
 
 const UnderlinedLabel = styled(Form.Label)`
-  border-bottom: 2px solid;
-  border-color: ${(props) => props.theme.palette.mainBrand};
+  text-decoration: underline;
+  text-decoration-color: ${(props) => props.theme.palette.mainBrand};
 `;
 
 const RequiredAsterisk = styled.span`
@@ -218,19 +218,26 @@ const ConfigureApplicationForm = ({ firebase }) => {
       }),
     });
 
-    if (isdefault) return <div style={{ maxWidth: 300 }}>{children}</div>;
+    const style = {
+      maxWidth: 300,
+      display: "flex",
+      justifyContent: "space-between",
+    };
+    let props = {
+      ref: drop,
+      style: {
+        ...style,
+        borderTop: `${isOver ? "2px solid red" : "none"}`,
+      },
+    };
 
-    return (
-      <div
-        ref={drop}
-        style={{
-          borderTop: `${isOver ? "2px solid red" : "none"}`,
-          maxWidth: 300,
-        }}
-      >
-        {children}
-      </div>
-    );
+    // default slots shouldn't interact with drop events
+    if (isdefault)
+      props = {
+        style,
+      };
+
+    return <div {...props}>{children}</div>;
   };
 
   const QuestionWrapper = ({ questionId, isdefault, children }) => {
@@ -263,14 +270,6 @@ const ConfigureApplicationForm = ({ firebase }) => {
         return (
           <Form.Label>
             {question.name} {question.required && <RequiredAsterisk />}
-            <button
-              type="button"
-              class="close ml-2 mb-1"
-              onClick={() => removeQuestion(question.id)}
-            >
-              <span aria-hidden="true">×</span>
-              <span class="sr-only">Close</span>
-            </button>
           </Form.Label>
         );
       }
@@ -306,6 +305,16 @@ const ConfigureApplicationForm = ({ firebase }) => {
           {renderLabel(question)}
           {questionComponent}
         </QuestionWrapper>
+        {!question.default && (
+          <button
+            type="button"
+            className="close ml-2 mb-1"
+            onClick={() => removeQuestion(question.id)}
+          >
+            <span aria-hidden="true">×</span>
+            <span className="sr-only">Close</span>
+          </button>
+        )}
       </QuestionSlot>
     );
   };
@@ -419,10 +428,17 @@ const ConfigureApplicationForm = ({ firebase }) => {
               </Form.Group>
             </Form.Row>
 
-            <Button variant="secondary" onClick={closeModal}>
-              Cancel
-            </Button>
-            <Button type="submit">Add</Button>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Button variant="secondary" onClick={closeModal}>
+                Cancel
+              </Button>
+              <Button type="submit">Add</Button>
+            </div>
           </Form>
         </Modal.Body>
       </Modal>
