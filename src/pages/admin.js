@@ -9,7 +9,6 @@ import ConfigureApplicationForm from "../components/ConfigureApplicationForm";
 
 const FullSizeRouter = styled(Router)`
   display: flex;
-  padding-bottom: 25px;
   flex-grow: 1;
 `;
 

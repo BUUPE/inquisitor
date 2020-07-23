@@ -6,8 +6,21 @@ import Col from "react-bootstrap/Col";
 import { Container } from "../styles/global";
 
 const StyledNav = styled(Nav)`
-  width: 155px;
+  width: 200px;
   padding: 15px;
+  background: ${props => props.theme.palette.darkShades};
+
+  a {
+    color: white;
+    font-weight: bold;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid grey;
+  }
+
+  a[aria-current="page"] {
+    color: ${props => props.theme.palette.mainBrand};
+  }
 `;
 
 const Sidebar = () => (
@@ -17,16 +30,16 @@ const Sidebar = () => (
   </StyledNav>
 );
 
-const AdminContaienr = styled(Container)`
+const AdminContainer = styled(Container)`
   padding-left: 0;
   margin-top: 0;
 `;
 
 const AdminLayout = ({ children }) => (
-  <AdminContaienr fluid flexdirection="row">
+  <AdminContainer fluid flexdirection="row">
     <Sidebar />
-    <Col>{children}</Col>
-  </AdminContaienr>
+    <Col style={{padding: 25}}>{children}</Col>
+  </AdminContainer>
 );
 
 export default AdminLayout;
