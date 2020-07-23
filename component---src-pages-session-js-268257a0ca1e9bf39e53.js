@@ -1,2 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[13],{TrmM:function(n,e,o){"use strict";o.r(e);var t=o("q1tI"),r=o.n(t);e.default=function(){return r.a.createElement("h1",null,"Welcome to your Session")}}}]);
-//# sourceMappingURL=component---src-pages-session-js-268257a0ca1e9bf39e53.js.map
