@@ -136,183 +136,7 @@ const RequiredAsterisk = styled.span`
   }
 `;
 
-const updateQuestionOrder = (questionId, order) => {
-  // heres where we need redux
-  const questions = [...applicationFormConfig.questions]; // get temp array
-  const questionIndex = questions.findIndex(
-    (question) => question.id === questionId
-  ); // find question
-  questions[questionIndex].order = -1; // set order to -1 temporarily
 
-  // shift question in slot and other ones down
-  questions.forEach((question) => {
-    if (question.order >= order) question.order += 1;
-  });
-
-  questions[questionIndex].order = order; // set order what it should be
-
-  setApplicationFormConfig({
-    ...applicationFormConfig,
-    questions: questions,
-  });
-};
-
-const QuestionSlot = ({ isdefault, order, children }) => {
-  const [{ isOver }, drop] = useDrop({
-    accept: "question",
-    drop: (item) => console.log(item), //updateQuestionOrder(item.id, order),
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
-  });
-
-  if (isdefault) return <div style={{ width: "fit-content" }}>{children}</div>;
-
-  return (
-    <div
-      ref={drop}
-      style={{
-        borderTop: `${isOver ? "2px solid red" : "none"}`,
-        width: "fit-content",
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
-const QuestionWrapper = ({ questionId, isdefault, children }) => {
-  const [, dragRef] = useDrag({
-    item: {
-      type: "question",
-      id: questionId,
-    },
-  });
-
-  if (isdefault)
-    return (
-      <Form.Row>
-        <Form.Group controlId={questionId}>{children}</Form.Group>
-      </Form.Row>
-    );
-
-  return (
-    <Form.Row ref={dragRef}>
-      <Form.Group controlId={questionId}>{children}</Form.Group>
-    </Form.Row>
-  );
-};
-
-const renderQuestion = (question, disabled = false) => {
-  let questionComponent;
-
-  const renderLabel = (question) => {
-    if (question.default) {
-      return (
-        <UnderlinedLabel>
-          {question.name} {question.required && <RequiredAsterisk />}
-        </UnderlinedLabel>
-      );
-    } else {
-      return (
-        <Form.Label>
-          {question.name} {question.required && <RequiredAsterisk />}
-        </Form.Label>
-      );
-    }
-  };
-
-  switch (question.type) {
-    case "text":
-      questionComponent = (
-        <Fragment>
-          {renderLabel(question)}
-          <Form.Control
-            required={question.required}
-            type="text"
-            disabled={disabled}
-          />
-        </Fragment>
-      );
-      break;
-    case "textarea":
-      questionComponent = (
-        <Fragment>
-          {renderLabel(question)}
-          <Form.Control
-            required={question.required}
-            as="textarea"
-            rows="3"
-            disabled={disabled}
-          />
-        </Fragment>
-      );
-      break;
-    case "email":
-      questionComponent = (
-        <Fragment>
-          {renderLabel(question)}
-          <Form.Control
-            required={question.required}
-            type="email"
-            disabled={disabled}
-          />
-        </Fragment>
-      );
-      break;
-    case "number":
-      questionComponent = (
-        <Fragment>
-          {renderLabel(question)}
-          <Form.Control
-            required={question.required}
-            type="number"
-            disabled={disabled}
-          />
-        </Fragment>
-      );
-      break;
-    case "checkbox":
-      questionComponent = (
-        <Fragment>
-          {renderLabel(question)}
-          <Form.Control
-            required={question.required}
-            type="checkbox"
-            disabled={disabled}
-          />
-        </Fragment>
-      );
-      break;
-    case "file":
-      questionComponent = (
-        <Fragment>
-          {renderLabel(question)}
-          <Form.Control
-            required={question.required}
-            type="file"
-            disabled={disabled}
-          />
-        </Fragment>
-      );
-      break;
-    default:
-      console.error(`Unknown question type: ${question.type}`);
-      return null;
-  }
-
-  return (
-    <QuestionSlot
-      key={question.id}
-      isdefault={question.default}
-      order={question.order}
-    >
-      <QuestionWrapper questionId={question.id} isdefault={question.default}>
-        {questionComponent}
-      </QuestionWrapper>
-    </QuestionSlot>
-  );
-};
 
 const ConfigureApplicationForm = ({ firebase }) => {
   const [applicationFormConfig, setApplicationFormConfig] = useState(
@@ -342,6 +166,8 @@ const ConfigureApplicationForm = ({ firebase }) => {
     };
     //if (firebase) loadApplicationFormConfig();
   }, [firebase]);
+
+  if (loading) return <Loader />;
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -382,7 +208,183 @@ const ConfigureApplicationForm = ({ firebase }) => {
     }
   };
 
-  if (loading) return <Loader />;
+  const updateQuestionOrder = (questionId, order) => {
+    // heres where we need redux
+    const questions = [...applicationFormConfig.questions]; // get temp array
+    const questionIndex = questions.findIndex(
+      (question) => question.id === questionId
+    ); // find question
+    questions[questionIndex].order = -1; // set order to -1 temporarily
+
+    // shift question in slot and other ones down
+    questions.forEach((question) => {
+      if (question.order >= order) question.order += 1;
+    });
+
+    questions[questionIndex].order = order; // set order what it should be
+
+    setApplicationFormConfig({
+      ...applicationFormConfig,
+      questions: questions,
+    });
+  };
+
+  const QuestionSlot = ({ isdefault, order, children }) => {
+    const [{ isOver }, drop] = useDrop({
+      accept: "question",
+      drop: (item) => updateQuestionOrder(item.id, order),
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
+    });
+
+    if (isdefault) return <div style={{ width: "fit-content" }}>{children}</div>;
+
+    return (
+      <div
+        ref={drop}
+        style={{
+          borderTop: `${isOver ? "2px solid red" : "none"}`,
+          width: "fit-content",
+        }}
+      >
+        {children}
+      </div>
+    );
+  };
+
+  const QuestionWrapper = ({ questionId, isdefault, children }) => {
+    const [, dragRef] = useDrag({
+      item: {
+        type: "question",
+        id: questionId,
+      },
+    });
+
+    if (isdefault)
+      return (
+        <Form.Row>
+          <Form.Group controlId={questionId}>{children}</Form.Group>
+        </Form.Row>
+      );
+
+    return (
+      <Form.Row ref={dragRef}>
+        <Form.Group controlId={questionId}>{children}</Form.Group>
+      </Form.Row>
+    );
+  };
+
+  const renderQuestion = (question, disabled = false) => {
+    let questionComponent;
+
+    const renderLabel = (question) => {
+      if (question.default) {
+        return (
+          <UnderlinedLabel>
+            {question.name} {question.required && <RequiredAsterisk />}
+          </UnderlinedLabel>
+        );
+      } else {
+        return (
+          <Form.Label>
+            {question.name} {question.required && <RequiredAsterisk />}
+          </Form.Label>
+        );
+      }
+    };
+
+    switch (question.type) {
+      case "text":
+        questionComponent = (
+          <Fragment>
+            {renderLabel(question)}
+            <Form.Control
+              required={question.required}
+              type="text"
+              disabled={disabled}
+            />
+          </Fragment>
+        );
+        break;
+      case "textarea":
+        questionComponent = (
+          <Fragment>
+            {renderLabel(question)}
+            <Form.Control
+              required={question.required}
+              as="textarea"
+              rows="3"
+              disabled={disabled}
+            />
+          </Fragment>
+        );
+        break;
+      case "email":
+        questionComponent = (
+          <Fragment>
+            {renderLabel(question)}
+            <Form.Control
+              required={question.required}
+              type="email"
+              disabled={disabled}
+            />
+          </Fragment>
+        );
+        break;
+      case "number":
+        questionComponent = (
+          <Fragment>
+            {renderLabel(question)}
+            <Form.Control
+              required={question.required}
+              type="number"
+              disabled={disabled}
+            />
+          </Fragment>
+        );
+        break;
+      case "checkbox":
+        questionComponent = (
+          <Fragment>
+            {renderLabel(question)}
+            <Form.Control
+              required={question.required}
+              type="checkbox"
+              disabled={disabled}
+            />
+          </Fragment>
+        );
+        break;
+      case "file":
+        questionComponent = (
+          <Fragment>
+            {renderLabel(question)}
+            <Form.Control
+              required={question.required}
+              type="file"
+              disabled={disabled}
+            />
+          </Fragment>
+        );
+        break;
+      default:
+        console.error(`Unknown question type: ${question.type}`);
+        return null;
+    }
+
+    return (
+      <QuestionSlot
+        key={question.id}
+        isdefault={question.default}
+        order={question.order}
+      >
+        <QuestionWrapper questionId={question.id} isdefault={question.default}>
+          {questionComponent}
+        </QuestionWrapper>
+      </QuestionSlot>
+    );
+  };
 
   const year = new Date().getFullYear();
   return (
@@ -428,7 +430,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
               Required questions will have an asterisk.
             </p>
             <DndProvider backend={HTML5Backend} id="questions">
-              {applicationFormConfig.questions.map((question) =>
+              {applicationFormConfig.questions.sort((a, b) => (a.order > b.order) ? 1 : -1).map((question) =>
                 renderQuestion(question, true)
               )}
             </DndProvider>
