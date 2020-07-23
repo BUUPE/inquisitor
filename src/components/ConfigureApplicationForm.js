@@ -189,20 +189,35 @@ const ConfigureApplicationForm = ({ firebase }) => {
     });
   };
 
-  const updateQuestionOrder = (questionId, order) => {
-    const questions = [...applicationFormConfig.questions]; // get temp array
+  const updateQuestionOrder = (questionId, questionOrder, slotOrder) => {
+    if (questionOrder === slotOrder) return; // if order doesn't change, do nothing
+
+    let questions = [...applicationFormConfig.questions]; // copy array
+
     const questionIndex = questions.findIndex(
-      (question) => question.id === questionId
+      (question) => question.order === questionOrder
     ); // find question
-    questions[questionIndex].order = -1; // set order to -1 temporarily
+    const question = questions[questionIndex];
 
-    // shift down questions starting at order
-    questions.forEach((question) => {
-      if (question.order >= order) question.order += 1;
-    });
+    // remove question to be moved
+    questions = questions.filter(
+      (question) => question.order !== questionOrder
+    );
 
-    questions[questionIndex].order = order; // set order to what it should be
+    // split array at new slot index
+    let newSlotIndex = questions.findIndex(
+      (question) => question.order === slotOrder
+    );
+    if (slotOrder > questionOrder) newSlotIndex += 1;
+    const p1 = questions.slice(0, newSlotIndex);
+    const p2 = questions.slice(newSlotIndex);
 
+    // add question at split and rejoin array
+    p1.push(question);
+    questions = p1.concat(p2);
+
+    // redo order numbers and save
+    questions.forEach((question, i) => (question.order = i + 1));
     setApplicationFormConfig({
       ...applicationFormConfig,
       questions,
@@ -212,7 +227,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const QuestionSlot = ({ isdefault, order, children }) => {
     const [{ isOver }, drop] = useDrop({
       accept: "question",
-      drop: (item) => updateQuestionOrder(item.id, order),
+      drop: (item) => updateQuestionOrder(item.id, item.order, order),
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),
       }),
@@ -228,6 +243,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
       style: {
         ...style,
         borderTop: `${isOver ? "2px solid red" : "none"}`,
+        borderBottom: `${isOver ? "2px solid red" : "none"}`,
       },
     };
 
@@ -240,11 +256,12 @@ const ConfigureApplicationForm = ({ firebase }) => {
     return <div {...props}>{children}</div>;
   };
 
-  const QuestionWrapper = ({ questionId, isdefault, children }) => {
+  const QuestionWrapper = ({ questionId, isdefault, order, children }) => {
     const [, dragRef] = useDrag({
       item: {
         type: "question",
         id: questionId,
+        order,
       },
     });
 
@@ -263,13 +280,15 @@ const ConfigureApplicationForm = ({ firebase }) => {
       if (question.default) {
         return (
           <UnderlinedLabel>
-            {question.name} {question.required && <RequiredAsterisk />}
+            {question.order}. {question.name}{" "}
+            {question.required && <RequiredAsterisk />}
           </UnderlinedLabel>
         );
       } else {
         return (
           <Form.Label>
-            {question.name} {question.required && <RequiredAsterisk />}
+            {question.order}. {question.name}{" "}
+            {question.required && <RequiredAsterisk />}
           </Form.Label>
         );
       }
@@ -301,7 +320,11 @@ const ConfigureApplicationForm = ({ firebase }) => {
         isdefault={question.default}
         order={question.order}
       >
-        <QuestionWrapper questionId={question.id} isdefault={question.default}>
+        <QuestionWrapper
+          questionId={question.id}
+          isdefault={question.default}
+          order={question.order}
+        >
           {renderLabel(question)}
           {questionComponent}
         </QuestionWrapper>
