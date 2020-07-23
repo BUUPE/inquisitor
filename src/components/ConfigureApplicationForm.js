@@ -16,22 +16,6 @@ import { withFirebase } from "../components/Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "./Loader";
 
-/*
-  Types of questions:
-  short/long text, number, checkbox, file upload
-  Things that wont change semester to semester: name, email, major, year, resume
-
-  Things that may change: taken 112/330 checkbox, short paragraph questions
-  Allow addition/removal of checkboxes and textareas for now, as well as reordering them
-
-  For unambiguity, rename all this application stuff to applicationForm
-
-  add a reset db button in general settings that saves a copy of the inquisitor db then deletes it so it can be re-init (make sure theres ample warnings)
-  for future perhaps add ability for select/dropdown questions
-
-  this file is a big boi, needs to shrink
-*/
-
 // assumes this is run before the coming recruitment season
 const estimateSemester = () => {
   const month = new Date().getMonth();
@@ -122,9 +106,9 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const [applicationFormConfig, setApplicationFormConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const [showModal, setShowModal] = useState(false);
+  const openModal = () => setShowModal(true);
+  const closeModal = () => setShowModal(false);
 
   useEffect(() => {
     const loadApplicationFormConfig = async () => {
@@ -173,13 +157,13 @@ const ConfigureApplicationForm = ({ firebase }) => {
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
-      const questionsCopy = [...applicationFormConfig.questions];
+      const questions = [...applicationFormConfig.questions];
       const nextId =
         Math.max(...applicationFormConfig.questions.map((q) => q.id)) + 1;
       const nextOrder =
         Math.max(...applicationFormConfig.questions.map((q) => q.order)) + 1;
 
-      questionsCopy.push({
+      questions.push({
         id: nextId,
         order: nextOrder,
         name: form.querySelector("#newQuestionName").value,
@@ -189,30 +173,39 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
       setApplicationFormConfig({
         ...applicationFormConfig,
-        questions: questionsCopy,
+        questions,
       });
       closeModal();
     }
   };
 
+  const removeQuestion = (questionId) => {
+    const questions = applicationFormConfig.questions.filter(
+      (q) => q.id !== questionId
+    );
+    setApplicationFormConfig({
+      ...applicationFormConfig,
+      questions,
+    });
+  };
+
   const updateQuestionOrder = (questionId, order) => {
-    // heres where we need redux
     const questions = [...applicationFormConfig.questions]; // get temp array
     const questionIndex = questions.findIndex(
       (question) => question.id === questionId
     ); // find question
     questions[questionIndex].order = -1; // set order to -1 temporarily
 
-    // shift question in slot and other ones down
+    // shift down questions starting at order
     questions.forEach((question) => {
       if (question.order >= order) question.order += 1;
     });
 
-    questions[questionIndex].order = order; // set order what it should be
+    questions[questionIndex].order = order; // set order to what it should be
 
     setApplicationFormConfig({
       ...applicationFormConfig,
-      questions: questions,
+      questions,
     });
   };
 
@@ -249,7 +242,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
     });
 
     const props = {};
-    if (!isdefault) props.ref = dragRef;
+    if (!isdefault) props.ref = dragRef; // only non-default questions should be draggable
 
     return (
       <Form.Row {...props}>
@@ -270,6 +263,14 @@ const ConfigureApplicationForm = ({ firebase }) => {
         return (
           <Form.Label>
             {question.name} {question.required && <RequiredAsterisk />}
+            <button
+              type="button"
+              class="close ml-2 mb-1"
+              onClick={() => removeQuestion(question.id)}
+            >
+              <span aria-hidden="true">×</span>
+              <span class="sr-only">Close</span>
+            </button>
           </Form.Label>
         );
       }
@@ -387,7 +388,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
         </div>
       </Form>
 
-      <Modal show={modalOpen} onHide={closeModal}>
+      <Modal show={showModal} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>Add New Question</Modal.Title>
         </Modal.Header>
