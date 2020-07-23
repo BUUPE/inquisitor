@@ -56,7 +56,22 @@
     "eslint-plugin-react": "7.x",
     "eslint-plugin-react-hooks": "2.x",
     "gh-pages": "^2.2.0",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.11",
     "prettier": "^2.0.5"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx}": [
+      "eslint src"
+    ],
+    "src/**/*.{js,jsx,json,md}": [
+      "prettier --write \"**/*.{js,jsx,json,md}\""
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "scripts": {
     "build": "gatsby clean && gatsby build",
