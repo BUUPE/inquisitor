@@ -36,16 +36,11 @@ const setFileValidity = (fileUpload) => {
   }
 };
 
-const renderQuestion = (question, disabled = false) => {
+const renderQuestion = (question) => {
   let questionComponent;
   if (question.type === "textarea") {
     questionComponent = (
-      <Form.Control
-        required={question.required}
-        as="textarea"
-        rows="3"
-        disabled={disabled}
-      />
+      <Form.Control required={question.required} as="textarea" rows="3" />
     );
   } else if (question.type === "file") {
     questionComponent = (
@@ -59,11 +54,7 @@ const renderQuestion = (question, disabled = false) => {
     );
   } else {
     questionComponent = (
-      <Form.Control
-        required={question.required}
-        type={question.type}
-        disabled={disabled}
-      />
+      <Form.Control required={question.required} type={question.type} />
     );
   }
 

@@ -286,7 +286,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
     );
   };
 
-  const renderQuestion = (question, disabled = false) => {
+  const renderQuestion = (question) => {
     const renderLabel = (question) => {
       if (question.default) {
         return (
@@ -312,7 +312,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
           required={question.required}
           as="textarea"
           rows="3"
-          disabled={disabled}
+          disabled
         />
       );
     } else if (question.type === "file") {
@@ -321,6 +321,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
           id={`custom-file-${question.id}`}
           label="Upload file"
           custom
+          disabled
         />
       );
     } else {
@@ -328,7 +329,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
         <Form.Control
           required={question.required}
           type={question.type}
-          disabled={disabled}
+          disabled
         />
       );
     }
@@ -427,7 +428,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
             <DndProvider backend={HTML5Backend}>
               {applicationFormConfig.questions
                 .sort((a, b) => (a.order > b.order ? 1 : -1))
-                .map((question) => renderQuestion(question, true))}
+                .map((question) => renderQuestion(question))}
             </DndProvider>
 
             <Button onClick={openModal}>Add Question</Button>
