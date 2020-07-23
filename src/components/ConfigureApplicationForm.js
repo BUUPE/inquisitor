@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect } from "react";
 import { compose } from "recompose";
 import styled from "styled-components";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
@@ -9,6 +9,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import Toast from "react-bootstrap/Toast";
 
 import { withAuthorization } from "../components/Session";
 import { withFirebase } from "../components/Firebase";
@@ -26,6 +27,7 @@ import Loader from "./Loader";
   For unambiguity, rename all this application stuff to applicationForm
 
   add a reset db button in general settings that saves a copy of the inquisitor db then deletes it so it can be re-init (make sure theres ample warnings)
+  for future perhaps add ability for select/dropdown questions
 
   this file is a big boi, needs to shrink
 */
@@ -100,26 +102,6 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       required: true,
       default: true,
     },
-
-    {
-      id: 7,
-      order: 7,
-      name: "asd",
-      type: "text",
-    },
-    {
-      id: 8,
-      order: 8,
-      name: "fds",
-      type: "text",
-      required: true,
-    },
-    {
-      id: 9,
-      order: 9,
-      name: "gad",
-      type: "text",
-    },
   ],
 };
 
@@ -136,18 +118,13 @@ const RequiredAsterisk = styled.span`
   }
 `;
 
-
-
 const ConfigureApplicationForm = ({ firebase }) => {
-  const [applicationFormConfig, setApplicationFormConfig] = useState(
-    DEFAULT_APPLICATION_FORM_CONFIG
-  );
-  const [validated, setValidated] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-
-  const handleClose = () => setShowModal(false);
-  const handleShow = () => setShowModal(true);
+  const [applicationFormConfig, setApplicationFormConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
 
   useEffect(() => {
     const loadApplicationFormConfig = async () => {
@@ -164,19 +141,29 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
       setLoading(false);
     };
-    //if (firebase) loadApplicationFormConfig();
+    if (firebase) loadApplicationFormConfig();
   }, [firebase]);
 
   if (loading) return <Loader />;
 
-  const handleSubmit = (event) => {
+  const saveApplicationFormConfig = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
+
     if (form.checkValidity() === false) {
       event.stopPropagation();
-    }
+    } else {
+      const semester = form.querySelector("#semester").value;
+      const year = form.querySelector("#year").value;
+      const newApplicationFormConfig = {
+        ...applicationFormConfig,
+        semester: `${semester}-${year}`,
+      };
 
-    setValidated(true);
+      await firebase.applicationFormConfig().set(newApplicationFormConfig);
+      setApplicationFormConfig(newApplicationFormConfig);
+      setShowToast(true);
+    }
   };
 
   const addNewQuestion = (event) => {
@@ -204,7 +191,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
         ...applicationFormConfig,
         questions: questionsCopy,
       });
-      handleClose();
+      closeModal();
     }
   };
 
@@ -238,14 +225,14 @@ const ConfigureApplicationForm = ({ firebase }) => {
       }),
     });
 
-    if (isdefault) return <div style={{ width: "fit-content" }}>{children}</div>;
+    if (isdefault) return <div style={{ maxWidth: 300 }}>{children}</div>;
 
     return (
       <div
         ref={drop}
         style={{
           borderTop: `${isOver ? "2px solid red" : "none"}`,
-          width: "fit-content",
+          maxWidth: 300,
         }}
       >
         {children}
@@ -261,23 +248,17 @@ const ConfigureApplicationForm = ({ firebase }) => {
       },
     });
 
-    if (isdefault)
-      return (
-        <Form.Row>
-          <Form.Group controlId={questionId}>{children}</Form.Group>
-        </Form.Row>
-      );
+    const props = {};
+    if (!isdefault) props.ref = dragRef;
 
     return (
-      <Form.Row ref={dragRef}>
+      <Form.Row {...props}>
         <Form.Group controlId={questionId}>{children}</Form.Group>
       </Form.Row>
     );
   };
 
   const renderQuestion = (question, disabled = false) => {
-    let questionComponent;
-
     const renderLabel = (question) => {
       if (question.default) {
         return (
@@ -294,83 +275,24 @@ const ConfigureApplicationForm = ({ firebase }) => {
       }
     };
 
-    switch (question.type) {
-      case "text":
-        questionComponent = (
-          <Fragment>
-            {renderLabel(question)}
-            <Form.Control
-              required={question.required}
-              type="text"
-              disabled={disabled}
-            />
-          </Fragment>
-        );
-        break;
-      case "textarea":
-        questionComponent = (
-          <Fragment>
-            {renderLabel(question)}
-            <Form.Control
-              required={question.required}
-              as="textarea"
-              rows="3"
-              disabled={disabled}
-            />
-          </Fragment>
-        );
-        break;
-      case "email":
-        questionComponent = (
-          <Fragment>
-            {renderLabel(question)}
-            <Form.Control
-              required={question.required}
-              type="email"
-              disabled={disabled}
-            />
-          </Fragment>
-        );
-        break;
-      case "number":
-        questionComponent = (
-          <Fragment>
-            {renderLabel(question)}
-            <Form.Control
-              required={question.required}
-              type="number"
-              disabled={disabled}
-            />
-          </Fragment>
-        );
-        break;
-      case "checkbox":
-        questionComponent = (
-          <Fragment>
-            {renderLabel(question)}
-            <Form.Control
-              required={question.required}
-              type="checkbox"
-              disabled={disabled}
-            />
-          </Fragment>
-        );
-        break;
-      case "file":
-        questionComponent = (
-          <Fragment>
-            {renderLabel(question)}
-            <Form.Control
-              required={question.required}
-              type="file"
-              disabled={disabled}
-            />
-          </Fragment>
-        );
-        break;
-      default:
-        console.error(`Unknown question type: ${question.type}`);
-        return null;
+    let questionComponent;
+    if (question.type === "textarea") {
+      questionComponent = (
+        <Form.Control
+          required={question.required}
+          as="textarea"
+          rows="3"
+          disabled={disabled}
+        />
+      );
+    } else {
+      questionComponent = (
+        <Form.Control
+          required={question.required}
+          type={question.type}
+          disabled={disabled}
+        />
+      );
     }
 
     return (
@@ -380,6 +302,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
         order={question.order}
       >
         <QuestionWrapper questionId={question.id} isdefault={question.default}>
+          {renderLabel(question)}
           {questionComponent}
         </QuestionWrapper>
       </QuestionSlot>
@@ -391,7 +314,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
     <AdminLayout>
       <h1>Configure Application</h1>
 
-      <Form noValidate validated={validated} onSubmit={handleSubmit}>
+      <Form onSubmit={saveApplicationFormConfig}>
         <Row>
           <Col md="6">
             <p>
@@ -430,19 +353,41 @@ const ConfigureApplicationForm = ({ firebase }) => {
               Required questions will have an asterisk.
             </p>
             <DndProvider backend={HTML5Backend} id="questions">
-              {applicationFormConfig.questions.sort((a, b) => (a.order > b.order) ? 1 : -1).map((question) =>
-                renderQuestion(question, true)
-              )}
+              {applicationFormConfig.questions
+                .sort((a, b) => (a.order > b.order ? 1 : -1))
+                .map((question) => renderQuestion(question, true))}
             </DndProvider>
 
-            <Button onClick={handleShow}>Add Question</Button>
+            <Button onClick={openModal}>Add Question</Button>
           </Col>
         </Row>
         <hr />
-        <Button type="submit">Save Config</Button>
+        <div
+          style={{
+            display: "flex",
+          }}
+        >
+          <Button type="submit" disabled={showToast}>
+            Save Config
+          </Button>
+          <Toast
+            onClose={() => setShowToast(false)}
+            show={showToast}
+            delay={3000}
+            autohide
+            style={{
+              width: "fit-content",
+              marginLeft: 25,
+            }}
+          >
+            <Toast.Header>
+              <strong className="mr-auto">Config Saved!</strong>
+            </Toast.Header>
+          </Toast>
+        </div>
       </Form>
 
-      <Modal show={showModal} onHide={handleClose}>
+      <Modal show={modalOpen} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>Add New Question</Modal.Title>
         </Modal.Header>
@@ -473,7 +418,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
               </Form.Group>
             </Form.Row>
 
-            <Button variant="secondary" onClick={handleClose}>
+            <Button variant="secondary" onClick={closeModal}>
               Cancel
             </Button>
             <Button type="submit">Add</Button>
