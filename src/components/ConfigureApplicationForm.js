@@ -15,6 +15,7 @@ import { withAuthorization } from "../components/Session";
 import { withFirebase } from "../components/Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "./Loader";
+import { RequiredAsterisk } from "./ApplicationForm";
 
 // assumes this is run before the coming recruitment season
 const estimateSemester = () => {
@@ -92,14 +93,6 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
 const UnderlinedLabel = styled(Form.Label)`
   text-decoration: underline;
   text-decoration-color: ${(props) => props.theme.palette.mainBrand};
-`;
-
-const RequiredAsterisk = styled.span`
-  color: red;
-
-  &:after {
-    content: "*";
-  }
 `;
 
 const ConfigureApplicationForm = ({ firebase }) => {
@@ -224,6 +217,24 @@ const ConfigureApplicationForm = ({ firebase }) => {
     });
   };
 
+  const updateQuestionRequired = (e, questionId) => {
+    const questions = [...applicationFormConfig.questions].map((q) => {
+      if (q.id === questionId) {
+        return {
+          ...q,
+          required: e.target.checked,
+        };
+      } else {
+        return q;
+      }
+    });
+
+    setApplicationFormConfig({
+      ...applicationFormConfig,
+      questions,
+    });
+  };
+
   const QuestionSlot = ({ isdefault, order, children }) => {
     const [{ isOver }, drop] = useDrop({
       accept: "question",
@@ -304,6 +315,14 @@ const ConfigureApplicationForm = ({ firebase }) => {
           disabled={disabled}
         />
       );
+    } else if (question.type === "file") {
+      questionComponent = (
+        <Form.File
+          id={`custom-file-${question.id}`}
+          label="Upload file"
+          custom
+        />
+      );
     } else {
       questionComponent = (
         <Form.Control
@@ -328,15 +347,35 @@ const ConfigureApplicationForm = ({ firebase }) => {
           {renderLabel(question)}
           {questionComponent}
         </QuestionWrapper>
+
         {!question.default && (
-          <button
-            type="button"
-            className="close ml-2 mb-1"
-            onClick={() => removeQuestion(question.id)}
-          >
-            <span aria-hidden="true">×</span>
-            <span className="sr-only">Close</span>
-          </button>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <Form.Check
+              custom
+              checked={question.required}
+              type="switch"
+              label="Required?"
+              id={`${question.id}-required`}
+              onChange={(e) => updateQuestionRequired(e, question.id)}
+            />
+            <div
+              style={{
+                flexGrow: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <button
+                type="button"
+                className="close ml-2 mb-1"
+                onClick={() => removeQuestion(question.id)}
+              >
+                <span aria-hidden="true">×</span>
+                <span className="sr-only">Close</span>
+              </button>
+            </div>
+          </div>
         )}
       </QuestionSlot>
     );
@@ -385,7 +424,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
               Default questions are underlined in red and can't be re-ordered.
               Required questions will have an asterisk.
             </p>
-            <DndProvider backend={HTML5Backend} id="questions">
+            <DndProvider backend={HTML5Backend}>
               {applicationFormConfig.questions
                 .sort((a, b) => (a.order > b.order ? 1 : -1))
                 .map((question) => renderQuestion(question, true))}

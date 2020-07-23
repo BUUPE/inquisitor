@@ -1,12 +1,12 @@
 import React from "react";
-import { Link } from "gatsby";
 
 import Layout from "../components/Layout";
+import ApplicationForm from "../components/ApplicationForm";
 
+// check if application form is open, otherwise show message
 const ApplyPage = () => (
   <Layout>
-    <h1>Apply here! (anyone can see)</h1>
-    <Link to="/">Home</Link>
+    <ApplicationForm />
   </Layout>
 );
 

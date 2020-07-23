@@ -1,349 +1,193 @@
-import React from "react";
-import axios from "axios";
-import Container from "react-bootstrap/Container";
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import bsCustomFileInput from "bs-custom-file-input";
+
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 
-import logo from "../assets/img/logo.png";
+import { withFirebase } from "./Firebase";
+import Loader from "./Loader";
+import Logo from "./Logo";
+import { Container } from "../styles/global";
 
-class ApplicationForm extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: "",
-      applicantName: "",
-      resume: "",
-      classYear: "",
-      major: "",
-      taken112: "",
-      taken330: "",
-      q1: "",
-      q2: "",
-      timeslots: {
-        saturday: {
-          "9 AM - 10 AM": false,
-          "10 AM - 11 AM": false,
-          "11 AM - 12 PM": false,
-          "12 PM - 1 PM": false,
-          "1 PM - 2 PM": false,
-          "2 PM - 3 PM": false,
-          "3 PM - 4 PM": false,
-          "4 PM - 5 PM": false,
-          "5 PM - 6 PM": false,
-        },
-        sunday: {
-          "9 AM - 10 AM": false,
-          "10 AM - 11 AM": false,
-          "11 AM - 12 PM": false,
-          "12 PM - 1 PM": false,
-          "1 PM - 2 PM": false,
-          "2 PM - 3 PM": false,
-          "3 PM - 4 PM": false,
-          "4 PM - 5 PM": false,
-          "5 PM - 6 PM": false,
-        },
-      },
-      validated: false,
-      error: null,
-      submitted: false,
-    };
+export const RequiredAsterisk = styled.span`
+  color: red;
+
+  &:after {
+    content: "*";
+  }
+`;
+
+const CenteredForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;
+  margin: 0 auto;
+  margin-bottom: 25px;
+`;
+
+const setFileValidity = (fileUpload) => {
+  if (fileUpload.files.length === 0) {
+    fileUpload.setCustomValidity("You must upload a file!");
+  } else if (fileUpload.files.length > 1) {
+    fileUpload.setCustomValidity("You can only upload 1 file!");
+  } else {
+    fileUpload.setCustomValidity("");
+  }
+};
+
+const renderQuestion = (question, disabled = false) => {
+  let questionComponent;
+  if (question.type === "textarea") {
+    questionComponent = (
+      <Form.Control
+        required={question.required}
+        as="textarea"
+        rows="3"
+        disabled={disabled}
+      />
+    );
+  } else if (question.type === "file") {
+    questionComponent = (
+      <Form.File
+        id={`custom-file-${question.id}`}
+        label="Upload file"
+        custom
+        accept=".pdf"
+        onChange={(e) => setFileValidity(e.target)}
+      />
+    );
+  } else {
+    questionComponent = (
+      <Form.Control
+        required={question.required}
+        type={question.type}
+        disabled={disabled}
+      />
+    );
   }
 
-  onChange = (event) =>
-    this.setState({ [event.target.name]: event.target.value });
+  return (
+    <Form.Row style={{ width: "100%" }} key={question.id}>
+      <Form.Group controlId={question.id} style={{ width: "100%" }}>
+        <Form.Label>
+          {question.name} {question.required && <RequiredAsterisk />}
+        </Form.Label>
+        {questionComponent}
+      </Form.Group>
+    </Form.Row>
+  );
+};
 
-  onCheckboxChange = (event) => {
-    const { timeslots } = this.state;
-    const checked = timeslots[event.target.name][event.target.value];
-    timeslots[event.target.name][event.target.value] = !checked;
-    this.setState({ timeslots });
-  };
+const ApplicationForm = ({ firebase }) => {
+  const [applicationFormConfig, setApplicationFormConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [validated, setValidated] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  onSubmit = (event) => {
+  useEffect(() => {
+    const loadApplicationFormConfig = async () => {
+      const doc = await firebase.applicationFormConfig().get();
+
+      if (!doc.exists) {
+        setErrorMsg(
+          'Document "applicationFormConfig" does not exist! Please inform an administrator.'
+        );
+        setLoading(false);
+      } else {
+        setApplicationFormConfig(doc.data());
+      }
+
+      setLoading(false);
+    };
+    if (firebase) loadApplicationFormConfig();
+  }, [firebase]);
+
+  if (loading) return <Loader />;
+
+  const onSubmit = async (event) => {
+    setSending(true);
     event.preventDefault();
     const form = event.currentTarget;
+    const fileUpload = form.querySelector(".custom-file-input");
+    setFileValidity(fileUpload);
+
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
-      axios
-        .post("/api/saveApplication", {
-          email: this.state.email,
-          name: this.state.applicantName,
-          resume: this.state.resume,
-          classYear: this.state.classYear,
-          major: this.state.major,
-          taken112: this.state.taken112,
-          taken330: this.state.taken330,
-          q1: this.state.q1,
-          q2: this.state.q2,
-          timeslots: this.state.timeslots,
-        })
-        .then((res) => console.log(res))
-        .catch((error) => console.error(error));
+      const inputs = form.querySelectorAll(".form-control");
 
-      this.setState({ submitted: true });
-      console.log(this.state);
+      console.log(inputs);
+      console.log(fileUpload);
+      // save to firebase
+
+      setSubmitted(true);
     }
 
-    this.setState({ validated: true });
+    setSending(false);
+    setValidated(true);
   };
 
-  render() {
-    const {
-      email,
-      applicantName,
-      classYear,
-      major,
-      taken112,
-      taken330,
-      resume,
-      q1,
-      q2,
-      timeslots,
-      validated,
-      submitted,
-      error,
-    } = this.state;
+  const successMessage = (
+    <Container flexdirection="column">
+      <div style={{ alignSelf: "center" }}>
+        <Logo size="medium" />
+      </div>
 
-    const successMessage = (
-      <Container className="application-form-wrapper">
-        <Row>
-          <Col className="col-md-12 text-center">
-            <img src={logo} alt="UPE Logo" height="256" width="256" />
-            <h1>Application Submitted!</h1>
-          </Col>
-        </Row>
-        <Row className="thanks-text">
-          <Col className="col-md-12 text-center">
-            <p>
-              Thank you for applying to join UPE. We will be getting back to you
-              by Friday the XX with a timeslot for your interview.{" "}
-            </p>
-            <p>
-              Additional details will be sent to you via the email address you
-              provided in your application!
-            </p>
-          </Col>
-        </Row>
+      <h1>Application Submitted!</h1>
+      <p>
+        Thank you for applying to join BU UPE. Please check your email for a
+        confirmation of your submission. Further details, such as interview
+        timeslots, will be prompted via email and can be entered in this
+        application. If you'd like to edit your submission, simply refresh this
+        page and re-apply.
+      </p>
+    </Container>
+  );
+
+  if (errorMsg)
+    return (
+      <Container flexdirection="column">
+        <h1>Uh oh!</h1>
+        <p>{errorMsg}</p>
       </Container>
     );
 
-    const year = new Date().getFullYear();
-    const years = [];
-    for (let i = year; i <= year + 7; i++) {
-      years.push(i);
-    }
+  if (submitted) return successMessage;
 
-    return submitted ? (
-      successMessage
-    ) : (
-      <Container className="application-form-wrapper">
-        <Form noValidate validated={validated} onSubmit={this.onSubmit}>
-          <div className="text-center">
-            <img src={logo} alt="UPE Logo" height="256" width="256" />
-            <p> </p>
-            <h1>Application Form</h1>
-          </div>
+  bsCustomFileInput.init();
+  // use auth user context here, if user has already applied dont let them apply again (alternatively, just let them know they've applied already and further applications will overwrite previous ones)
+  return (
+    <Container flexdirection="column">
+      <CenteredForm noValidate validated={validated} onSubmit={onSubmit}>
+        <Logo size="medium" />
+        <h1>Apply to BU UPE</h1>
+        {/* maybe this message here should be configurable as well? */}
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
+          fringilla, dui vitae maximus luctus, magna urna convallis purus,
+          condimentum ullamcorper velit dui eu dolor. Pellentesque et tincidunt
+          tellus. Fusce venenatis magna sed elit bibendum, sed scelerisque augue
+          placerat. Vestibulum nec mi efficitur, posuere nisl at, pretium ex.
+          Quisque quam dui, pulvinar a pellentesque eu, cursus et elit. Ut
+          volutpat imperdiet ex, id commodo nulla pretium id. Proin accumsan
+          dignissim tortor, id pulvinar urna euismod ac. Morbi suscipit massa id
+          dui feugiat ultrices. Nulla ac faucibus tortor, quis pharetra leo.
+        </p>
 
-          <Row>
-            <Col>
-              <h5>Email</h5>
-              <Form.Group>
-                <Form.Control
-                  name="email"
-                  type="email"
-                  placeholder="upe@bu.edu"
-                  value={email}
-                  onChange={this.onChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <h5>Name</h5>
-              <Form.Group>
-                <Form.Control
-                  name="applicantName"
-                  type="text"
-                  placeholder="Adam Smith"
-                  value={applicantName}
-                  onChange={this.onChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <h5>Resume</h5>
-              <Form.Group>
-                <Form.Control
-                  name="resume"
-                  type="file"
-                  placeholder="Resume"
-                  value={resume}
-                  onChange={this.onChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h5>Major</h5>
-              <Form.Group>
-                <Form.Control
-                  name="major"
-                  type="text"
-                  placeholder="Computer Science"
-                  value={major}
-                  onChange={this.onChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <h5>Class Year</h5>
-              <Form.Group>
-                <Form.Control
-                  as="select"
-                  name="classYear"
-                  value={classYear}
-                  onChange={this.onChange}
-                  required
-                >
-                  <option value="">-</option>
-                  {years.map((year) => (
-                    <option key={year}>{year}</option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h5>Taken CS 112?</h5>
-              <Form.Group>
-                <Form.Control
-                  as="select"
-                  name="taken112"
-                  value={taken112}
-                  onChange={this.onChange}
-                  required
-                >
-                  <option value="">-</option>
-                  <option>Yes</option>
-                  <option>No</option>
-                  <option>Currently Enrolled</option>
-                </Form.Control>
-              </Form.Group>
-            </Col>
-            <Col>
-              <h5>Taken CS 330?</h5>
-              <Form.Group>
-                <Form.Control
-                  as="select"
-                  name="taken330"
-                  value={taken330}
-                  onChange={this.onChange}
-                  required
-                >
-                  <option value="">-</option>
-                  <option>Yes</option>
-                  <option>No</option>
-                  <option>Currently Enrolled</option>
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h5>Why do you want to join UPE?</h5>
-              <p>Around 100 Words</p>
-              <Form.Group>
-                <Form.Control
-                  name="q1"
-                  as="textarea"
-                  rows="7"
-                  placeholder="..."
-                  value={q1}
-                  onChange={this.onChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h5>What do you hope to gain from joining UPE?</h5>
-              <p>Around 100 Words</p>
-              <Form.Group>
-                <Form.Control
-                  name="q2"
-                  as="textarea"
-                  rows="7"
-                  placeholder="..."
-                  value={q2}
-                  onChange={this.onChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h5>When are you available for interviews?</h5>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h6>Saturday - 01/01/20</h6>
-              <Form.Group>
-                {Object.keys(timeslots.saturday).map((time) => (
-                  <Form.Check
-                    key={time}
-                    type="checkbox"
-                    onChange={this.onCheckboxChange}
-                    name="saturday"
-                    value={time}
-                    label={time}
-                  />
-                ))}
-              </Form.Group>
-            </Col>
-            <Col>
-              <h6>Sunday - 01/02/20</h6>
-              <Form.Group>
-                {Object.keys(timeslots.sunday).map((time) => (
-                  <Form.Check
-                    key={time}
-                    type="checkbox"
-                    onChange={this.onCheckboxChange}
-                    name="sunday"
-                    value={time}
-                    label={time}
-                  />
-                ))}
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="row-button">
-            <Col>
-              <Button
-                type="submit"
-                onSubmit={this.onSubmit}
-                className="btn btn-danger"
-              >
-                Submit Application
-              </Button>
-            </Col>
-          </Row>
+        {applicationFormConfig.questions
+          .sort((a, b) => (a.order > b.order ? 1 : -1))
+          .map((question) => renderQuestion(question))}
 
-          {error && <p className="error-msg">{error.message}</p>}
-        </Form>
-      </Container>
-    );
-  }
-}
+        <Button type="submit" disabled={sending}>
+          Submit
+        </Button>
+      </CenteredForm>
+    </Container>
+  );
+};
 
-export default ApplicationForm;
+export default withFirebase(ApplicationForm);
