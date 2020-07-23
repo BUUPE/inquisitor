@@ -20,8 +20,6 @@ const Landing = styled.div`
   }
 `;
 
-test = 2;
-
 const IndexPage = () => (
   <Layout>
     <SEO title="Home" route="/" />
