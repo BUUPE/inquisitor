@@ -8,7 +8,7 @@ import { Container } from "../styles/global";
 const StyledNav = styled(Nav)`
   width: 200px;
   padding: 15px;
-  background: ${props => props.theme.palette.darkShades};
+  background: ${(props) => props.theme.palette.darkShades};
 
   a {
     color: white;
@@ -19,7 +19,7 @@ const StyledNav = styled(Nav)`
   }
 
   a[aria-current="page"] {
-    color: ${props => props.theme.palette.mainBrand};
+    color: ${(props) => props.theme.palette.mainBrand};
   }
 `;
 
@@ -38,7 +38,7 @@ const AdminContainer = styled(Container)`
 const AdminLayout = ({ children }) => (
   <AdminContainer fluid flexdirection="row">
     <Sidebar />
-    <Col style={{padding: 25}}>{children}</Col>
+    <Col style={{ padding: 25 }}>{children}</Col>
   </AdminContainer>
 );
 
