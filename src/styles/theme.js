@@ -1,5 +1,5 @@
 const colorPalette = {
-  mainBrand: "#2f8dff",
+  mainBrand: "#f21131", // UPE Red
 
   lightAccent: "#8b8e95",
   lightShades: "#fff",

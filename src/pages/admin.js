@@ -4,18 +4,18 @@ import { Router } from "@reach/router";
 
 import Layout from "../components/Layout";
 import GeneralSettings from "../components/GeneralSettings";
-import ConfigureApplication from "../components/ConfigureApplication";
+import ConfigureApplicationForm from "../components/ConfigureApplicationForm";
 
 const FullSizeRouter = styled(Router)`
-  height: 100%;
-  width: 100%;
   display: flex;
+  padding-bottom: 25px;
+  flex-grow: 1;
 `;
 
 export default () => (
   <Layout>
     <FullSizeRouter basepath="/admin">
-      <ConfigureApplication path="/configure-application" />
+      <ConfigureApplicationForm path="/configure-application" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
   </Layout>

@@ -71,7 +71,7 @@ class Firebase {
 
   messages = () => this.db.ref('messages');*/
 
-  applicationConfig = () => this.firestore.doc("applicationConfig");
+  applicationFormConfig = () => this.firestore.doc("applicationFormConfig");
 }
 
 let firebase;
