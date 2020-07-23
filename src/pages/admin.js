@@ -1,4 +1,5 @@
 import React from "react";
+import { withPrefix } from "gatsby";
 import styled from "styled-components";
 import { Router } from "@reach/router";
 
@@ -14,7 +15,7 @@ const FullSizeRouter = styled(Router)`
 
 export default () => (
   <Layout>
-    <FullSizeRouter basepath="/admin">
+    <FullSizeRouter basepath={withPrefix("/admin")}>
       <ConfigureApplicationForm path="/configure-application" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
