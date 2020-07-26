@@ -16,7 +16,9 @@ class Firebase {
     /* Firebase APIs */
 
     this.auth = app.auth();
-    this.firestore = app.firestore().collection("inquisitor");
+    this.firestore = app.firestore().doc("inquisitor/data");
+    this.firestoreRoot = app.firestore();
+    this.storage = app.storage().ref("inquisitor");
   }
 
   // *** Auth API ***
@@ -31,54 +33,60 @@ class Firebase {
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged((authUser) => {
       if (authUser) {
-        /*this.user(authUser.uid) might need this to merge user info from db
-          .once('value')
-          .then(snapshot => {
-            const dbUser = snapshot.val();
+        this.user(authUser.uid)
+          .get()
+          .then((snapshot) => {
+            if (snapshot.exists) {
+              const dbUser = snapshot.data();
 
-            // default empty roles
-            if (!dbUser.roles) {
-              dbUser.roles = {};
+              authUser = {
+                uid: authUser.uid,
+                email: authUser.email,
+                emailVerified: authUser.emailVerified,
+                providerData: authUser.providerData,
+                ...dbUser,
+              };
+
+              next(authUser);
+            } else {
+              const dbUser = {
+                roles: ["Guest"],
+              };
+
+              this.user(authUser.uid)
+                .set(dbUser)
+                .then(() => {
+                  authUser = {
+                    uid: authUser.uid,
+                    email: authUser.email,
+                    emailVerified: authUser.emailVerified,
+                    providerData: authUser.providerData,
+                    ...dbUser,
+                  };
+
+                  next(authUser);
+                });
             }
-
-            // merge auth and db user
-            authUser = {
-              uid: authUser.uid,
-              email: authUser.email,
-              emailVerified: authUser.emailVerified,
-              providerData: authUser.providerData,
-              ...dbUser,
-            };
-
-            next(authUser);
-          });*/
-
-        next(authUser);
+          });
       } else {
         fallback();
       }
     });
 
-  /*** User API *** use this as a reference for implementing firestore calls
+  // *** User API ***
+  user = (uid) => this.firestoreRoot.doc(`users/${uid}`);
+  resume = (uid) => this.storage.child(`resumes/${uid}`);
+  application = (uid) => this.firestore.collection("applications").doc(uid);
 
-  user = uid => this.db.ref(`users/${uid}`);
-
-  users = () => this.db.ref('users');
-
-  // *** Message API ***
-
-  message = uid => this.db.ref(`messages/${uid}`);
-
-  messages = () => this.db.ref('messages');*/
-
-  applicationFormConfig = () => this.firestore.doc("applicationFormConfig");
+  applicationFormConfig = () =>
+    this.firestoreRoot.doc("inquisitor/applicationFormConfig");
 }
 
 let firebase;
 
-function getFirebase(app, auth, firestore) {
+function getFirebase(app, auth, firestore, storage) {
   if (!firebase) {
-    firebase = new Firebase(app, auth, firestore);
+    firebase = new Firebase(app, auth, firestore, storage);
   }
 
   return firebase;

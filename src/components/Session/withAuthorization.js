@@ -3,6 +3,8 @@ import { navigate } from "gatsby";
 
 import AuthUserContext from "./context";
 import { withFirebase } from "../Firebase";
+import Logo from "../Logo";
+import { Centered } from "../../styles/global";
 
 const withAuthorization = (condition) => (Component) => {
   class WithAuthorization extends React.Component {
@@ -14,7 +16,7 @@ const withAuthorization = (condition) => (Component) => {
 
         this.listener = this.props.firebase.onAuthUserListener(
           (authUser) => {
-            if (!condition(authUser)) {
+            if (!authUser) {
               navigate("/login");
             }
           },
@@ -36,10 +38,22 @@ const withAuthorization = (condition) => (Component) => {
     }
 
     render() {
+      const AuthorizationFailed = () => (
+        <Centered>
+          <Logo size="medium" />
+          <h3>You don't have permission to view this page!</h3>
+          <p>If you believe you should have access, please contact an admin.</p>
+        </Centered>
+      );
+
       return (
         <AuthUserContext.Consumer>
           {(authUser) =>
-            condition(authUser) ? <Component {...this.props} /> : null
+            condition(authUser) ? (
+              <Component {...this.props} />
+            ) : (
+              <AuthorizationFailed />
+            )
           }
         </AuthUserContext.Consumer>
       );

@@ -5,7 +5,7 @@ import InputGroup from "react-bootstrap/InputGroup";
 import Button from "react-bootstrap/Button";
 
 import AdminLayout from "./AdminLayout";
-import { withAuthorization } from "../components/Session";
+import { withAuthorization, isAdmin } from "../components/Session";
 
 export const FormExample = () => {
   const [validated, setValidated] = useState(false);
@@ -103,5 +103,4 @@ const GeneralSettings = () => (
   </AdminLayout>
 );
 
-const condition = (authUser) => !!authUser;
-export default withAuthorization(condition)(GeneralSettings);
+export default withAuthorization(isAdmin)(GeneralSettings);

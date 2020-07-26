@@ -76,8 +76,6 @@
   "scripts": {
     "build": "gatsby clean && gatsby build",
     "develop": "gatsby clean && gatsby develop",
-    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
-    "lint": "eslint src",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "deploy": "gatsby clean && gatsby build --prefix-paths && gh-pages -d public"

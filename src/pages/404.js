@@ -1,16 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { Link } from "gatsby";
 
 import Layout from "../components/Layout";
 import Logo from "../components/Logo";
-
-const Centered = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`;
+import Centered from "../styles/global";
 
 const NotFoundPage = () => (
   <Layout>

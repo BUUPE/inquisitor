@@ -1,9 +1,10 @@
 import React from "react";
 import styled from "styled-components";
-
+import { compose } from "recompose";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
+import { AuthUserContext, withAuthorization, isLoggedIn } from "./Session";
 import { withFirebase } from "./Firebase";
 import Loader from "./Loader";
 import Logo from "./Logo";
@@ -29,8 +30,14 @@ const CenteredForm = styled(Form)`
 const setFileValidity = (fileUpload) => {
   if (fileUpload.files.length === 0) {
     fileUpload.setCustomValidity("You must upload a file!");
+    alert("You must upload a file!");
   } else if (fileUpload.files.length > 1) {
     fileUpload.setCustomValidity("You can only upload 1 file!");
+    alert("You can only upload 1 file!");
+  } else if (fileUpload.files[0].size > 1048576) {
+    fileUpload.setCustomValidity("Max file size is 1MB!");
+    fileUpload.value = "";
+    alert("Max file size is 1MB!");
   } else {
     fileUpload.setCustomValidity("");
   }
@@ -77,29 +84,39 @@ class ApplicationForm extends React.Component {
     validated: false,
     sending: false,
     submitted: false,
+    firebaseInit: false,
+    alreadyApplied: false,
     errorMsg: "",
   };
+  static contextType = AuthUserContext;
 
   loadApplicationFormConfig = async () => {
     const doc = await this.props.firebase.applicationFormConfig().get();
+    const { applied: alreadyApplied } = await this.props.firebase
+      .user(this.context.uid)
+      .get()
+      .then((snapshot) => snapshot.data());
 
     if (!doc.exists) {
       this.setState({
         errorMsg:
           'Document "applicationFormConfig" does not exist! Please inform an administrator.',
         loading: false,
+        alreadyApplied,
       });
     } else {
       this.setState({
         applicationFormConfig: doc.data(),
         loading: false,
+        alreadyApplied,
       });
     }
   };
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase !== null) {
+    if (this.props.firebase !== null && !this.state.firebaseInit) {
       this.loadApplicationFormConfig();
+      this.setState({ firebaseInit: true });
     }
     if (typeof window !== "undefined") {
       import("bs-custom-file-input").then((bsCustomFileInput) => {
@@ -116,6 +133,7 @@ class ApplicationForm extends React.Component {
       validated,
       applicationFormConfig,
       sending,
+      alreadyApplied,
     } = this.state;
 
     if (loading) return <Loader />;
@@ -130,13 +148,30 @@ class ApplicationForm extends React.Component {
       if (form.checkValidity() === false) {
         event.stopPropagation();
       } else {
-        const inputs = form.querySelectorAll(".form-control");
+        const inputs = Array.from(form.querySelectorAll(".form-control"));
+        const authUser = this.context;
 
-        console.log(inputs);
-        console.log(fileUpload);
-        // save to firebase
+        const responses = inputs.map(({ id, value }) => {
+          return {
+            id,
+            value,
+          };
+        });
 
-        this.setState({ submitted: true });
+        const uploadApplicationData = this.props.firebase
+          .application(authUser.uid)
+          .set({ responses });
+        const uploadResume = this.props.firebase
+          .resume(authUser.uid)
+          .put(fileUpload.files[0]);
+        const setApplied = this.props.firebase
+          .user(authUser.uid)
+          .update({ applied: true });
+        Promise.all([
+          uploadApplicationData,
+          uploadResume,
+          setApplied,
+        ]).then((values) => this.setState({ submitted: true }));
       }
 
       this.setState({
@@ -192,6 +227,13 @@ class ApplicationForm extends React.Component {
             tortor, quis pharetra leo.
           </p>
 
+          {alreadyApplied && (
+            <p style={{ color: "red" }}>
+              Look's like you've already applied! Feel free to reapply however,
+              just note that it will overwrite your previous submission.
+            </p>
+          )}
+
           {applicationFormConfig.questions
             .sort((a, b) => (a.order > b.order ? 1 : -1))
             .map((question) => renderQuestion(question))}
@@ -205,4 +247,7 @@ class ApplicationForm extends React.Component {
   }
 }
 
-export default withFirebase(ApplicationForm);
+export default compose(
+  withAuthorization(isLoggedIn),
+  withFirebase
+)(ApplicationForm);

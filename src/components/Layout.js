@@ -18,8 +18,9 @@ class Layout extends Component {
     const app = import("firebase/app");
     const auth = import("firebase/auth");
     const firestore = import("firebase/firestore");
+    const storage = import("firebase/storage");
 
-    Promise.all([app, auth, firestore]).then((values) => {
+    Promise.all([app, auth, firestore, storage]).then((values) => {
       const firebase = getFirebase(values[0]);
 
       this.setState({ firebase });

@@ -11,7 +11,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Toast from "react-bootstrap/Toast";
 
-import { withAuthorization } from "../components/Session";
+import { withAuthorization, isAdmin } from "../components/Session";
 import { withFirebase } from "../components/Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "./Loader";
@@ -509,8 +509,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
   );
 };
 
-const condition = (authUser) => !!authUser;
 export default compose(
-  withAuthorization(condition),
+  withAuthorization(isAdmin),
   withFirebase
 )(ConfigureApplicationForm);
