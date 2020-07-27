@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack:///./src/pages/room.js"],"names":["RoomPage"],"mappings":"4FAAA,gCAIeA,UAFE,kBAAM","file":"component---src-pages-room-js-22dcaba7f9f9889c7b72.js","sourcesContent":["import React from \"react\";\n\nconst RoomPage = () => <h1>Welcome to your Session</h1>;\n\nexport default RoomPage;\n"],"sourceRoot":""}
