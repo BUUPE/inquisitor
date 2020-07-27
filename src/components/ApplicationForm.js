@@ -80,6 +80,7 @@ const renderQuestion = (question) => {
 class ApplicationForm extends React.Component {
   state = {
     applicationFormConfig: null,
+    generalSettings: null,
     loading: true,
     validated: false,
     sending: false,
@@ -90,33 +91,50 @@ class ApplicationForm extends React.Component {
   };
   static contextType = AuthUserContext;
 
-  loadApplicationFormConfig = async () => {
-    const doc = await this.props.firebase.applicationFormConfig().get();
-    const { applied: alreadyApplied } = await this.props.firebase
+  loadData = async () => {
+    const loadApplicationFormConfig = this.props.firebase
+      .applicationFormConfig()
+      .get()
+      .then((snapshot) => snapshot.data())
+      .catch(() =>
+        this.setState({
+          errorMsg: "Application Form Config doesn't exist!",
+          loading: false,
+        })
+      );
+    const loadAlreadyApplied = this.props.firebase
       .user(this.context.uid)
       .get()
       .then((snapshot) => snapshot.data())
       .catch(console.error);
+    const loadGeneralSettings = this.props.firebase
+      .generalSettings()
+      .get()
+      .then((snapshot) => snapshot.data())
+      .catch(() =>
+        this.setState({
+          errorMsg: "General settings doesn't exist!",
+          loading: false,
+        })
+      );
 
-    if (!doc.exists) {
+    Promise.all([
+      loadApplicationFormConfig,
+      loadAlreadyApplied,
+      loadGeneralSettings,
+    ]).then((values) =>
       this.setState({
-        errorMsg:
-          'Document "applicationFormConfig" does not exist! Please inform an administrator.',
         loading: false,
-        alreadyApplied,
-      });
-    } else {
-      this.setState({
-        applicationFormConfig: doc.data(),
-        loading: false,
-        alreadyApplied,
-      });
-    }
+        applicationFormConfig: values[0],
+        alreadyApplied: values[1].applied,
+        generalSettings: values[2],
+      })
+    );
   };
 
   componentDidUpdate(prevProps) {
     if (this.props.firebase !== null && !this.state.firebaseInit) {
-      this.loadApplicationFormConfig();
+      this.loadData();
       this.setState({ firebaseInit: true });
     }
     if (typeof window !== "undefined") {
@@ -135,9 +153,33 @@ class ApplicationForm extends React.Component {
       applicationFormConfig,
       sending,
       alreadyApplied,
+      generalSettings,
     } = this.state;
 
     if (loading) return <Loader />;
+
+    if (!generalSettings.applicationsOpen)
+      return (
+        <Container
+          flexdirection="column"
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            maxWidth: 700,
+          }}
+        >
+          <Logo size="medium" />
+          <h1>Applications are closed!</h1>
+          <p>
+            Unfortunately, the application for the{" "}
+            {applicationFormConfig.semester} season has closed. If you're
+            interesting in joining BU UPE, please come back next semester and
+            apply, we'd love to have you! In the meantime, feel free to check
+            out the public events on{" "}
+            <a href="https://upe.bu.edu/events">our calendar</a>.
+          </p>
+        </Container>
+      );
 
     const onSubmit = (event) => {
       this.setState({ sending: true });

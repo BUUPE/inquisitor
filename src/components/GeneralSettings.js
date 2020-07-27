@@ -1,106 +1,95 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { compose } from "recompose";
+
 import Form from "react-bootstrap/Form";
-import Col from "react-bootstrap/Col";
-import InputGroup from "react-bootstrap/InputGroup";
 import Button from "react-bootstrap/Button";
+import Toast from "react-bootstrap/Toast";
 
+import { withAuthorization, isAdmin } from "./Session";
+import { withFirebase } from "./Firebase";
 import AdminLayout from "./AdminLayout";
-import { withAuthorization, isAdmin } from "../components/Session";
+import Loader from "./Loader";
 
-export const FormExample = () => {
-  const [validated, setValidated] = useState(false);
+const DEFAULT_GENERAL_SETTINGS = {
+  applicationsOpen: false,
+};
 
-  const handleSubmit = (event) => {
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+const GeneralSettings = ({ firebase }) => {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
 
-    setValidated(true);
+  useEffect(() => {
+    const loadSettings = async () => {
+      const doc = await firebase.generalSettings().get();
+
+      if (!doc.exists) {
+        await firebase.generalSettings().set(DEFAULT_GENERAL_SETTINGS);
+        setSettings(DEFAULT_GENERAL_SETTINGS);
+      } else {
+        setSettings(doc.data());
+      }
+
+      setLoading(false);
+    };
+    if (firebase) loadSettings();
+  }, [firebase]);
+
+  if (loading) return <Loader />;
+
+  const saveSettings = async (e) => {
+    e.preventDefault();
+    await firebase.generalSettings().set(settings);
+    setShowToast(true);
   };
 
   return (
-    <Form noValidate validated={validated} onSubmit={handleSubmit}>
-      <Form.Row>
-        <Form.Group as={Col} md="4" controlId="validationCustom01">
-          <Form.Label>First name</Form.Label>
-          <Form.Control
-            required
-            type="text"
-            placeholder="First name"
-            defaultValue="Mark"
+    <AdminLayout>
+      <h1>General Settings</h1>
+
+      <Form onSubmit={saveSettings}>
+        <Form.Row>
+          <Form.Check
+            custom
+            checked={settings.applicationsOpen}
+            type="switch"
+            label={`Applications are ${
+              settings.applicationsOpen ? "open" : "closed"
+            }`}
+            id="applicationsOpen"
+            onChange={(e) =>
+              setSettings({ ...settings, applicationsOpen: e.target.checked })
+            }
           />
-          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group as={Col} md="4" controlId="validationCustom02">
-          <Form.Label>Last name</Form.Label>
-          <Form.Control
-            required
-            type="text"
-            placeholder="Last name"
-            defaultValue="Otto"
-          />
-          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group as={Col} md="4" controlId="validationCustomUsername">
-          <Form.Label>Username</Form.Label>
-          <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id="inputGroupPrepend">@</InputGroup.Text>
-            </InputGroup.Prepend>
-            <Form.Control
-              type="text"
-              placeholder="Username"
-              aria-describedby="inputGroupPrepend"
-              required
-            />
-            <Form.Control.Feedback type="invalid">
-              Please choose a username.
-            </Form.Control.Feedback>
-          </InputGroup>
-        </Form.Group>
-      </Form.Row>
-      <Form.Row>
-        <Form.Group as={Col} md="6" controlId="validationCustom03">
-          <Form.Label>City</Form.Label>
-          <Form.Control type="text" placeholder="City" required />
-          <Form.Control.Feedback type="invalid">
-            Please provide a valid city.
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group as={Col} md="3" controlId="validationCustom04">
-          <Form.Label>State</Form.Label>
-          <Form.Control type="text" placeholder="State" required />
-          <Form.Control.Feedback type="invalid">
-            Please provide a valid state.
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group as={Col} md="3" controlId="validationCustom05">
-          <Form.Label>Zip</Form.Label>
-          <Form.Control type="text" placeholder="Zip" required />
-          <Form.Control.Feedback type="invalid">
-            Please provide a valid zip.
-          </Form.Control.Feedback>
-        </Form.Group>
-      </Form.Row>
-      <Form.Group>
-        <Form.Check
-          required
-          label="Agree to terms and conditions"
-          feedback="You must agree before submitting."
-        />
-      </Form.Group>
-      <Button type="submit">Submit form</Button>
-    </Form>
+        </Form.Row>
+        <hr />
+        <div
+          style={{
+            display: "flex",
+          }}
+        >
+          <Button type="submit">Save</Button>
+          <Toast
+            onClose={() => setShowToast(false)}
+            show={showToast}
+            delay={3000}
+            autohide
+            style={{
+              width: "fit-content",
+              marginLeft: 25,
+            }}
+          >
+            <Toast.Header>
+              <strong className="mr-auto">Settings Saved!</strong>
+            </Toast.Header>
+          </Toast>
+        </div>
+      </Form>
+    </AdminLayout>
   );
 };
 
-const GeneralSettings = () => (
-  <AdminLayout>
-    <h1>General Settings</h1>
-    <FormExample />
-  </AdminLayout>
-);
-
-export default withAuthorization(isAdmin)(GeneralSettings);
+export default compose(
+  withAuthorization(isAdmin),
+  withFirebase
+)(GeneralSettings);

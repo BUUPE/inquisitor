@@ -81,6 +81,7 @@ class Firebase {
 
   applicationFormConfig = () =>
     this.firestoreRoot.doc("inquisitor/applicationFormConfig");
+  generalSettings = () => this.firestoreRoot.doc("inquisitor/generalSettings");
 }
 
 let firebase;
