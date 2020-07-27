@@ -12,9 +12,6 @@ const config = {
 class Firebase {
   constructor(app) {
     app.initializeApp(config);
-
-    /* Firebase APIs */
-
     this.auth = app.auth();
     this.firestore = app.firestore().doc("inquisitor/data");
     this.firestoreRoot = app.firestore();
@@ -22,14 +19,11 @@ class Firebase {
   }
 
   // *** Auth API ***
-
-  doSignInWithEmailAndPassword = (email, password) =>
-    this.auth.signInWithEmailAndPassword(email, password);
+  doSignInWithToken = (token) => this.auth.signInWithCustomToken(token);
 
   doSignOut = () => this.auth.signOut();
 
-  // *** Merge Auth and DB User API *** //
-
+  // *** Merge Auth and DB User API ***
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged((authUser) => {
       if (authUser) {
@@ -67,7 +61,8 @@ class Firebase {
                   next(authUser);
                 });
             }
-          });
+          })
+          .catch(console.error);
       } else {
         fallback();
       }

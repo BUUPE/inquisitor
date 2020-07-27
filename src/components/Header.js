@@ -49,9 +49,9 @@ const Header = ({ firebase }) => {
       </Link>
 
       {!authUser && (
-        <Link to="/login">
+        <a href="https://upe-authenticator.herokuapp.com/">
           <Button>Login</Button>
-        </Link>
+        </a>
       )}
       {authUser && <Button onClick={handleSignOut}>Logout</Button>}
     </Navbar>
