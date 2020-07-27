@@ -61,38 +61,35 @@ const ViewApplications = ({ firebase }) => {
   const CurrentApplication = () => {
     if (!currentApplication) return <h1>Select an application!</h1>;
 
-    const renderQuestion = (question) => {
-      const { value } = currentApplication.responses.find(
-        (r) => r.id === question.id
-      );
-      let questionComponent;
-      if (question.type === "file") {
-        questionComponent = (
+    const renderResponse = (response) => {
+      let responseComponent;
+      if (response.type === "file") {
+        responseComponent = (
           <embed
-            src={value}
+            src={response.value}
             width="100%"
             height="500"
             type="application/pdf"
-            title={question.name}
+            title={response.name}
           />
         );
       } else {
-        questionComponent = <p>{value}</p>;
+        responseComponent = <p>{response.value}</p>;
       }
 
       return (
-        <Fragment key={question.id}>
-          <h3>{question.name}</h3>
-          {questionComponent}
+        <Fragment key={response.id}>
+          <h3>{response.name}</h3>
+          {responseComponent}
         </Fragment>
       );
     };
 
     return (
       <Fragment>
-        {applicationFormConfig.questions
+        {currentApplication.responses
           .sort((a, b) => (a.order > b.order ? 1 : -1))
-          .map((question) => renderQuestion(question))}
+          .map((response) => renderResponse(response))}
       </Fragment>
     );
   };

@@ -153,12 +153,17 @@ class ApplicationForm extends React.Component {
       } else {
         const inputs = Array.from(form.querySelectorAll(".form-control"));
         const { uid } = this.context;
-        const { semester } = this.state.applicationFormConfig;
+        const { semester, questions } = this.state.applicationFormConfig;
 
-        let responses = inputs.map(({ id, value }) => {
+        let responses = inputs.map(({ id: inputId, value }) => {
+          const id = parseInt(inputId);
+          const { name, order, type } = questions.find((q) => q.id === id);
           return {
-            id: parseInt(id),
+            id,
             value,
+            name,
+            order,
+            type,
           };
         });
 
@@ -170,12 +175,18 @@ class ApplicationForm extends React.Component {
                 .file(uid, id)
                 .put(fileUpload.files[0])
                 .then((snapshot) => snapshot.ref.getDownloadURL())
-                .then((value) =>
-                  resolve({
+                .then((value) => {
+                  const { name, order, type } = questions.find(
+                    (q) => q.id === id
+                  );
+                  return resolve({
                     id,
                     value,
-                  })
-                );
+                    name,
+                    order,
+                    type,
+                  });
+                });
             })
         );
 
@@ -184,10 +195,10 @@ class ApplicationForm extends React.Component {
 
           const uploadApplicationData = this.props.firebase
             .application(uid)
-            .set({ responses });
+            .set({ responses, semester });
           const setApplied = this.props.firebase
             .user(uid)
-            .update({ applied: true, semester });
+            .update({ applied: true });
 
           Promise.all([uploadApplicationData, setApplied]).then(() =>
             this.setState({ submitted: true, sending: false })
