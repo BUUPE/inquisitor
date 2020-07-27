@@ -75,8 +75,9 @@ class Firebase {
 
   // *** User API ***
   user = (uid) => this.firestoreRoot.doc(`users/${uid}`);
-  resume = (uid) => this.storage.child(`resumes/${uid}`);
+  file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
   application = (uid) => this.firestore.collection("applications").doc(uid);
+  applications = () => this.firestore.collection("applications");
 
   applicationFormConfig = () =>
     this.firestoreRoot.doc("inquisitor/applicationFormConfig");

@@ -27,6 +27,7 @@ const Sidebar = () => (
   <StyledNav className="flex-column">
     <Link to="/admin">General Settings</Link>
     <Link to="/admin/configure-application">Configure Application</Link>
+    <Link to="/admin/view-applications">View Applications</Link>
   </StyledNav>
 );
 

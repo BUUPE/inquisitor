@@ -5,8 +5,6 @@ import Layout from "../components/Layout";
 import SEO from "../components/SEO";
 import Logo from "../components/Logo";
 
-import { Link } from "gatsby";
-
 const Landing = styled.div`
   width: 100%;
   height: 100%;
@@ -30,10 +28,7 @@ const IndexPage = () => (
 
       <p>
         This is BU UPE's interview application. Please login to get started; you
-        will be redirected to the appropriate page based on your affiliation.{" "}
-        <br />
-        <Link to="/apply">Apply</Link> <br />
-        <Link to="/admin">Admin</Link> <br />
+        will be redirected to the appropriate page based on your affiliation.
       </p>
     </Landing>
   </Layout>

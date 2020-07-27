@@ -20,6 +20,11 @@ const Navbar = styled.nav`
   a.home {
     margin-right: auto;
   }
+
+  & > * {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
 `;
 
 const Header = ({ firebase }) => {
@@ -35,6 +40,14 @@ const Header = ({ firebase }) => {
       <Link to="/" className="home">
         <Button>Home</Button>
       </Link>
+
+      <Link to="/apply">
+        <Button>Apply</Button>
+      </Link>
+      <Link to="/admin">
+        <Button>Admin</Button>
+      </Link>
+
       {!authUser && (
         <Link to="/login">
           <Button>Login</Button>

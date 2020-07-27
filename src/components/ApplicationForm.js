@@ -95,7 +95,8 @@ class ApplicationForm extends React.Component {
     const { applied: alreadyApplied } = await this.props.firebase
       .user(this.context.uid)
       .get()
-      .then((snapshot) => snapshot.data());
+      .then((snapshot) => snapshot.data())
+      .catch(console.error);
 
     if (!doc.exists) {
       this.setState({
@@ -138,44 +139,63 @@ class ApplicationForm extends React.Component {
 
     if (loading) return <Loader />;
 
-    const onSubmit = async (event) => {
+    const onSubmit = (event) => {
       this.setState({ sending: true });
       event.preventDefault();
       const form = event.currentTarget;
-      const fileUpload = form.querySelector(".custom-file-input");
-      setFileValidity(fileUpload);
+      const fileUploads = Array.from(
+        form.querySelectorAll(".custom-file-input")
+      );
+      fileUploads.forEach((fileUpload) => setFileValidity(fileUpload));
 
       if (form.checkValidity() === false) {
         event.stopPropagation();
       } else {
         const inputs = Array.from(form.querySelectorAll(".form-control"));
-        const authUser = this.context;
+        const { uid } = this.context;
+        const { semester } = this.state.applicationFormConfig;
 
-        const responses = inputs.map(({ id, value }) => {
+        let responses = inputs.map(({ id, value }) => {
           return {
-            id,
+            id: parseInt(id),
             value,
           };
         });
 
-        const uploadApplicationData = this.props.firebase
-          .application(authUser.uid)
-          .set({ responses });
-        const uploadResume = this.props.firebase
-          .resume(authUser.uid)
-          .put(fileUpload.files[0]);
-        const setApplied = this.props.firebase
-          .user(authUser.uid)
-          .update({ applied: true });
-        Promise.all([
-          uploadApplicationData,
-          uploadResume,
-          setApplied,
-        ]).then((values) => this.setState({ submitted: true }));
+        const uploadFiles = fileUploads.map(
+          (fileUpload) =>
+            new Promise((resolve, reject) => {
+              const id = parseInt(fileUpload.id.split("-").pop());
+              this.props.firebase
+                .file(uid, id)
+                .put(fileUpload.files[0])
+                .then((snapshot) => snapshot.ref.getDownloadURL())
+                .then((value) =>
+                  resolve({
+                    id,
+                    value,
+                  })
+                );
+            })
+        );
+
+        Promise.all(uploadFiles).then((fileURLs) => {
+          responses = responses.concat(fileURLs);
+
+          const uploadApplicationData = this.props.firebase
+            .application(uid)
+            .set({ responses });
+          const setApplied = this.props.firebase
+            .user(uid)
+            .update({ applied: true, semester });
+
+          Promise.all([uploadApplicationData, setApplied]).then(() =>
+            this.setState({ submitted: true, sending: false })
+          );
+        });
       }
 
       this.setState({
-        sending: false,
         validated: true,
       });
     };
