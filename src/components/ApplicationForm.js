@@ -27,6 +27,7 @@ const CenteredForm = styled(Form)`
   margin-bottom: 25px;
 `;
 
+// use sweetalert here since its non blocking
 const setFileValidity = (fileUpload) => {
   if (fileUpload.files.length === 0) {
     fileUpload.setCustomValidity("You must upload a file!");

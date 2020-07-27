@@ -28,11 +28,6 @@ const Navbar = styled.nav`
 `;
 
 const Header = ({ firebase }) => {
-  const handleSignOut = () =>
-    firebase
-      .doSignOut()
-      .then(() => navigate("/"))
-      .catch(console.error);
   const authUser = useContext(AuthUserContext);
 
   return (
@@ -49,11 +44,11 @@ const Header = ({ firebase }) => {
       </Link>
 
       {!authUser && (
-        <a href="https://upe-authenticator.herokuapp.com/">
+        <Link to="/login">
           <Button>Login</Button>
-        </a>
+        </Link>
       )}
-      {authUser && <Button onClick={handleSignOut}>Logout</Button>}
+      {authUser && <Button onClick={() => navigate("/logout")}>Logout</Button>}
     </Navbar>
   );
 };

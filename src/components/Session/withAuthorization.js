@@ -10,6 +10,9 @@ const withAuthorization = (condition) => (Component) => {
   class WithAuthorization extends React.Component {
     _initFirebase = false;
 
+    savePathname = () =>
+      window.localStorage.setItem("pathname", this.props.location.pathname);
+
     firebaseInit = () => {
       if (this.props.firebase && !this._initFirebase) {
         this._initFirebase = true;
@@ -17,10 +20,14 @@ const withAuthorization = (condition) => (Component) => {
         this.listener = this.props.firebase.onAuthUserListener(
           (authUser) => {
             if (!authUser) {
+              this.savePathname();
               navigate("/login");
             }
           },
-          () => navigate("/login")
+          () => {
+            this.savePathname();
+            navigate("/login");
+          }
         );
       }
     };

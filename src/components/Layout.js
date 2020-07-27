@@ -2,7 +2,7 @@ import React, { Component, Fragment } from "react";
 import { withTheme } from "styled-components";
 
 import getFirebase, { FirebaseContext } from "./Firebase";
-import withAuthentication from "./Session/withAuthentication";
+import { withAuthentication } from "./Session";
 import Header from "./Header";
 import Footer from "./Footer";
 import GlobalStyle from "../styles/global";
@@ -36,11 +36,11 @@ class Layout extends Component {
   }
 }
 
-const LayoutBase = withTheme((props) => (
+const LayoutBase = withTheme(({ theme, children }) => (
   <Fragment>
-    <GlobalStyle theme={props.theme} />
+    <GlobalStyle theme={theme} />
     <Header />
-    {props.children}
+    {children}
     <Footer />
   </Fragment>
 ));
