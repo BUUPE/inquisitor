@@ -29,9 +29,15 @@ class Firebase {
       if (authUser) {
         this.user(authUser.uid)
           .get()
-          .then((snapshot) => {
+          .then(async (snapshot) => {
             if (snapshot.exists) {
               const dbUser = snapshot.data();
+              if (!dbUser.hasOwnProperty("roles")) {
+                dbUser.roles = {
+                  guest: true,
+                };
+                await this.user(authUser.uid).update(dbUser);
+              }
 
               authUser = {
                 uid: authUser.uid,
@@ -44,7 +50,9 @@ class Firebase {
               next(authUser);
             } else {
               const dbUser = {
-                roles: ["Guest"],
+                roles: {
+                  guest: true,
+                },
               };
 
               this.user(authUser.uid)
@@ -70,6 +78,7 @@ class Firebase {
 
   // *** User API ***
   user = (uid) => this.firestoreRoot.doc(`users/${uid}`);
+  users = () => this.firestoreRoot.collection("users");
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
   application = (uid) => this.firestore.collection("applications").doc(uid);
   applications = () => this.firestore.collection("applications");

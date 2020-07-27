@@ -80,6 +80,7 @@
     "develop": "gatsby clean && gatsby develop",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
+    "lint": "eslint src",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
     "deploy": "gatsby clean && gatsby build --prefix-paths && gh-pages -d public"
   }

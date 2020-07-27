@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { compose } from "recompose";
 import styled from "styled-components";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -12,11 +11,10 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Toast from "react-bootstrap/Toast";
 
-import { withAuthorization, isAdmin } from "../components/Session";
-import { withFirebase } from "../components/Firebase";
+import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
-import Loader from "./Loader";
-import { RequiredAsterisk } from "./ApplicationForm";
+import Loader from "../Loader";
+import { RequiredAsterisk } from "../ApplicationForm";
 
 // assumes this is run before the coming recruitment season
 const estimateSemester = () => {
@@ -544,7 +542,4 @@ const ConfigureApplicationForm = ({ firebase }) => {
   );
 };
 
-export default compose(
-  withAuthorization(isAdmin),
-  withFirebase
-)(ConfigureApplicationForm);
+export default withFirebase(ConfigureApplicationForm);

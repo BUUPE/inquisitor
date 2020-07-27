@@ -3,7 +3,7 @@ import { Link } from "gatsby";
 import styled from "styled-components";
 import Nav from "react-bootstrap/Nav";
 import Col from "react-bootstrap/Col";
-import { Container } from "../styles/global";
+import { Container } from "../../styles/global";
 
 const StyledNav = styled(Nav)`
   width: 200px;
@@ -26,6 +26,7 @@ const StyledNav = styled(Nav)`
 const Sidebar = () => (
   <StyledNav className="flex-column">
     <Link to="/admin">General Settings</Link>
+    <Link to="/admin/manage-users">Manage Users</Link>
     <Link to="/admin/configure-application">Configure Application</Link>
     <Link to="/admin/view-applications">View Applications</Link>
   </StyledNav>

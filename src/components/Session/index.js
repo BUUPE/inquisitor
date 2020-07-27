@@ -2,7 +2,7 @@ import AuthUserContext from "./context";
 import withAuthentication from "./withAuthentication";
 import withAuthorization from "./withAuthorization";
 
-const isAdmin = (authUser) => authUser && authUser.roles.includes("Admin");
+const isAdmin = (authUser) => authUser && !!authUser.roles.admin;
 const isLoggedIn = (authUser) => !!authUser;
 
 export {

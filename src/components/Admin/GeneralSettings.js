@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { compose } from "recompose";
 
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Toast from "react-bootstrap/Toast";
 
-import { withAuthorization, isAdmin } from "./Session";
-import { withFirebase } from "./Firebase";
+import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
-import Loader from "./Loader";
+import Loader from "../Loader";
 
 const DEFAULT_GENERAL_SETTINGS = {
   applicationsOpen: false,
@@ -89,7 +87,4 @@ const GeneralSettings = ({ firebase }) => {
   );
 };
 
-export default compose(
-  withAuthorization(isAdmin),
-  withFirebase
-)(GeneralSettings);
+export default withFirebase(GeneralSettings);

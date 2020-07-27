@@ -1,14 +1,12 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { compose } from "recompose";
 import styled from "styled-components";
 
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-import { withAuthorization, isAdmin } from "../components/Session";
-import { withFirebase } from "../components/Firebase";
+import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
-import Loader from "./Loader";
+import Loader from "../Loader";
 
 const ApplicationList = styled.ul`
   border: 1px solid black;
@@ -112,7 +110,4 @@ const ViewApplications = ({ firebase }) => {
   );
 };
 
-export default compose(
-  withAuthorization(isAdmin),
-  withFirebase
-)(ViewApplications);
+export default withFirebase(ViewApplications);
