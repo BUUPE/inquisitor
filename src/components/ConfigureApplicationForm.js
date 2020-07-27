@@ -3,6 +3,7 @@ import { compose } from "recompose";
 import styled from "styled-components";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import swal from "@sweetalert/with-react";
 
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
@@ -123,23 +124,57 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
   if (loading) return <Loader />;
 
-  const saveApplicationFormConfig = async (event) => {
+  const saveApplicationFormConfig = (event) => {
     event.preventDefault();
     const form = event.currentTarget;
 
     if (form.checkValidity() === false) {
       event.stopPropagation();
     } else {
-      const semester = form.querySelector("#semester").value;
-      const year = form.querySelector("#year").value;
-      const newApplicationFormConfig = {
-        ...applicationFormConfig,
-        semester: `${semester}-${year}`,
+      const doUpdate = () => {
+        const semester = form.querySelector("#semester").value;
+        const year = form.querySelector("#year").value;
+        const newApplicationFormConfig = {
+          ...applicationFormConfig,
+          semester: `${semester}-${year}`,
+        };
+
+        firebase
+          .applicationFormConfig()
+          .set(newApplicationFormConfig)
+          .then(() => {
+            setApplicationFormConfig(newApplicationFormConfig);
+            setShowToast(true);
+          });
       };
 
-      await firebase.applicationFormConfig().set(newApplicationFormConfig);
-      setApplicationFormConfig(newApplicationFormConfig);
-      setShowToast(true);
+      firebase
+        .applications()
+        .get()
+        .then((snapshot) => {
+          if (snapshot.size > 0) {
+            swal({
+              title: "Applications already exist!",
+              text:
+                "If you edit the application form configuration now, some applications will have different questions than others! Are you sure you want to do this?",
+              icon: "warning",
+              buttons: {
+                cancel: {
+                  text: "No",
+                  value: false,
+                  visible: true,
+                },
+                confirm: {
+                  text: "Yes",
+                  value: true,
+                  visible: true,
+                },
+              },
+            }).then((confirm) => {
+              if (confirm) doUpdate();
+            });
+          } else doUpdate();
+        });
     }
   };
 
