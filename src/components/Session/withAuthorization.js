@@ -1,5 +1,5 @@
 import React from "react";
-import { navigate } from "gatsby";
+import { navigate, useStaticQuery, graphql } from "gatsby";
 
 import AuthUserContext from "./context";
 import { withFirebase } from "../Firebase";
@@ -11,7 +11,10 @@ const withAuthorization = (condition) => (Component) => {
     _initFirebase = false;
 
     savePathname = () =>
-      window.localStorage.setItem("pathname", this.props.location.pathname);
+      window.localStorage.setItem(
+        "pathname",
+        this.props.location.pathname.replace(this.props.pathPrefix, "")
+      );
 
     firebaseInit = () => {
       if (this.props.firebase && !this._initFirebase) {
@@ -67,7 +70,23 @@ const withAuthorization = (condition) => (Component) => {
     }
   }
 
-  return withFirebase(WithAuthorization);
+  const WithQuery = () => {
+    const {
+      site: { pathPrefix },
+    } = useStaticQuery(
+      graphql`
+        query {
+          site {
+            pathPrefix
+          }
+        }
+      `
+    );
+
+    return <WithAuthorization pathPrefix={pathPrefix} />;
+  };
+
+  return withFirebase(WithQuery);
 };
 
 export default withAuthorization;
