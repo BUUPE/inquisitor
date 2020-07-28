@@ -21,7 +21,8 @@ class Firebase {
   // *** Auth API ***
   doSignInWithToken = (token) => this.auth.signInWithCustomToken(token);
 
-  doSignOut = () => this.auth.signOut();
+  doSignOut = () =>
+    this.auth.signOut().then(() => localStorage.removeItem("authUser"));
 
   // *** Merge Auth and DB User API ***
   onAuthUserListener = (next, fallback) =>
