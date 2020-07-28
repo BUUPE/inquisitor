@@ -5,5 +5,6 @@
 <url> <loc>https://upe.bu.edu/interview/Inquisitor/login/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://upe.bu.edu/interview/Inquisitor/logout/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://upe.bu.edu/interview/Inquisitor/room/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://upe.bu.edu/interview/Inquisitor/timeslots/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://upe.bu.edu/interview/Inquisitor/admin/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 </urlset>
