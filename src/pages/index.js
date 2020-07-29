@@ -30,6 +30,9 @@ const IndexPage = () => (
         This is BU UPE's interview application. Please login to get started; you
         will be redirected to the appropriate page based on your affiliation.
       </p>
+      {/*
+        Show links here to different pages (apply, timeslots, etc) based on user role, user data, and settings
+      */}
     </Landing>
   </Layout>
 );

@@ -39,6 +39,9 @@ const Header = ({ firebase }) => {
       <Link to="/apply">
         <Button>Apply</Button>
       </Link>
+      <Link to="/timeslots">
+        <Button>Timeslots</Button>
+      </Link>
       <Link to="/admin">
         <Button>Admin</Button>
       </Link>

@@ -92,6 +92,19 @@ class ApplicationForm extends React.Component {
   };
   static contextType = AuthUserContext;
 
+  componentDidMount() {
+    if (this.props.firebase && !this.state.firebaseInit) this.loadData();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.firebase && !this.state.firebaseInit) this.loadData();
+    if (typeof window !== "undefined") {
+      import("bs-custom-file-input").then((bsCustomFileInput) => {
+        bsCustomFileInput.init();
+      });
+    }
+  }
+
   loadData = async () => {
     const loadApplicationFormConfig = this.props.firebase
       .applicationFormConfig()
@@ -129,21 +142,10 @@ class ApplicationForm extends React.Component {
         applicationFormConfig: values[0],
         alreadyApplied: values[1].applied,
         generalSettings: values[2],
+        firebaseInit: true,
       })
     );
   };
-
-  componentDidUpdate(prevProps) {
-    if (this.props.firebase !== null && !this.state.firebaseInit) {
-      this.loadData();
-      this.setState({ firebaseInit: true });
-    }
-    if (typeof window !== "undefined") {
-      import("bs-custom-file-input").then((bsCustomFileInput) => {
-        bsCustomFileInput.init();
-      });
-    }
-  }
 
   render() {
     const {

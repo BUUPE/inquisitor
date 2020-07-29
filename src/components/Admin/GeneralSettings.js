@@ -15,6 +15,7 @@ const DEFAULT_GENERAL_SETTINGS = {
   applicationsOpen: false,
   timeslotsOpen: false,
   timeslotsOpenForApplicants: false,
+  timeslotLength: 45,
   timeslotDays: [],
 };
 
@@ -181,6 +182,25 @@ class GeneralSettings extends Component {
                     marginTop: 15,
                   }}
                 >
+                  <Form.Group controlId="timeslotLength">
+                    <Form.Label>Timeslot Length (minutes)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="30"
+                      step="15"
+                      max="120"
+                      placeholder="Enter length..."
+                      value={settings.timeslotLength}
+                      onChange={(e) =>
+                        this.setState({
+                          settings: {
+                            ...settings,
+                            timeslotLength: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </Form.Group>
                   <strong>Select Interview Days</strong>
                   <DayPicker
                     initialMonth={initialMonth}
