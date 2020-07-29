@@ -105,6 +105,7 @@ class GeneralSettings extends Component {
       settings.timeslotsOpenForApplicants = false;
       settings.timeslotDays = [];
     }
+
     await this.props.firebase.generalSettings().set(settings);
     this.setState({ showToast: true });
   };
@@ -195,7 +196,7 @@ class GeneralSettings extends Component {
                         this.setState({
                           settings: {
                             ...settings,
-                            timeslotLength: e.target.value,
+                            timeslotLength: parseInt(e.target.value),
                           },
                         })
                       }

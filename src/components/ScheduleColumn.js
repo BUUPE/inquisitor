@@ -54,10 +54,10 @@ const ScheduleColumn = ({ date, timeslotLength }) => {
 
   const handleSelect = (slot, i) => {
     const validateSlot = (slot, i) => {
-      // if the slot will overflow past 10 PM, it's invalid
+      // if the timeslot will overflow past 10 PM, it's invalid
       if (i + slotsPerTimeslot > slots.length) return false;
 
-      // if the slot will overflow into an already selected timeslot, it's invalid
+      // if the timeslot will overflow into an already selected timeslot, it's invalid
       const end = slot + timeslotLength;
       for (let pos = slot; pos < end; pos += 15) {
         if (selectedSlots.hasOwnProperty(pos)) return false;
@@ -77,7 +77,7 @@ const ScheduleColumn = ({ date, timeslotLength }) => {
       }
       return setSelectedSlots(newSlots);
     } else if (validateSlot(slot, i)) {
-      // if slot isn't selected, select it and the rest in it's timeslot
+      // if slot isn't selected and is valid, select it and the rest in its timeslot
       const newSlots = { ...selectedSlots };
       const end = slot + timeslotLength - 15;
       for (let pos = slot; pos <= end; pos += 15) {
