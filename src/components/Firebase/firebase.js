@@ -80,9 +80,14 @@ class Firebase {
   // *** User API ***
   user = (uid) => this.firestoreRoot.doc(`users/${uid}`);
   users = () => this.firestoreRoot.collection("users");
+
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
+
   application = (uid) => this.firestore.collection("applications").doc(uid);
   applications = () => this.firestore.collection("applications");
+
+  timeslot = (uid) => this.firestore.collection("timeslots").doc(uid);
+  timeslots = () => this.firestore.collection("timeslots");
 
   applicationFormConfig = () =>
     this.firestoreRoot.doc("inquisitor/applicationFormConfig");
@@ -91,12 +96,12 @@ class Firebase {
 
 let firebase;
 
-function getFirebase(app, auth, firestore, storage) {
+const getFirebase = (app, auth, firestore, storage) => {
   if (!firebase) {
     firebase = new Firebase(app, auth, firestore, storage);
   }
 
   return firebase;
-}
+};
 
 export default getFirebase;

@@ -1,17 +1,41 @@
 import React, { useState, useEffect } from "react";
 
 import Col from "react-bootstrap/Col";
+import Toast from "react-bootstrap/Toast";
 
 // selecting anything other than first slot picks everything
-const ScheduleColumn = ({ date, timeslotLength }) => {
+const ScheduleColumn = ({
+  date,
+  timeslotLength,
+  sendToParent,
+  initialTimeslots,
+}) => {
   // selectedSlots is an object/hashmap for performance reasons
-  const [selectedSlots, setSelectedSlots] = useState({});
+  const [selectedSlots, setSelectedSlots] = useState({}); // TODO: explain this data structure in depth
+  const [showToast, setShowToast] = useState(false);
 
   const startHour = 8; // 8 am
   const endHour = 22; // 10 pm
   const numSlots = (endHour - startHour) * 4; // 15 min slots
   const slots = Array.from(Array(numSlots), (_, i) => i * 15); // total 15 min slots in a day
   const slotsPerTimeslot = timeslotLength / 15; // number of 15 min slots in an interview
+
+  useEffect(() => {
+    if (initialTimeslots) {
+      console.log("Received", initialTimeslots);
+      const newSlots = { ...selectedSlots };
+      initialTimeslots.forEach((ts) => {
+        const slot =
+          (ts.time.getHours() - startHour) * 60 + ts.time.getMinutes();
+        const end = slot + timeslotLength - 15;
+        for (let pos = slot; pos <= end; pos += 15) {
+          newSlots[pos] = [slot, end];
+        }
+      });
+      setSelectedSlots(newSlots);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTimeslots]);
 
   // converts selectedSlots to array of dates that can be saved in firebase
   const getTimeslots = () =>
@@ -87,7 +111,7 @@ const ScheduleColumn = ({ date, timeslotLength }) => {
     }
 
     // otherwise show the user an error
-    console.error("cant pick that!");
+    setShowToast(true);
   };
 
   const renderSlot = (slot, i) => {
@@ -171,8 +195,30 @@ const ScheduleColumn = ({ date, timeslotLength }) => {
     );
   };
 
+  // update parent when selectedSlots changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => sendToParent(date.toDateString(), getTimeslots()), [
+    selectedSlots,
+  ]);
+
+  // validate clicking based on other interviewers (if timeslot has another interviewer, put them together, otherwise make a new one)
   return (
-    <Col>
+    <Col style={{ width: 300, flex: "none" }}>
+      <div style={{ position: "fixed" }}>
+        <Toast
+          onClose={() => setShowToast(false)}
+          show={showToast}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body>
+            <strong className="mr-auto" style={{ color: "red" }}>
+              Invalid option/timeslot conflict!
+            </strong>
+          </Toast.Body>
+        </Toast>
+      </div>
+
       <strong>{date.toDateString()}</strong>
       {slots.map(renderSlot)}
     </Col>
