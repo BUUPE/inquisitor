@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[16],{Z6Z7:function(n,e,o){"use strict";o.r(e);var t=o("q1tI"),u=o.n(t);e.default=function(){return u.a.createElement("h1",null,"Welcome to your Session")}}}]);
+//# sourceMappingURL=component---src-pages-room-js-058ca5445020c083fbee.js.map
