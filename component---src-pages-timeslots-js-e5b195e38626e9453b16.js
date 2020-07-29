@@ -1,2 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[15],{XIxq:function(e,n,t){"use strict";t.r(n);var a=t("q1tI"),c=t.n(a),o=t("CCtv"),l=t("7oih"),r=Object(o.e)(o.c)((function(){return c.a.createElement("h1",null,"Timeslots")}));n.default=function(e){var n=e.location;return c.a.createElement(l.a,null,c.a.createElement(r,{location:n}))}}}]);
-//# sourceMappingURL=component---src-pages-timeslots-js-e5b195e38626e9453b16.js.map
