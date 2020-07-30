@@ -24,17 +24,24 @@ class Timeslots extends Component {
     showToast: false,
     selectedTimeslots: {},
     firebaseInit: false,
+    firstDataLoad: true,
   };
   static contextType = AuthUserContext;
   slider = React.createRef();
   unsub = null;
 
   componentDidMount() {
-    if (this.props.firebase && !this.state.firebaseInit) this.loadSettings();
+    if (this.props.firebase && !this.state.firebaseInit) {
+      this.setState({ firebaseInit: true });
+      this.loadSettings();
+    }
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this.state.firebaseInit) this.loadSettings();
+    if (this.props.firebase && !this.state.firebaseInit) {
+      this.setState({ firebaseInit: true });
+      this.loadSettings();
+    }
   }
 
   componentWillUnmount() {
@@ -42,7 +49,6 @@ class Timeslots extends Component {
   }
 
   loadSettings = async () => {
-    this.setState({ firebaseInit: true });
     const doc = await this.props.firebase.generalSettings().get();
 
     if (!doc.exists) this.setState({ error: "Failed to load timeslots!" });
@@ -59,14 +65,20 @@ class Timeslots extends Component {
           .timeslots()
           .onSnapshot((querySnapshot) => {
             const { selectedTimeslots } = this.state;
-            const listenerData = querySnapshot.docs.map((doc) => {
-              return {
-                ...doc.data(),
-                time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
-              };
-            });
-
-            // TODO: merge data here, remove things that got removed
+            const listenerData = querySnapshot.docs
+              .map((doc) => {
+                return {
+                  ...doc.data(),
+                  time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
+                };
+              })
+              .filter((ts) => {
+                // TODO: merge data here, remove things that got removed
+                // only deal with data that DOESN'T concern current user
+                // rn it takes only on first load, but make this smarter
+                if (this.state.firstDataLoad) return true;
+                return !ts.interviewers.hasOwnProperty(this.context.uid);
+              });
 
             listenerData.forEach((ts) => {
               const key = ts.time.toDateString();
@@ -77,10 +89,12 @@ class Timeslots extends Component {
               }
             });
 
-            this.setState({ selectedTimeslots });
+            this.setState({
+              selectedTimeslots,
+              loading: false,
+              firstDataLoad: false,
+            });
           }, console.error);
-
-        this.setState({ loading: false });
       });
     }
   };
@@ -108,9 +122,13 @@ class Timeslots extends Component {
     this.isDown = false;
   };
 
+  // when saving, only deal with timeslots associated with this user
   saveTimeslots = async () => {
-    // these are firestore documents
-    /*const existingTimeslots = await firebase
+    const { firebase } = this.props;
+    const authUser = this.context;
+    const { selectedTimeslots } = this.state;
+
+    const existingTimeslots = await firebase
       .timeslots()
       .get()
       .then((snapshot) =>
@@ -122,97 +140,112 @@ class Timeslots extends Component {
           };
         })
       );
+    const existingTimeslotMap = {};
+    existingTimeslots.forEach((ts, i) => (existingTimeslotMap[ts.time] = i));
 
-    // these are just date objects
-    const newTimeslots = Object.values(selectedTimeslots).flat();
+    const newTimeslots = Object.values(selectedTimeslots)
+      .flat()
+      .filter((ts) => ts.interviewers.hasOwnProperty(authUser.uid));
     const newTimeslotMap = {};
-    newTimeslots.forEach((date, i) => (newTimeslotMap[date] = i));
+    newTimeslots.forEach((ts, i) => (newTimeslotMap[ts.time] = i));
 
-    // first remove timeslots the user no longer is in
-    existingTimeslots
-      .filter((ts) =>
-        // filter for timeslots this user is a part of
-        ts.interviewers.hasOwnProperty(authUser.uid)
-      )
-      .forEach((ts, i) => {
-        // if old timeslot is no longer selected, remove interviewer from it
-        if (!newTimeslotMap.hasOwnProperty(ts.time)) {
-          const doc = this[i];
-          const { id } = doc;
-          delete doc.id;
-          delete doc.interviewers[authUser.uid];
-          firebase.timeslot(id).update(doc);
-          // TODO: notify admins if an timeslot with an applicant loses interviewers
-        }
-      }, existingTimeslots);
-
-    // helper function that does for each and waits
-    const asyncForEach = async (array, callback) => {
-      for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array);
-      }
-    };
-
-    // TODO: filter out ones they are already in
-    // iterate over newly selected timeslots
-    await asyncForEach(newTimeslots, async (ts) => {
-      // get existing timeslots that match current timeslot time
-      const matchingTimeslots = existingTimeslots.filter(
-        (ets) => ets.time.getTime() === ts.getTime()
-      );
-
-      let wroteToDb = false;
-      await asyncForEach(matchingTimeslots, async (mts) => {
-        try {
-          // run inside transaction in case others are concurrently editing
-          await firebase.firestoreRoot.runTransaction(async (t) => {
-            if (wroteToDb) return;
-            const doc = await t.get(firebase.timeslot(mts.id));
-            const newDoc = { ...doc.data() };
-            if (Object.keys(newDoc.interviewers).length < 2) {
-              newDoc.interviewers[authUser.uid] = true;
-              t.update(firebase.timeslot(mts.id), newDoc);
-              wroteToDb = true;
+    try {
+      // run all of this inside a transaction so it will restart if someone makes changes at the same time
+      await firebase.firestoreRoot.runTransaction(async (transaction) => {
+        // first remove timeslots the user no longer is in
+        existingTimeslots
+          .filter((ts) =>
+            // filter for timeslots this user is a part of
+            ts.interviewers.hasOwnProperty(authUser.uid)
+          )
+          .forEach((ts, i) => {
+            // if old timeslot is no longer selected, remove interviewer from it
+            if (!newTimeslotMap.hasOwnProperty(ts.time)) {
+              const doc = existingTimeslots[i];
+              const { id } = doc;
+              delete doc.id;
+              delete doc.interviewers[authUser.uid];
+              // TODO: notify admins if an timeslot with an applicant loses interviewers
+              if (
+                Object.keys(doc.interviewers).length === 0 &&
+                !doc.hasOwnProperty("applicant")
+              )
+                transaction.delete(firebase.timeslot(id));
+              else transaction.update(firebase.timeslot(id), doc);
             }
           });
-        } catch (e) {
-          console.error("Transaction failure!", e);
-        }
-      });
 
-      if (!wroteToDb) {
-        // if none, create a new timeslot object and add it to existing timeslots
-        const interviewers = {};
-        interviewers[authUser.uid] = true;
-        firebase.timeslots().add({
-          time: ts,
-          interviewers,
-          timeslotLength: settings.timeslotLength,
+        // helper function that does for each and waits
+        const asyncForEach = async (array, callback) => {
+          for (let index = 0; index < array.length; index++) {
+            await callback(array[index], index, array);
+          }
+        };
+
+        // iterate over newly selected timeslots
+        // that is timeslots the user is in and don't already exist
+        await asyncForEach(newTimeslots, async (ts) => {
+          // get existing timeslots that match current timeslot time
+          const matchingTimeslots = existingTimeslots.filter(
+            (ets) => ets.time.getTime() === ts.time.getTime()
+          );
+
+          // only proceed if none of those timeslots have the current user already
+          if (
+            matchingTimeslots.every(
+              (ts) => !ts.interviewers.hasOwnProperty(authUser.uid)
+            )
+          ) {
+            let wroteToDb = false;
+            await asyncForEach(matchingTimeslots, async (mts) => {
+              if (wroteToDb) return;
+              const doc = await transaction.get(firebase.timeslot(mts.id));
+              const newDoc = { ...doc.data() };
+              if (Object.keys(newDoc.interviewers).length < 2) {
+                newDoc.interviewers[authUser.uid] = authUser.name;
+                transaction.update(firebase.timeslot(mts.id), newDoc);
+                wroteToDb = true;
+              }
+            });
+
+            if (!wroteToDb) {
+              // if none, create a new timeslot object and add it to existing timeslots
+              const interviewers = {};
+              interviewers[authUser.uid] = authUser.name;
+              const newTimeslotRef = firebase.timeslots().doc();
+              transaction.set(newTimeslotRef, ts);
+            }
+          }
         });
-      }
-    });
+      });
+    } catch (e) {
+      console.error("Transaction failure!", e);
+    }
 
-    setShowToast(true);*/
+    this.setState({ showToast: true });
   };
 
   selectTimeslot = (date) => {
     const day = date.toDateString();
-    const { selectedTimeslots } = this.state;
+    const {
+      selectedTimeslots,
+      settings: { timeslotLength },
+    } = this.state;
     const authUser = this.context;
 
     // iterate over timeslots interviewer is not in and add interviewer if possible
     let saved = false;
     selectedTimeslots[day]
       .filter((ts) => !ts.interviewers.hasOwnProperty(authUser.uid))
-      .some((ts) => {
+      .forEach((ts) => {
         if (
           ts.time.getTime() === date.getTime() &&
-          Object.keys(ts.interviewers).length < 2
+          Object.keys(ts.interviewers).length < 2 &&
+          !saved
         ) {
           ts.interviewers[authUser.uid] = authUser.name;
           saved = true;
         }
-        return saved;
       });
 
     // if interviewer hasn't been added yet, push a new timeslot
@@ -222,7 +255,7 @@ class Timeslots extends Component {
       selectedTimeslots[day].push({
         time: date,
         interviewers,
-        timeslotLength: this.state.settings.timeslotLength,
+        timeslotLength,
       });
     }
     this.setState({ selectedTimeslots });
@@ -318,7 +351,6 @@ class Timeslots extends Component {
             // TODO: explain this data structure in depth
             // selectedSlots is an object/hashmap for performance reasons
             const timeslotsForDay = selectedTimeslots[date.toDateString()];
-            //console.log(timeslotsForDay);
             const userSelectedSlots = timeslotsForDay
               ? this.timeslotsToSlots(
                   timeslotsForDay.filter((ts) =>
