@@ -12,6 +12,7 @@ import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 
+// TODO: don't allow kerberos roles to be removed
 const ALL_ROLES = [
   "admin",
   "eboard",

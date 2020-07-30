@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import Col from "react-bootstrap/Col";
 import Toast from "react-bootstrap/Toast";
 
-// selecting anything other than first slot picks everything
 const ScheduleColumn = ({
   date,
   timeslotLength,
-  sendToParent,
-  initialTimeslots,
+  userSelectedSlots,
+  slotsWithOpening,
+  selectTimeslot,
+  unselectTimeslot,
 }) => {
-  // selectedSlots is an object/hashmap for performance reasons
-  const [selectedSlots, setSelectedSlots] = useState({}); // TODO: explain this data structure in depth
   const [showToast, setShowToast] = useState(false);
 
   const startHour = 8; // 8 am
@@ -19,40 +18,6 @@ const ScheduleColumn = ({
   const numSlots = (endHour - startHour) * 4; // 15 min slots
   const slots = Array.from(Array(numSlots), (_, i) => i * 15); // total 15 min slots in a day
   const slotsPerTimeslot = timeslotLength / 15; // number of 15 min slots in an interview
-
-  useEffect(() => {
-    if (initialTimeslots) {
-      console.log("Received", initialTimeslots);
-      const newSlots = { ...selectedSlots };
-      initialTimeslots.forEach((ts) => {
-        const slot =
-          (ts.time.getHours() - startHour) * 60 + ts.time.getMinutes();
-        const end = slot + timeslotLength - 15;
-        for (let pos = slot; pos <= end; pos += 15) {
-          newSlots[pos] = [slot, end];
-        }
-      });
-      setSelectedSlots(newSlots);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialTimeslots]);
-
-  // converts selectedSlots to array of dates that can be saved in firebase
-  const getTimeslots = () =>
-    Array.from(
-      // create a set of the start offsets for timeslots (removes duplicates)
-      new Set(Object.values(selectedSlots).map((timeslot) => timeslot[0]))
-    ).map(
-      (offset) =>
-        // turn start offset (which is in minutes) into a Date object
-        new Date(
-          date.getFullYear(),
-          date.getMonth(),
-          date.getDate(),
-          startHour + Math.floor(offset / 60),
-          offset % 60
-        )
-    );
 
   // converts a start offset (slot) into a Date object
   const dateFromSlot = (slot) => {
@@ -84,30 +49,37 @@ const ScheduleColumn = ({
       // if the timeslot will overflow into an already selected timeslot, it's invalid
       const end = slot + timeslotLength;
       for (let pos = slot; pos < end; pos += 15) {
-        if (selectedSlots.hasOwnProperty(pos)) return false;
+        if (userSelectedSlots.hasOwnProperty(pos)) return false;
       }
 
       // otherwise it's valid
       return true;
     };
 
-    if (selectedSlots.hasOwnProperty(slot)) {
-      // if slot is already selected, remove it and associated ones
-      const newSlots = { ...selectedSlots };
-      const start = newSlots[slot][0];
-      const end = newSlots[slot][1];
-      for (let pos = start; pos <= end; pos += 15) {
-        delete newSlots[pos];
-      }
-      return setSelectedSlots(newSlots);
+    if (userSelectedSlots.hasOwnProperty(slot)) {
+      // if slot is already selected, tell parent to remove the associated timeslot
+      const offset = userSelectedSlots[slot][0];
+      return unselectTimeslot(
+        new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          startHour + Math.floor(offset / 60),
+          offset % 60
+        )
+      );
     } else if (validateSlot(slot, i)) {
       // if slot isn't selected and is valid, select it and the rest in its timeslot
-      const newSlots = { ...selectedSlots };
-      const end = slot + timeslotLength - 15;
-      for (let pos = slot; pos <= end; pos += 15) {
-        newSlots[pos] = [slot, end];
-      }
-      return setSelectedSlots(newSlots);
+      const offset = slot;
+      return selectTimeslot(
+        new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate(),
+          startHour + Math.floor(offset / 60),
+          offset % 60
+        )
+      );
     }
 
     // otherwise show the user an error
@@ -115,11 +87,11 @@ const ScheduleColumn = ({
   };
 
   const renderSlot = (slot, i) => {
-    const getPositions = (slot) => {
-      const isSelected = selectedSlots.hasOwnProperty(slot);
-      const isTop = isSelected && slot === selectedSlots[slot][0];
-      const isMiddle = isSelected && !selectedSlots[slot].includes(slot);
-      const isBottom = isSelected && slot === selectedSlots[slot][1];
+    const getPositions = (slot, collection) => {
+      const isSelected = collection.hasOwnProperty(slot);
+      const isTop = isSelected && slot === collection[slot][0];
+      const isMiddle = isSelected && !collection[slot].includes(slot);
+      const isBottom = isSelected && slot === collection[slot][1];
       return {
         isSelected,
         isTop,
@@ -136,7 +108,10 @@ const ScheduleColumn = ({
         justifyContent: "space-between",
       };
 
-      const { isTop, isMiddle, isBottom } = getPositions(slot);
+      const { isTop, isMiddle, isBottom } = getPositions(
+        slot,
+        userSelectedSlots
+      );
       const borderStyle = "1px solid black";
 
       return {
@@ -145,11 +120,14 @@ const ScheduleColumn = ({
         borderRight: borderStyle,
         borderTop: isBottom || isMiddle ? "none" : borderStyle,
         borderBottom: isTop || isMiddle ? "none" : borderStyle,
-        background: selectedSlots.hasOwnProperty(slot) ? "green" : "white",
+        background: userSelectedSlots.hasOwnProperty(slot) ? "green" : "white",
       };
     };
 
-    const { isSelected, isTop, isMiddle, isBottom } = getPositions(slot);
+    const { isSelected, isTop, isMiddle, isBottom } = getPositions(
+      slot,
+      userSelectedSlots
+    );
 
     const SlotBase = ({ children }) => (
       <div
@@ -195,13 +173,6 @@ const ScheduleColumn = ({
     );
   };
 
-  // update parent when selectedSlots changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => sendToParent(date.toDateString(), getTimeslots()), [
-    selectedSlots,
-  ]);
-
-  // validate clicking based on other interviewers (if timeslot has another interviewer, put them together, otherwise make a new one)
   return (
     <Col style={{ width: 300, flex: "none" }}>
       <div style={{ position: "fixed" }}>

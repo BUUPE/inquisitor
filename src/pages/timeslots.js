@@ -22,7 +22,6 @@ const Timeslots = ({ firebase }) => {
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [selectedTimeslots, setSelectedTimeslots] = useState({});
-  const [initialTimeslots, setInitialTimeslots] = useState({});
   const authUser = useContext(AuthUserContext);
   const slider = useRef(null);
 
@@ -45,28 +44,30 @@ const Timeslots = ({ firebase }) => {
     if (firebase) {
       loadSettings();
       const unsub = firebase.timeslots().onSnapshot((querySnapshot) => {
-        const newInitialData = {};
+        // whenever /data/timeslots changes, merge changes with our state
+        const timeslots = { ...selectedTimeslots };
         const listenerData = querySnapshot.docs.map((doc) => {
           return {
             ...doc.data(),
-            time: doc.data().time.toDate(),
+            time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
           };
         });
 
         listenerData.forEach((ts) => {
           const key = ts.time.toDateString();
-          if (newInitialData.hasOwnProperty(key)) {
-            newInitialData[key].push(ts);
+          if (timeslots.hasOwnProperty(key)) {
+            timeslots[key].push(ts);
           } else {
-            newInitialData[key] = [ts];
+            timeslots[key] = [ts];
           }
         });
 
-        setInitialTimeslots(newInitialData);
+        setSelectedTimeslots(timeslots);
       }, console.error);
 
       return () => unsub();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firebase]);
 
   if (loading) return <Loader />;
@@ -123,7 +124,7 @@ const Timeslots = ({ firebase }) => {
 
   const saveTimeslots = async () => {
     // these are firestore documents
-    const existingTimeslots = await firebase
+    /*const existingTimeslots = await firebase
       .timeslots()
       .get()
       .then((snapshot) =>
@@ -205,13 +206,75 @@ const Timeslots = ({ firebase }) => {
       }
     });
 
-    setShowToast(true);
+    setShowToast(true);*/
   };
 
-  const setSelectedForDay = (day, timeslots) => {
+  const unselectTimeslot = (date) => {
+    const day = date.toDateString();
     const newTimeslots = { ...selectedTimeslots };
-    newTimeslots[day] = timeslots;
+
+    // first remove this user from list of interviewers in relevant timeslot
+    newTimeslots[day] = newTimeslots[day].map((ts) => {
+      if (
+        ts.interviewers.hasOwnProperty(authUser.uid) &&
+        ts.time.getTime() === date.getTime()
+      )
+        delete ts.interviewers[authUser.uid];
+      return ts;
+    });
+
+    // filter out timeslots with no interviewers or applicants
+    newTimeslots[day] = newTimeslots[day].filter(
+      (ts) =>
+        Object.keys(ts.interviewers).length > 0 ||
+        ts.hasOwnProperty("applicant")
+    );
     setSelectedTimeslots(newTimeslots);
+  };
+
+  const selectTimeslot = (date) => {
+    const day = date.toDateString();
+    const newTimeslots = { ...selectedTimeslots };
+
+    // iterate over timeslots interviewer is not in and add interviewer if possible
+    let saved = false;
+    newTimeslots[day]
+      .filter((ts) => !ts.interviewers.hasOwnProperty(authUser.uid))
+      .some((ts) => {
+        if (
+          ts.time.getTime() === date.getTime() &&
+          Object.keys(ts.interviewers).length < 2
+        ) {
+          ts.interviewers[authUser.uid] = authUser.name;
+          saved = true;
+        }
+        return saved;
+      });
+
+    // if interviewer hasn't been added yet, push a new timeslot
+    if (!saved) {
+      const interviewers = {};
+      interviewers[authUser.uid] = authUser.name;
+      newTimeslots[day].push({
+        time: date,
+        interviewers,
+        timeslotLength: settings.timeslotLength,
+      });
+    }
+    setSelectedTimeslots(newTimeslots);
+  };
+
+  const timeslotsToSlots = (timeslots) => {
+    const startHour = 8; // make this configurable
+    const slots = {};
+    timeslots.forEach((ts) => {
+      const slot = (ts.time.getHours() - startHour) * 60 + ts.time.getMinutes();
+      const end = slot + timeslotLength - 15;
+      for (let pos = slot; pos <= end; pos += 15) {
+        slots[pos] = [slot, end];
+      }
+    });
+    return slots;
   };
 
   return (
@@ -229,15 +292,38 @@ const Timeslots = ({ firebase }) => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
-        {timeslotDays.map((date, i) => (
-          <ScheduleColumn
-            key={i}
-            date={date}
-            timeslotLength={timeslotLength}
-            sendToParent={setSelectedForDay}
-            initialTimeslots={initialTimeslots[date.toDateString()]}
-          />
-        ))}
+        {timeslotDays.map((date, i) => {
+          // TODO: explain this data structure in depth
+          // selectedSlots is an object/hashmap for performance reasons
+          const timeslotsForDay = selectedTimeslots[date.toDateString()];
+          const userSelectedSlots = timeslotsForDay
+            ? timeslotsToSlots(
+                timeslotsForDay.filter((ts) =>
+                  ts.interviewers.hasOwnProperty(authUser.uid)
+                )
+              )
+            : {};
+          const slotsWithOpening = timeslotsForDay
+            ? timeslotsToSlots(
+                timeslotsForDay.filter(
+                  (ts) =>
+                    !ts.interviewers.hasOwnProperty(authUser.uid) &&
+                    Object.keys(ts.interviewers).length < 2
+                )
+              )
+            : {};
+          return (
+            <ScheduleColumn
+              key={i}
+              date={date}
+              timeslotLength={timeslotLength}
+              userSelectedSlots={userSelectedSlots}
+              slotsWithOpening={slotsWithOpening}
+              selectTimeslot={selectTimeslot}
+              unselectTimeslot={unselectTimeslot}
+            />
+          );
+        })}
       </Row>
       <div style={{ display: "flex", alignItems: "center" }}>
         <Button
