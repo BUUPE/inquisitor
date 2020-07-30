@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 import styled from "styled-components";
 import { compose } from "recompose";
 import Form from "react-bootstrap/Form";
@@ -78,7 +78,7 @@ const renderQuestion = (question) => {
   );
 };
 
-class ApplicationForm extends React.Component {
+class ApplicationForm extends Component {
   state = {
     applicationFormConfig: null,
     generalSettings: null,

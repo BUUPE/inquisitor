@@ -17,6 +17,7 @@ const DEFAULT_GENERAL_SETTINGS = {
   timeslotsOpenForApplicants: false,
   timeslotLength: 45,
   timeslotDays: [],
+  // TODO: Add timeslot start and end hours
 };
 
 class GeneralSettings extends Component {
