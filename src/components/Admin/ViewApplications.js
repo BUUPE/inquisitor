@@ -1,9 +1,11 @@
 import React, { useState, useEffect, Fragment } from "react";
 import styled from "styled-components";
+import { compose } from "recompose";
 
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
+import { withAuthorization, isRecruitmentTeam } from "../Session";
 import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
@@ -110,4 +112,7 @@ const ViewApplications = ({ firebase }) => {
   );
 };
 
-export default withFirebase(ViewApplications);
+export default compose(
+  withAuthorization(isRecruitmentTeam),
+  withFirebase
+)(ViewApplications);

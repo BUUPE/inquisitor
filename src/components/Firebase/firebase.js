@@ -92,6 +92,8 @@ class Firebase {
   applicationFormConfig = () =>
     this.firestoreRoot.doc("inquisitor/applicationFormConfig");
   generalSettings = () => this.firestoreRoot.doc("inquisitor/generalSettings");
+
+  allRoles = () => this.firestoreRoot.doc("config/roles");
 }
 
 let firebase;

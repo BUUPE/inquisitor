@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import swal from "@sweetalert/with-react";
+import { compose } from "recompose";
 
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
@@ -11,6 +12,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Toast from "react-bootstrap/Toast";
 
+import { withAuthorization, isAdmin } from "../Session";
 import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
@@ -542,4 +544,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
   );
 };
 
-export default withFirebase(ConfigureApplicationForm);
+export default compose(
+  withAuthorization(isAdmin),
+  withFirebase
+)(ConfigureApplicationForm);

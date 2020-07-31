@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { compose } from "recompose";
 
 import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
@@ -8,18 +9,13 @@ import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
+import { withAuthorization, isAdmin } from "../Session";
 import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 
-const ALL_ROLES = {
-  admin: true,
-  eboard: true,
-  recruitmentteam: true,
-  applicant: true,
-};
-
 const ManageUsers = ({ firebase }) => {
+  const [allRoles, setAllRoles] = useState({});
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,26 +37,44 @@ const ManageUsers = ({ firebase }) => {
     handleClose();
   };
 
-  const loadUsers = () => {
-    if (firebase)
-      firebase
-        .users()
-        .get()
-        .then((snapshot) => {
-          setUsers(
-            snapshot.docs.map((doc) => {
-              return {
-                ...doc.data(),
-                uid: doc.ref.path.split("/")[1],
-              };
-            })
-          );
-          setLoading(false);
-        })
-        .catch(console.error);
-  };
+  const loadAllRoles = () =>
+    new Promise((resolve) => {
+      if (firebase)
+        resolve(
+          firebase
+            .allRoles()
+            .get()
+            .then((snapshot) => snapshot.data())
+        );
+    });
 
-  useEffect(loadUsers, [firebase]);
+  const loadUsers = () =>
+    new Promise((resolve) => {
+      if (firebase)
+        resolve(
+          firebase
+            .users()
+            .get()
+            .then((snapshot) => {
+              return snapshot.docs.map((doc) => {
+                return {
+                  ...doc.data(),
+                  uid: doc.ref.path.split("/")[1],
+                };
+              });
+            })
+        );
+    });
+
+  useEffect(() => {
+    Promise.all([loadAllRoles(), loadUsers()])
+      .then((values) => {
+        setAllRoles(values[0]);
+        setUsers(values[1]);
+        setLoading(false);
+      })
+      .catch(console.error);
+  }, [firebase]);
 
   if (loading) return <Loader />;
 
@@ -170,7 +184,7 @@ const ManageUsers = ({ firebase }) => {
               </Row>
               <Row>
                 <DroppableColumn userOwned={false}>
-                  {Object.entries(ALL_ROLES)
+                  {Object.entries(allRoles)
                     .filter(
                       (role) =>
                         !Object.keys(currentUser.roles).includes(role[0])
@@ -201,4 +215,4 @@ const ManageUsers = ({ firebase }) => {
   );
 };
 
-export default withFirebase(ManageUsers);
+export default compose(withAuthorization(isAdmin), withFirebase)(ManageUsers);

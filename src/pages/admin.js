@@ -3,13 +3,13 @@ import { withPrefix } from "gatsby";
 import styled from "styled-components";
 import { Router } from "@reach/router";
 
-import { withAuthorization, isAdmin } from "../components/Session";
 import Layout from "../components/Layout";
 import {
   GeneralSettings,
   ConfigureApplicationForm,
   ViewApplications,
   ManageUsers,
+  ManageRoles,
 } from "../components/Admin";
 
 const FullSizeRouter = styled(Router)`
@@ -17,17 +17,14 @@ const FullSizeRouter = styled(Router)`
   flex-grow: 1;
 `;
 
-const AuthorizedRouter = withAuthorization(isAdmin)(() => (
-  <FullSizeRouter basepath={withPrefix("/admin")}>
-    <ConfigureApplicationForm path="/configure-application" />
-    <ViewApplications path="/view-applications" />
-    <ManageUsers path="/manage-users" />
-    <GeneralSettings path="/" />
-  </FullSizeRouter>
-));
-
 export default ({ location }) => (
   <Layout>
-    <AuthorizedRouter location={location} />
+    <FullSizeRouter basepath={withPrefix("/admin")}>
+      <ConfigureApplicationForm path="/configure-application" />
+      <ViewApplications path="/view-applications" />
+      <ManageUsers path="/manage-users" />
+      <ManageRoles path="/manage-roles" />
+      <GeneralSettings path="/" />
+    </FullSizeRouter>
   </Layout>
 );

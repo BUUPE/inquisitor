@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 import DayPicker, { DateUtils } from "react-day-picker";
 import "react-day-picker/lib/style.css";
@@ -7,6 +8,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Toast from "react-bootstrap/Toast";
 
+import { withAuthorization, isAdmin } from "../Session";
 import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
@@ -330,4 +332,7 @@ class GeneralSettings extends Component {
   }
 }
 
-export default withFirebase(GeneralSettings);
+export default compose(
+  withAuthorization(isAdmin),
+  withFirebase
+)(GeneralSettings);
