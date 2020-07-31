@@ -1,3 +1,13 @@
 import React from "react";
 
-export default () => <h1>Hi</h1>;
+import { Container } from "../../styles/global";
+
+const ApplicantView = () => {
+  return (
+    <Container flexdirection="column">
+      <h1>Applicant Timeslot Selection</h1>
+    </Container>
+  );
+};
+
+export default ApplicantView;
