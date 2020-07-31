@@ -2,6 +2,7 @@ import ConfigureApplicationForm from "./ConfigureApplicationForm";
 import GeneralSettings from "./GeneralSettings";
 import ManageUsers from "./ManageUsers";
 import ManageRoles from "./ManageRoles";
+import ManageTimeslots from "./ManageTimeslots";
 import ViewApplications from "./ViewApplications";
 
 export {
@@ -10,4 +11,5 @@ export {
   ViewApplications,
   ManageUsers,
   ManageRoles,
+  ManageTimeslots,
 };

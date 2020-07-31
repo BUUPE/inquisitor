@@ -10,6 +10,7 @@ import {
   ViewApplications,
   ManageUsers,
   ManageRoles,
+  ManageTimeslots,
 } from "../components/Admin";
 
 const FullSizeRouter = styled(Router)`
@@ -24,6 +25,7 @@ export default ({ location }) => (
       <ViewApplications path="/view-applications" />
       <ManageUsers path="/manage-users" />
       <ManageRoles path="/manage-roles" />
+      <ManageTimeslots path="/manage-timeslots" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
   </Layout>
