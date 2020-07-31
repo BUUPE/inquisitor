@@ -5,13 +5,16 @@ import getFirebase, { FirebaseContext } from "./Firebase";
 import { withAuthentication } from "./Session";
 import Header from "./Header";
 import Footer from "./Footer";
-import GlobalStyle from "../styles/global";
+import Logo from "./Logo";
+import GlobalStyle, { Centered } from "../styles/global";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 class Layout extends Component {
   state = {
     firebase: null,
+    error: null,
+    errorInfo: null,
   };
 
   componentDidMount() {
@@ -28,7 +31,30 @@ class Layout extends Component {
     });
   }
 
+  componentDidCatch(error, errorInfo) {
+    this.setState({
+      error: error,
+      errorInfo: errorInfo,
+    });
+  }
+
   render() {
+    if (this.state.hasError)
+      return (
+        <LayoutBase>
+          <Centered>
+            <Logo size="medium" />
+            <h1>Uh oh!</h1>
+            <p>Something went wrong!</p>
+            <details style={{ whiteSpace: "pre-wrap" }}>
+              {this.state.error && this.state.error.toString()}
+              <br />
+              {this.state.errorInfo.componentStack}
+            </details>
+          </Centered>
+        </LayoutBase>
+      );
+
     return (
       <FirebaseContext.Provider value={this.state.firebase}>
         <AppWithAuthentication {...this.props} />

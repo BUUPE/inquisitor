@@ -3,7 +3,7 @@ import { Link } from "gatsby";
 
 import Layout from "../components/Layout";
 import Logo from "../components/Logo";
-import Centered from "../styles/global";
+import { Centered } from "../styles/global";
 
 const NotFoundPage = () => (
   <Layout>
