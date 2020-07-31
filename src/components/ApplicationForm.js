@@ -44,40 +44,6 @@ const setFileValidity = (fileUpload) => {
   }
 };
 
-const renderQuestion = (question) => {
-  let questionComponent;
-  if (question.type === "textarea") {
-    questionComponent = (
-      <Form.Control required={question.required} as="textarea" rows="3" />
-    );
-  } else if (question.type === "file") {
-    questionComponent = (
-      <Form.File
-        id={`custom-file-${question.id}`}
-        label="Upload file"
-        custom
-        accept=".pdf"
-        onChange={(e) => setFileValidity(e.target)}
-      />
-    );
-  } else {
-    questionComponent = (
-      <Form.Control required={question.required} type={question.type} />
-    );
-  }
-
-  return (
-    <Form.Row style={{ width: "100%" }} key={question.id}>
-      <Form.Group controlId={question.id} style={{ width: "100%" }}>
-        <Form.Label>
-          {question.name} {question.required && <RequiredAsterisk />}
-        </Form.Label>
-        {questionComponent}
-      </Form.Group>
-    </Form.Row>
-  );
-};
-
 class ApplicationForm extends Component {
   _initFirebase = false;
   state = {
@@ -282,6 +248,54 @@ class ApplicationForm extends Component {
       );
 
     if (submitted) return successMessage;
+
+    const renderQuestion = (question) => {
+      let questionComponent;
+      if (question.type === "textarea") {
+        questionComponent = (
+          <Form.Control required={question.required} as="textarea" rows="3" />
+        );
+      } else if (question.type === "file") {
+        questionComponent = (
+          <Form.File
+            id={`custom-file-${question.id}`}
+            label="Upload file"
+            custom
+            accept=".pdf"
+            onChange={(e) => setFileValidity(e.target)}
+          />
+        );
+      } else {
+        let defaultValue = "";
+        // eslint-disable-next-line default-case
+        switch (question.id) {
+          case 1:
+            defaultValue = this.context.name;
+            break;
+          case 2:
+            defaultValue = this.context.email;
+            break;
+        }
+        questionComponent = (
+          <Form.Control
+            required={question.required}
+            type={question.type}
+            defaultValue={defaultValue}
+          />
+        );
+      }
+
+      return (
+        <Form.Row style={{ width: "100%" }} key={question.id}>
+          <Form.Group controlId={question.id} style={{ width: "100%" }}>
+            <Form.Label>
+              {question.name} {question.required && <RequiredAsterisk />}
+            </Form.Label>
+            {questionComponent}
+          </Form.Group>
+        </Form.Row>
+      );
+    };
 
     // use auth user context here, if user has already applied dont let them apply again (alternatively, just let them know they've applied already and further applications will overwrite previous ones)
     return (
