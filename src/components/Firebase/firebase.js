@@ -16,6 +16,12 @@ class Firebase {
     this.firestore = app.firestore().doc("inquisitor/data");
     this.firestoreRoot = app.firestore();
     this.storage = app.storage().ref("inquisitor");
+    this.functions = app.functions();
+
+    // *** Functions API ***
+    this.exportInquisitorData = this.functions.httpsCallable(
+      "exportInquisitorData"
+    );
   }
 
   // *** Auth API ***
@@ -81,8 +87,6 @@ class Firebase {
   user = (uid) => this.firestoreRoot.doc(`users/${uid}`);
   users = () => this.firestoreRoot.collection("users");
 
-  file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
-
   application = (uid) => this.firestore.collection("applications").doc(uid);
   applications = () => this.firestore.collection("applications");
 
@@ -94,13 +98,17 @@ class Firebase {
   generalSettings = () => this.firestoreRoot.doc("inquisitor/generalSettings");
 
   allRoles = () => this.firestoreRoot.doc("config/roles");
+
+  // *** Storage API ***
+  file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
+  backup = (name) => this.storage.child(`backups/${name}`);
 }
 
 let firebase;
 
-const getFirebase = (app, auth, firestore, storage) => {
+const getFirebase = (app) => {
   if (!firebase) {
-    firebase = new Firebase(app, auth, firestore, storage);
+    firebase = new Firebase(app);
   }
 
   return firebase;

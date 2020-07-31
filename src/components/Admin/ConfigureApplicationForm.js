@@ -178,6 +178,37 @@ const ConfigureApplicationForm = ({ firebase }) => {
     }
   };
 
+  const resetApplicationFormConfig = () => {
+    swal({
+      title: "Are you sure?",
+      text:
+        "This will reset the application form configuration to its default state! If applications have already been sent, new applications will have different questions!",
+      icon: "warning",
+      buttons: {
+        cancel: {
+          text: "No",
+          value: false,
+          visible: true,
+        },
+        confirm: {
+          text: "Yes",
+          value: true,
+          visible: true,
+        },
+      },
+    }).then((confirm) => {
+      if (confirm) {
+        firebase
+          .applicationFormConfig()
+          .set(DEFAULT_APPLICATION_FORM_CONFIG)
+          .then(() => {
+            setApplicationFormConfig(DEFAULT_APPLICATION_FORM_CONFIG);
+            setShowToast(true);
+          });
+      }
+    });
+  };
+
   const addNewQuestion = (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -470,28 +501,34 @@ const ConfigureApplicationForm = ({ firebase }) => {
           </Col>
         </Row>
         <hr />
-        <div
-          style={{
-            display: "flex",
-          }}
-        >
-          <Button type="submit" disabled={showToast}>
-            Save Config
-          </Button>
-          <Toast
-            onClose={() => setShowToast(false)}
-            show={showToast}
-            delay={3000}
-            autohide
+        <div style={{ display: "flex" }}>
+          <div
             style={{
-              width: "fit-content",
-              marginLeft: 25,
+              display: "flex",
+              flexGrow: 1,
             }}
           >
-            <Toast.Header>
-              <strong className="mr-auto">Config Saved!</strong>
-            </Toast.Header>
-          </Toast>
+            <Button type="submit" disabled={showToast}>
+              Save Config
+            </Button>
+            <Toast
+              onClose={() => setShowToast(false)}
+              show={showToast}
+              delay={3000}
+              autohide
+              style={{
+                width: "fit-content",
+                marginLeft: 25,
+              }}
+            >
+              <Toast.Header>
+                <strong className="mr-auto">Config Saved!</strong>
+              </Toast.Header>
+            </Toast>
+          </div>
+          <Button variant="danger" onClick={resetApplicationFormConfig}>
+            Reset
+          </Button>
         </div>
       </Form>
 

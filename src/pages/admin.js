@@ -11,6 +11,7 @@ import {
   ManageUsers,
   ManageRoles,
   ManageTimeslots,
+  ImportExport,
 } from "../components/Admin";
 
 const FullSizeRouter = styled(Router)`
@@ -26,6 +27,7 @@ export default ({ location }) => (
       <ManageUsers path="/manage-users" />
       <ManageRoles path="/manage-roles" />
       <ManageTimeslots path="/manage-timeslots" />
+      <ImportExport path="/import-export" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
   </Layout>
