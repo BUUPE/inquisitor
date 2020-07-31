@@ -10,11 +10,11 @@ const ScheduleColumn = ({
   slotsWithOpening,
   selectTimeslot,
   unselectTimeslot,
+  startHour,
+  endHour,
 }) => {
   const [showToast, setShowToast] = useState(false);
 
-  const startHour = 8; // 8 am
-  const endHour = 22; // 10 pm
   const numSlots = (endHour - startHour) * 4; // 15 min slots
   const slots = Array.from(Array(numSlots), (_, i) => i * 15); // total 15 min slots in a day
   const slotsPerTimeslot = timeslotLength / 15; // number of 15 min slots in an interview

@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 
-import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
 import Toast from "react-bootstrap/Toast";
 
@@ -14,6 +13,7 @@ import {
 import { withFirebase } from "../components/Firebase";
 import Layout from "../components/Layout";
 import Loader from "../components/Loader";
+import ScrollableRow from "../components/ScrollableRow";
 import ScheduleColumn from "../components/ScheduleColumn";
 import { Container } from "../styles/global";
 
@@ -29,7 +29,6 @@ class Timeslots extends Component {
     runningTransaction: false,
   };
   static contextType = AuthUserContext;
-  slider = React.createRef();
   unsub = null;
 
   componentDidMount() {
@@ -94,30 +93,6 @@ class Timeslots extends Component {
           }, console.error);
       });
     }
-  };
-
-  // TODO: try extracting this into another component
-  isDown = false;
-  startX = null;
-  scrollLeft = null;
-
-  handleMouseDown = (e) => {
-    this.isDown = true;
-    this.startX = e.pageX - this.slider.current.offsetLeft;
-    this.scrollLeft = this.slider.current.scrollLeft;
-  };
-  handleMouseUp = (e) => {
-    this.isDown = false;
-  };
-  handleMouseMove = (e) => {
-    if (!this.isDown) return;
-    e.preventDefault();
-    const x = e.pageX - this.slider.current.offsetLeft;
-    const walk = (x - this.startX) * 3; //scroll-fast
-    this.slider.current.scrollLeft = this.scrollLeft - walk;
-  };
-  handleMouseLeave = (e) => {
-    this.isDown = false;
   };
 
   // when saving, only deal with timeslots associated with this user
@@ -299,7 +274,7 @@ class Timeslots extends Component {
   };
 
   timeslotsToSlots = (timeslots) => {
-    const startHour = 8; // TODO: make this configurable
+    const startHour = this.state.settings.timeslotStart;
     const slots = {};
     timeslots.forEach((ts) => {
       const slot = (ts.time.getHours() - startHour) * 60 + ts.time.getMinutes();
@@ -333,6 +308,8 @@ class Timeslots extends Component {
       timeslotsOpenForApplicants,
       timeslotLength,
       timeslotDays,
+      timeslotStart,
+      timeslotEnd,
     } = this.state.settings;
 
     const authUser = this.context;
@@ -354,18 +331,7 @@ class Timeslots extends Component {
     return (
       <Container flexdirection="column">
         <h1>Interviewer Timeslot Selection</h1>
-        <Row
-          style={{
-            flexWrap: "unset",
-            overflowX: "auto",
-            justifyContent: "flex-start",
-          }}
-          ref={this.slider}
-          onMouseDown={this.handleMouseDown}
-          onMouseLeave={this.handleMouseLeave}
-          onMouseMove={this.handleMouseMove}
-          onMouseUp={this.handleMouseUp}
-        >
+        <ScrollableRow>
           {timeslotDays.map((date, i) => {
             // TODO: explain this data structure in depth, good place for docz
             // selectedSlots is an object/hashmap for performance reasons
@@ -395,10 +361,12 @@ class Timeslots extends Component {
                 slotsWithOpening={slotsWithOpening}
                 selectTimeslot={this.selectTimeslot}
                 unselectTimeslot={this.unselectTimeslot}
+                startHour={timeslotStart}
+                endHour={timeslotEnd}
               />
             );
           })}
-        </Row>
+        </ScrollableRow>
         <div style={{ display: "flex", alignItems: "center" }}>
           <Button
             style={{ width: "fit-content", marginTop: 20, marginBottom: 20 }}

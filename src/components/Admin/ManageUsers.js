@@ -12,8 +12,12 @@ import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 
-// TODO: don't allow kerberos roles to be removed
-const ALL_ROLES = ["admin", "eboard", "recruitmentteam", "applicant"];
+const ALL_ROLES = {
+  admin: true,
+  eboard: true,
+  recruitmentteam: true,
+  applicant: true,
+};
 
 const ManageUsers = ({ firebase }) => {
   const [users, setUsers] = useState([]);
@@ -61,7 +65,7 @@ const ManageUsers = ({ firebase }) => {
   if (loading) return <Loader />;
 
   const renderRow = (user, i) => {
-    const roles = user.roles ? Object.keys(user.roles) : [];
+    const roles = user.roles ? Object.entries(user.roles) : [];
     return (
       <tr
         key={user.uid}
@@ -74,7 +78,7 @@ const ManageUsers = ({ firebase }) => {
       >
         <td>{user.name}</td>
         <td>{user.email}</td>
-        <td>{roles && roles.join(", ")}</td>
+        <td>{roles.map((role) => role[0]).join(", ")}</td>
       </tr>
     );
   };
@@ -85,8 +89,8 @@ const ManageUsers = ({ firebase }) => {
       drop: (item) => {
         if (item.userOwned !== userOwned) {
           let { roles } = currentUser;
-          if (item.userOwned) delete roles[item.role];
-          else roles[item.role] = true;
+          if (item.userOwned) delete roles[item.role[0]];
+          else roles[item.role[0]] = item.role[1];
 
           setCurrentUser({
             ...currentUser,
@@ -119,11 +123,16 @@ const ManageUsers = ({ firebase }) => {
       },
     });
 
-    return (
-      <Button style={{ marginTop: 5, marginBottom: 5 }} ref={dragRef}>
-        {role}
-      </Button>
-    );
+    const props = {
+      style: {
+        marginTop: 5,
+        marginBottom: 5,
+        backgroundColor: role[1] === "kerberos" && "grey",
+      },
+    };
+    if (role[1] !== "kerberos") props.ref = dragRef;
+
+    return <Button {...props}>{role[0]}</Button>;
   };
 
   return (
@@ -161,14 +170,17 @@ const ManageUsers = ({ firebase }) => {
               </Row>
               <Row>
                 <DroppableColumn userOwned={false}>
-                  {ALL_ROLES.filter(
-                    (role) => !Object.keys(currentUser.roles).includes(role)
-                  ).map((role) => (
-                    <DraggableRole userOwned={false} role={role} key={role} />
-                  ))}
+                  {Object.entries(ALL_ROLES)
+                    .filter(
+                      (role) =>
+                        !Object.keys(currentUser.roles).includes(role[0])
+                    )
+                    .map((role) => (
+                      <DraggableRole userOwned={false} role={role} key={role} />
+                    ))}
                 </DroppableColumn>
                 <DroppableColumn userOwned={true}>
-                  {Object.keys(currentUser.roles).map((role) => (
+                  {Object.entries(currentUser.roles).map((role) => (
                     <DraggableRole userOwned={true} role={role} key={role} />
                   ))}
                 </DroppableColumn>
