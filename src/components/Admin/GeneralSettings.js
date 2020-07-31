@@ -17,26 +17,28 @@ const DEFAULT_GENERAL_SETTINGS = {
   timeslotsOpenForApplicants: false,
   timeslotLength: 45,
   timeslotDays: [],
-  // TODO: Add timeslot start and end hours
+  timeslotStart: 8,
+  timeslotEnd: 22,
 };
 
 class GeneralSettings extends Component {
+  _initFirebase = false;
   state = {
     settings: null,
     loading: true,
     showToast: false,
-    firebaseInit: false,
   };
 
   componentDidMount() {
-    if (this.props.firebase && !this.state.firebaseInit) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadSettings();
   }
 
   componentDidUpdate() {
-    if (this.props.firebase && !this.state.firebaseInit) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadSettings();
   }
 
   loadSettings = async () => {
+    this._initFirebase = true;
     const doc = await this.props.firebase.generalSettings().get();
 
     if (!doc.exists) {
@@ -44,7 +46,6 @@ class GeneralSettings extends Component {
       this.setState({
         settings: DEFAULT_GENERAL_SETTINGS,
         loading: false,
-        firebaseInit: true,
       });
     } else {
       const settings = doc.data();
@@ -52,7 +53,6 @@ class GeneralSettings extends Component {
       this.setState({
         settings,
         loading: false,
-        firebaseInit: true,
       });
     }
   };
@@ -184,6 +184,52 @@ class GeneralSettings extends Component {
                     marginTop: 15,
                   }}
                 >
+                  <Form.Group controlId="timeslotStart">
+                    <Form.Label>Timeslot Start Time</Form.Label>
+                    <Form.Control
+                      type="time"
+                      placeholder="Enter Start..."
+                      step="3600"
+                      value={`${settings.timeslotStart
+                        .toString()
+                        .padStart(2, "0")}:00`}
+                      onChange={(e) =>
+                        this.setState({
+                          settings: {
+                            ...settings,
+                            timeslotStart: parseInt(
+                              e.target.value.split(":")[0]
+                            ),
+                          },
+                        })
+                      }
+                    />
+                    <Form.Text className="text-muted">
+                      Earliest time an interview can start.
+                    </Form.Text>
+                  </Form.Group>
+                  <Form.Group controlId="timeslotEnd">
+                    <Form.Label>Timeslot End Time</Form.Label>
+                    <Form.Control
+                      type="time"
+                      placeholder="Enter End..."
+                      step="3600"
+                      value={`${settings.timeslotEnd
+                        .toString()
+                        .padStart(2, "0")}:00`}
+                      onChange={(e) =>
+                        this.setState({
+                          settings: {
+                            ...settings,
+                            timeslotEnd: parseInt(e.target.value.split(":")[0]),
+                          },
+                        })
+                      }
+                    />
+                    <Form.Text className="text-muted">
+                      Latest time an interview can end.
+                    </Form.Text>
+                  </Form.Group>
                   <Form.Group controlId="timeslotLength">
                     <Form.Label>Timeslot Length (minutes)</Form.Label>
                     <Form.Control
@@ -202,6 +248,9 @@ class GeneralSettings extends Component {
                         })
                       }
                     />
+                    <Form.Text className="text-muted">
+                      Length of a single interview.
+                    </Form.Text>
                   </Form.Group>
                   <strong>Select Interview Days</strong>
                   <DayPicker

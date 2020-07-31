@@ -79,6 +79,7 @@ const renderQuestion = (question) => {
 };
 
 class ApplicationForm extends Component {
+  _initFirebase = false;
   state = {
     applicationFormConfig: null,
     generalSettings: null,
@@ -86,18 +87,17 @@ class ApplicationForm extends Component {
     validated: false,
     sending: false,
     submitted: false,
-    firebaseInit: false,
     alreadyApplied: false,
     errorMsg: "",
   };
   static contextType = AuthUserContext;
 
   componentDidMount() {
-    if (this.props.firebase && !this.state.firebaseInit) this.loadData();
+    if (this.props.firebase && !this._initFirebase) this.loadData();
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this.state.firebaseInit) this.loadData();
+    if (this.props.firebase && !this._initFirebase) this.loadData();
     if (typeof window !== "undefined") {
       import("bs-custom-file-input").then((bsCustomFileInput) => {
         bsCustomFileInput.init();
@@ -106,6 +106,7 @@ class ApplicationForm extends Component {
   }
 
   loadData = async () => {
+    this._initFirebase = true;
     const loadApplicationFormConfig = this.props.firebase
       .applicationFormConfig()
       .get()
@@ -142,7 +143,6 @@ class ApplicationForm extends Component {
         applicationFormConfig: values[0],
         alreadyApplied: values[1].applied,
         generalSettings: values[2],
-        firebaseInit: true,
       })
     );
   };

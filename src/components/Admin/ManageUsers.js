@@ -13,15 +13,7 @@ import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 
 // TODO: don't allow kerberos roles to be removed
-const ALL_ROLES = [
-  "admin",
-  "eboard",
-  "interviewer",
-  "member",
-  "alumni",
-  "applicant",
-  "guest",
-];
+const ALL_ROLES = ["admin", "eboard", "recruitmentteam", "applicant"];
 
 const ManageUsers = ({ firebase }) => {
   const [users, setUsers] = useState([]);

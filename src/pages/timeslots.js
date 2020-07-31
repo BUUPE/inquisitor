@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
+import swal from "@sweetalert/with-react";
 
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
@@ -17,31 +18,26 @@ import ScheduleColumn from "../components/ScheduleColumn";
 import { Container } from "../styles/global";
 
 class Timeslots extends Component {
+  _initFirebase = false;
   state = {
     settings: null,
     loading: true,
     error: null,
     showToast: false,
     selectedTimeslots: {},
-    firebaseInit: false,
     firstDataLoad: true,
+    runningTransaction: false,
   };
   static contextType = AuthUserContext;
   slider = React.createRef();
   unsub = null;
 
   componentDidMount() {
-    if (this.props.firebase && !this.state.firebaseInit) {
-      this.setState({ firebaseInit: true });
-      this.loadSettings();
-    }
+    if (this.props.firebase && !this._initFirebase) this.loadSettings();
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this.state.firebaseInit) {
-      this.setState({ firebaseInit: true });
-      this.loadSettings();
-    }
+    if (this.props.firebase && !this._initFirebase) this.loadSettings();
   }
 
   componentWillUnmount() {
@@ -49,6 +45,7 @@ class Timeslots extends Component {
   }
 
   loadSettings = async () => {
+    this._initFirebase = true;
     const doc = await this.props.firebase.generalSettings().get();
 
     if (!doc.exists) this.setState({ error: "Failed to load timeslots!" });
@@ -65,25 +62,25 @@ class Timeslots extends Component {
           .timeslots()
           .onSnapshot((querySnapshot) => {
             const { selectedTimeslots } = this.state;
-            const listenerData = querySnapshot.docs
-              .map((doc) => {
-                return {
-                  ...doc.data(),
-                  time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
-                };
-              })
-              .filter((ts) => {
-                // TODO: merge data here, remove things that got removed
-                // only deal with data that DOESN'T concern current user
-                // rn it takes only on first load, but make this smarter
-                if (this.state.firstDataLoad) return true;
-                return !ts.interviewers.hasOwnProperty(this.context.uid);
-              });
+            const listenerData = querySnapshot.docs.map((doc) => {
+              return {
+                ...doc.data(),
+                time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
+                id: doc.id,
+              };
+            });
 
             listenerData.forEach((ts) => {
               const key = ts.time.toDateString();
               if (selectedTimeslots.hasOwnProperty(key)) {
-                selectedTimeslots[key].push(ts);
+                const index = selectedTimeslots[key].findIndex(
+                  (sts) => sts.id === ts.id
+                );
+                if (index > -1) {
+                  selectedTimeslots[key][index] = ts;
+                } else {
+                  selectedTimeslots[key].push(ts);
+                }
               } else {
                 selectedTimeslots[key] = [ts];
               }
@@ -99,6 +96,7 @@ class Timeslots extends Component {
     }
   };
 
+  // TODO: try extracting this into another component
   isDown = false;
   startX = null;
   scrollLeft = null;
@@ -126,7 +124,16 @@ class Timeslots extends Component {
   saveTimeslots = async () => {
     const { firebase } = this.props;
     const authUser = this.context;
-    const { selectedTimeslots } = this.state;
+    const { selectedTimeslots, settings } = this.state;
+
+    // wipe state before transaction
+    this.setState({
+      selectedTimeslots: settings.timeslotDays.reduce((acc, cur) => {
+        acc[cur.toDateString()] = [];
+        return acc;
+      }, {}),
+      runningTransaction: true,
+    });
 
     const existingTimeslots = await firebase
       .timeslots()
@@ -140,8 +147,6 @@ class Timeslots extends Component {
           };
         })
       );
-    const existingTimeslotMap = {};
-    existingTimeslots.forEach((ts, i) => (existingTimeslotMap[ts.time] = i));
 
     const newTimeslots = Object.values(selectedTimeslots)
       .flat()
@@ -149,38 +154,39 @@ class Timeslots extends Component {
     const newTimeslotMap = {};
     newTimeslots.forEach((ts, i) => (newTimeslotMap[ts.time] = i));
 
+    // helper function that does for each and waits
+    const asyncForEach = async (array, callback) => {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+      }
+    };
+
     try {
       // run all of this inside a transaction so it will restart if someone makes changes at the same time
       await firebase.firestoreRoot.runTransaction(async (transaction) => {
         // first remove timeslots the user no longer is in
-        existingTimeslots
-          .filter((ts) =>
+        asyncForEach(
+          existingTimeslots.filter((ts) =>
             // filter for timeslots this user is a part of
             ts.interviewers.hasOwnProperty(authUser.uid)
-          )
-          .forEach((ts, i) => {
+          ),
+          async (ts, i) => {
             // if old timeslot is no longer selected, remove interviewer from it
             if (!newTimeslotMap.hasOwnProperty(ts.time)) {
               const doc = existingTimeslots[i];
               const { id } = doc;
               delete doc.id;
               delete doc.interviewers[authUser.uid];
-              // TODO: notify admins if an timeslot with an applicant loses interviewers
               if (
                 Object.keys(doc.interviewers).length === 0 &&
                 !doc.hasOwnProperty("applicant")
               )
                 transaction.delete(firebase.timeslot(id));
+              // TODO: notify admins if an timeslot with an applicant loses interviewers
               else transaction.update(firebase.timeslot(id), doc);
             }
-          });
-
-        // helper function that does for each and waits
-        const asyncForEach = async (array, callback) => {
-          for (let index = 0; index < array.length; index++) {
-            await callback(array[index], index, array);
           }
-        };
+        );
 
         // iterate over newly selected timeslots
         // that is timeslots the user is in and don't already exist
@@ -200,10 +206,10 @@ class Timeslots extends Component {
             await asyncForEach(matchingTimeslots, async (mts) => {
               if (wroteToDb) return;
               const doc = await transaction.get(firebase.timeslot(mts.id));
-              const newDoc = { ...doc.data() };
-              if (Object.keys(newDoc.interviewers).length < 2) {
-                newDoc.interviewers[authUser.uid] = authUser.name;
-                transaction.update(firebase.timeslot(mts.id), newDoc);
+              const timeslot = { ...doc.data() };
+              if (Object.keys(timeslot.interviewers).length < 2) {
+                timeslot.interviewers[authUser.uid] = authUser.name;
+                transaction.update(firebase.timeslot(mts.id), timeslot);
                 wroteToDb = true;
               }
             });
@@ -219,10 +225,17 @@ class Timeslots extends Component {
         });
       });
     } catch (e) {
+      this.setState({ selectedTimeslots });
       console.error("Transaction failure!", e);
+      swal(
+        "Uh oh!",
+        "Something went wrong with saving your selections! Please refresh the page and try again!",
+        "error"
+      );
     }
 
-    this.setState({ showToast: true });
+    this.setState({ showToast: true, runningTransaction: false });
+    window.scrollTo(0, document.body.scrollHeight);
   };
 
   selectTimeslot = (date) => {
@@ -286,7 +299,7 @@ class Timeslots extends Component {
   };
 
   timeslotsToSlots = (timeslots) => {
-    const startHour = 8; // make this configurable
+    const startHour = 8; // TODO: make this configurable
     const slots = {};
     timeslots.forEach((ts) => {
       const slot = (ts.time.getHours() - startHour) * 60 + ts.time.getMinutes();
@@ -299,9 +312,15 @@ class Timeslots extends Component {
   };
 
   render() {
-    const { loading, error, selectedTimeslots, showToast } = this.state;
+    const {
+      loading,
+      runningTransaction,
+      error,
+      selectedTimeslots,
+      showToast,
+    } = this.state;
 
-    if (loading) return <Loader />;
+    if (loading || runningTransaction) return <Loader />;
     if (error)
       return (
         <Container flexdirection="column">
@@ -348,7 +367,7 @@ class Timeslots extends Component {
           onMouseUp={this.handleMouseUp}
         >
           {timeslotDays.map((date, i) => {
-            // TODO: explain this data structure in depth
+            // TODO: explain this data structure in depth, good place for docz
             // selectedSlots is an object/hashmap for performance reasons
             const timeslotsForDay = selectedTimeslots[date.toDateString()];
             const userSelectedSlots = timeslotsForDay

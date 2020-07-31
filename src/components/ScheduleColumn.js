@@ -69,7 +69,7 @@ const ScheduleColumn = ({
         )
       );
     } else if (validateSlot(slot, i)) {
-      // if slot isn't selected and is valid, select it and the rest in its timeslot
+      // if slot isn't selected and is valid, tell the parent to add the associated timeslot
       const offset = slot;
       return selectTimeslot(
         new Date(
@@ -86,6 +86,7 @@ const ScheduleColumn = ({
     setShowToast(true);
   };
 
+  // TODO: render slots selected by others/with openings, show 1/2 2/2
   const renderSlot = (slot, i) => {
     const getPositions = (slot, collection) => {
       const isSelected = collection.hasOwnProperty(slot);
