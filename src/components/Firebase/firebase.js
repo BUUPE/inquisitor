@@ -22,6 +22,9 @@ class Firebase {
     this.exportInquisitorData = this.functions.httpsCallable(
       "exportInquisitorData"
     );
+    this.importInquisitorData = this.functions.httpsCallable(
+      "importInquisitorData"
+    );
   }
 
   // *** Auth API ***

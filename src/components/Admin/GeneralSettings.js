@@ -12,6 +12,7 @@ import { withAuthorization, isAdmin } from "../Session";
 import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
+import { FlexDiv } from "../../styles/global";
 
 const DEFAULT_GENERAL_SETTINGS = {
   applicationsOpen: false,
@@ -299,10 +300,9 @@ class GeneralSettings extends Component {
             </div>
           </Form.Row>
           <hr />
-          <div style={{ display: "flex" }}>
-            <div
+          <FlexDiv>
+            <FlexDiv
               style={{
-                display: "flex",
                 flexGrow: 1,
               }}
             >
@@ -321,11 +321,11 @@ class GeneralSettings extends Component {
                   <strong className="mr-auto">Settings Saved!</strong>
                 </Toast.Header>
               </Toast>
-            </div>
+            </FlexDiv>
             <Button variant="danger" onClick={this.resetSettings}>
               Reset
             </Button>
-          </div>
+          </FlexDiv>
         </Form>
       </AdminLayout>
     );

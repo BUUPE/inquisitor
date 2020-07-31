@@ -17,6 +17,10 @@ export const Centered = styled.div`
   height: 100%;
 `;
 
+export const FlexDiv = styled.div`
+  display: flex;
+`;
+
 export default createGlobalStyle`
   /* BOOTSTRAP OVERRIDES */
 

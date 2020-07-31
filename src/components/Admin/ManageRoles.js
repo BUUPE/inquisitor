@@ -10,6 +10,7 @@ import { withAuthorization, isAdmin } from "../Session";
 import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
+import { FlexDiv } from "../../styles/global";
 
 const RoleItem = ({ role, removeRole, updateRoleName }) => {
   const spanRef = useRef(null);
@@ -19,6 +20,7 @@ const RoleItem = ({ role, removeRole, updateRoleName }) => {
   };
 
   const onBlur = () => updateRoleName(role, spanRef.current.textContent);
+
   return (
     <ListGroup.Item as="li" style={{ display: "flex" }}>
       <span
@@ -80,8 +82,8 @@ const ManageRoles = ({ firebase }) => {
 
   const updateRoleName = (oldName, newName) => {
     const newRoles = { ...allRoles };
-    newRoles[newName] = newRoles[oldName];
     delete newRoles[oldName];
+    newRoles[newName] = true;
     setAllRoles(newRoles);
   };
 
@@ -106,9 +108,8 @@ const ManageRoles = ({ firebase }) => {
             />
           ))}
       </ListGroup>
-      <div
+      <FlexDiv
         style={{
-          display: "flex",
           marginTop: 20,
         }}
       >
@@ -121,13 +122,9 @@ const ManageRoles = ({ firebase }) => {
         <Button style={{ marginLeft: 20 }} onClick={addRole}>
           Add
         </Button>
-      </div>
+      </FlexDiv>
       <hr />
-      <div
-        style={{
-          display: "flex",
-        }}
-      >
+      <FlexDiv>
         <Button onClick={saveRoles}>Save</Button>
         <Toast
           onClose={() => setShowToast(false)}
@@ -143,7 +140,7 @@ const ManageRoles = ({ firebase }) => {
             <strong className="mr-auto">Roles Saved!</strong>
           </Toast.Header>
         </Toast>
-      </div>
+      </FlexDiv>
     </AdminLayout>
   );
 };

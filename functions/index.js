@@ -45,6 +45,14 @@ exports.exportInquisitorData = functions.https.onCall(async (data, context) => {
 });
 
 exports.importInquisitorData = functions.https.onCall(async (data, context) => {
+  const user = await admin
+    .firestore()
+    .collection("users")
+    .doc(context.auth.uid)
+    .get()
+    .then((snapshot) => snapshot.data());
+  if (!user.roles.admin) return { error: "Unauthorized" };
+
   return {
     success: true,
   };

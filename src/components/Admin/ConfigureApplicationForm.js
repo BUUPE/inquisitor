@@ -17,6 +17,7 @@ import { withFirebase } from "../Firebase";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 import { RequiredAsterisk } from "../ApplicationForm";
+import { FlexDiv } from "../../styles/global";
 
 // assumes this is run before the coming recruitment season
 const estimateSemester = () => {
@@ -501,10 +502,9 @@ const ConfigureApplicationForm = ({ firebase }) => {
           </Col>
         </Row>
         <hr />
-        <div style={{ display: "flex" }}>
-          <div
+        <FlexDiv>
+          <FlexDiv
             style={{
-              display: "flex",
               flexGrow: 1,
             }}
           >
@@ -525,11 +525,11 @@ const ConfigureApplicationForm = ({ firebase }) => {
                 <strong className="mr-auto">Config Saved!</strong>
               </Toast.Header>
             </Toast>
-          </div>
+          </FlexDiv>
           <Button variant="danger" onClick={resetApplicationFormConfig}>
             Reset
           </Button>
-        </div>
+        </FlexDiv>
       </Form>
 
       <Modal show={showModal} onHide={closeModal}>
