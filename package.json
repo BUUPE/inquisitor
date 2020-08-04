@@ -35,8 +35,10 @@
     "react-router-dom": "^5.0.1",
     "recompose": "^0.30.0",
     "redux": "^4.0.5",
+    "source-map-support": "^0.5.19",
     "styled-components": "^5.1.1",
-    "sweetalert": "^2.1.2"
+    "sweetalert": "^2.1.2",
+    "upe-react-components": "BUUPE/React-Components#dist"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "2.x",

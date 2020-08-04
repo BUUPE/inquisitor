@@ -33,6 +33,11 @@ class Firebase {
   doSignOut = () =>
     this.auth.signOut().then(() => localStorage.removeItem("authUser"));
 
+  getIdToken = () => {
+    if (this.auth.currentUser) return this.auth.currentUser.getIdToken();
+    else return new Promise((resolve) => resolve(null));
+  };
+
   // *** Merge Auth and DB User API ***
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged((authUser) => {
