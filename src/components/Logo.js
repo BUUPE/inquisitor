@@ -1,8 +1,8 @@
 import React from "react";
+import { useStaticQuery, graphql } from "gatsby";
 import PropTypes from "prop-types";
 import Img from "gatsby-image";
 import styled, { withTheme } from "styled-components";
-import { useStaticQuery, graphql } from "gatsby";
 
 const SmallImg = withTheme(styled(Img)`
   width: 100px;

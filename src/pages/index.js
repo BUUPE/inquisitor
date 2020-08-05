@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import Layout from "../components/Layout2";
+import Layout from "../components/Layout";
 import SEO from "../components/SEO";
 import Logo from "../components/Logo";
 

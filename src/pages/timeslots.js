@@ -1,20 +1,21 @@
 import React, { useContext } from "react";
 
-import { AuthUserContext, isRecruitmentTeam } from "../components/Session";
+import { isRecruitmentTeam } from "../util/conditions";
+import { AuthUserContext } from "upe-react-components";
 import Layout from "../components/Layout";
 import { InterviewerView, ApplicantView } from "../components/Timeslots";
 
 const TimeslotPage = ({ location }) => {
   const authUser = useContext(AuthUserContext);
-  return (
-    <Layout>
-      {isRecruitmentTeam(authUser) ? (
-        <InterviewerView location={location} />
-      ) : (
-        <ApplicantView location={location} />
-      )}
-    </Layout>
+  return isRecruitmentTeam(authUser) ? (
+    <InterviewerView location={location} />
+  ) : (
+    <ApplicantView location={location} />
   );
 };
 
-export default TimeslotPage;
+export default () => (
+  <Layout>
+    <TimeslotPage />
+  </Layout>
+);

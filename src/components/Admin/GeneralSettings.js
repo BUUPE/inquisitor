@@ -8,8 +8,9 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Toast from "react-bootstrap/Toast";
 
-import { withAuthorization, isAdmin } from "../Session";
-import { withFirebase } from "../Firebase";
+import { withFirebase, withAuthorization } from "upe-react-components";
+
+import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 import { FlexDiv } from "../../styles/global";

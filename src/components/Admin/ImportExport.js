@@ -5,8 +5,9 @@ import styled from "styled-components";
 import BootstrapButton from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 
-import { withAuthorization, isAdmin } from "../Session";
-import { withFirebase } from "../Firebase";
+import { withFirebase, withAuthorization } from "upe-react-components";
+
+import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 
 const Button = styled(BootstrapButton)`

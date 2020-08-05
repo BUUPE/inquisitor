@@ -1,12 +1,12 @@
 import React from "react";
 import { compose } from "recompose";
 
+import { isApplicant } from "../../util/conditions";
 import {
   AuthUserContext,
+  withFirebase,
   withAuthorization,
-  isApplicant,
-} from "../../components/Session";
-import { withFirebase } from "../../components/Firebase";
+} from "upe-react-components";
 
 import { Container } from "../../styles/global";
 

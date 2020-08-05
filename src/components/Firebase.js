@@ -1,3 +1,5 @@
+import { Firebase as FirebaseSuper } from "upe-react-components";
+
 const config = {
   apiKey: "AIzaSyBxBIbTYbRuqP1np-ri4YaJ0H6OYK4L46g",
   authDomain: "upe-website-fa07a.firebaseapp.com",
@@ -9,12 +11,11 @@ const config = {
   measurementId: "G-BV6VQMMSQ5",
 };
 
-class Firebase {
+class Firebase extends FirebaseSuper {
   constructor(app) {
-    app.initializeApp(config);
-    this.auth = app.auth();
-    this.firestore = app.firestore().doc("inquisitor/data");
-    this.firestoreRoot = app.firestore();
+    super(app, config);
+
+    this.inquisitorData = app.firestore().doc("inquisitor/data");
     this.storage = app.storage().ref("inquisitor");
     this.functions = app.functions();
 
@@ -92,34 +93,25 @@ class Firebase {
     });
 
   // *** User API ***
-  user = (uid) => this.firestoreRoot.doc(`users/${uid}`);
-  users = () => this.firestoreRoot.collection("users");
+  user = (uid) => this.firestore.doc(`users/${uid}`);
+  users = () => this.firestore.collection("users");
 
-  application = (uid) => this.firestore.collection("applications").doc(uid);
-  applications = () => this.firestore.collection("applications");
+  application = (uid) =>
+    this.inquisitorData.collection("applications").doc(uid);
+  applications = () => this.inquisitorData.collection("applications");
 
-  timeslot = (uid) => this.firestore.collection("timeslots").doc(uid);
-  timeslots = () => this.firestore.collection("timeslots");
+  timeslot = (uid) => this.inquisitorData.collection("timeslots").doc(uid);
+  timeslots = () => this.inquisitorData.collection("timeslots");
 
   applicationFormConfig = () =>
-    this.firestoreRoot.doc("inquisitor/applicationFormConfig");
-  generalSettings = () => this.firestoreRoot.doc("inquisitor/generalSettings");
+    this.firestore.doc("inquisitor/applicationFormConfig");
+  generalSettings = () => this.firestore.doc("inquisitor/generalSettings");
 
-  allRoles = () => this.firestoreRoot.doc("config/roles");
+  allRoles = () => this.firestore.doc("config/roles");
 
   // *** Storage API ***
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
   backup = (name) => this.storage.child(`backups/${name}`);
 }
 
-let firebase;
-
-const getFirebase = (app) => {
-  if (!firebase) {
-    firebase = new Firebase(app);
-  }
-
-  return firebase;
-};
-
-export default getFirebase;
+export default Firebase;

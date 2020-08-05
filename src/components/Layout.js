@@ -1,79 +1,76 @@
-import React, { Component, Fragment } from "react";
-import { withTheme } from "styled-components";
+import React from "react";
+import { navigate, useStaticQuery, graphql } from "gatsby";
+import { useLocation } from "@reach/router";
 
-import getFirebase, { FirebaseContext } from "./Firebase";
-import { withAuthentication } from "./Session";
-import Header from "./Header";
-import Footer from "./Footer";
+import {
+  Layout,
+  setWithAuthorizationWrapper,
+  WithAuthorizationClass,
+} from "upe-react-components";
+
+import { Centered } from "../styles/global";
 import Logo from "./Logo";
-import GlobalStyle, { Centered } from "../styles/global";
 
-import "bootstrap/dist/css/bootstrap.min.css";
+const WithAuthorizationWrapper = (props) => {
+  const {
+    site: { pathPrefix },
+  } = useStaticQuery(
+    graphql`
+      query {
+        site {
+          pathPrefix
+        }
+      }
+    `
+  );
 
-class Layout extends Component {
-  state = {
-    firebase: null,
-    error: null,
-    errorInfo: null,
-  };
-
-  componentDidMount() {
-    const app = import("firebase/app");
-    const auth = import("firebase/auth");
-    const firestore = import("firebase/firestore");
-    const storage = import("firebase/storage");
-    const functions = import("firebase/functions");
-
-    Promise.all([app, auth, firestore, storage, functions]).then((values) => {
-      const firebase = getFirebase(values[0]);
-
-      this.setState({ firebase });
-    });
-  }
-
-  componentDidCatch(error, errorInfo) {
-    this.setState({
-      error: error,
-      errorInfo: errorInfo,
-    });
-  }
-
-  render() {
-    if (this.state.hasError)
-      return (
-        <LayoutBase>
-          <Centered>
-            <Logo size="medium" />
-            <h1>Uh oh!</h1>
-            <p>Something went wrong!</p>
-            <details style={{ whiteSpace: "pre-wrap" }}>
-              {this.state.error && this.state.error.toString()}
-              <br />
-              {this.state.errorInfo.componentStack}
-            </details>
-          </Centered>
-        </LayoutBase>
-      );
-
-    return (
-      <FirebaseContext.Provider value={this.state.firebase}>
-        <AppWithAuthentication {...this.props} />
-      </FirebaseContext.Provider>
+  const location = useLocation();
+  const savePathname = () =>
+    window.localStorage.setItem(
+      "pathname",
+      location.pathname.replace(pathPrefix, "")
     );
-  }
-}
 
-const LayoutBase = withTheme(({ theme, children }) => (
-  <Fragment>
-    <GlobalStyle theme={theme} />
-    <Header />
-    {children}
-    <Footer />
-  </Fragment>
-));
+  return (
+    <WithAuthorizationClass
+      firebaseAuthNext={(authUser) => {
+        if (!authUser) {
+          savePathname();
+          navigate("/login");
+        }
+      }}
+      firebaseAuthFallback={() => {
+        savePathname();
+        navigate("/login");
+      }}
+      authorizationFailed={
+        <Centered>
+          <Logo size="medium" />
+          <h3>You don't have permission to view this page!</h3>
+          <p>If you believe you should have access, please contact an admin.</p>
+        </Centered>
+      }
+      {...props}
+    />
+  );
+};
+setWithAuthorizationWrapper(WithAuthorizationWrapper);
 
-const AppWithAuthentication = withAuthentication(({ children }) => (
-  <LayoutBase>{children}</LayoutBase>
-));
+const ErrorComponent = ({ error, errorInfo }) => (
+  <Centered>
+    <Logo size="medium" />
+    <h1>Uh oh!</h1>
+    <p>Something went wrong!</p>
+    <details
+      style={{ whiteSpace: "pre-wrap", maxHeight: "50%", overflowY: "auto" }}
+    >
+      {error && error.toString()}
+      <br />
+      {errorInfo.componentStack}
+    </details>
+  </Centered>
+);
 
-export default Layout;
+export default ({ children }) => (
+  <Layout errorComponent={ErrorComponent}>{children}</Layout>
+);

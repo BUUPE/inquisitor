@@ -5,8 +5,9 @@ import { compose } from "recompose";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-import { withAuthorization, isRecruitmentTeam } from "../Session";
-import { withFirebase } from "../Firebase";
+import { withFirebase, withAuthorization } from "upe-react-components";
+
+import { isRecruitmentTeam } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 

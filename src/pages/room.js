@@ -1,5 +1,10 @@
 import React from "react";
+import Layout from "../components/Layout";
 
-const RoomPage = () => <h1>Welcome to your Session</h1>;
+const RoomPage = () => (
+  <Layout>
+    <h1>Welcome to your Session</h1>
+  </Layout>
+);
 
 export default RoomPage;

@@ -4,8 +4,13 @@ import { compose } from "recompose";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
-import { AuthUserContext, withAuthorization, isLoggedIn } from "./Session";
-import { withFirebase } from "./Firebase";
+import {
+  AuthUserContext,
+  withFirebase,
+  withAuthorization,
+} from "upe-react-components";
+
+import { isLoggedIn } from "../util/conditions";
 import Loader from "./Loader";
 import Logo from "./Logo";
 import { Container } from "../styles/global";

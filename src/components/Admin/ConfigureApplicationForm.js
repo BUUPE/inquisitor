@@ -12,8 +12,10 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Toast from "react-bootstrap/Toast";
 
-import { withAuthorization, isAdmin } from "../Session";
-import { withFirebase } from "../Firebase";
+import { withAuthorization } from "upe-react-components";
+import { withFirebase } from "upe-react-components";
+
+import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 import { RequiredAsterisk } from "../ApplicationForm";

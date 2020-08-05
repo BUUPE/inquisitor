@@ -7,11 +7,12 @@ import Toast from "react-bootstrap/Toast";
 
 import {
   AuthUserContext,
+  withFirebase,
   withAuthorization,
-  isRecruitmentTeam,
-} from "../../components/Session";
-import { withFirebase } from "../../components/Firebase";
-import Loader from "../../components/Loader";
+} from "upe-react-components";
+
+import { isRecruitmentTeam } from "../../util/conditions";
+import Loader from "../Loader";
 import { Container } from "../../styles/global";
 
 import ScrollableRow from "./ScrollableRow";

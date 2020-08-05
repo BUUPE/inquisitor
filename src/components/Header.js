@@ -3,9 +3,7 @@ import styled from "styled-components";
 import { Link, navigate } from "gatsby";
 import Button from "react-bootstrap/Button";
 
-import { AuthUserContext } from "./Session";
-
-import { withFirebase } from "./Firebase";
+import { AuthUserContext, withFirebase } from "upe-react-components";
 
 const Navbar = styled.nav`
   width: 100%;
@@ -29,6 +27,7 @@ const Navbar = styled.nav`
 
 const Header = ({ firebase }) => {
   const authUser = useContext(AuthUserContext);
+  //console.log("header authUser", authUser)
 
   return (
     <Navbar>

@@ -7,8 +7,9 @@ import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-import { withAuthorization, isAdmin } from "../Session";
-import { withFirebase } from "../Firebase";
+import { withFirebase, withAuthorization } from "upe-react-components";
+
+import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 

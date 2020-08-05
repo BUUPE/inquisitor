@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "gatsby";
 import styled from "styled-components";
+
 import Nav from "react-bootstrap/Nav";
 import Col from "react-bootstrap/Col";
+
 import { Container } from "../../styles/global";
 
 const StyledNav = styled(Nav)`

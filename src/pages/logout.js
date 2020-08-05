@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { navigate } from "gatsby";
 
-import { withFirebase } from "../components/Firebase";
+import { withFirebase } from "upe-react-components";
 import Layout from "../components/Layout";
 import Logo from "../components/Logo";
 import { Centered } from "../styles/global";
