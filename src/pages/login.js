@@ -1,14 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { navigate } from "gatsby";
 
-import { withFirebase } from "../components/Firebase";
-import Layout from "../components/Layout";
+//import { withFirebase } from "../components/Firebase";
+import { withFirebase, FirebaseContext } from "upe-react-components/Firebase";
+//import Layout from "../components/Layout";
+import Layout from "../components/Layout2";
 import Logo from "../components/Logo";
 import { Centered } from "../styles/global";
 
 const Login = ({ firebase }) => {
   useEffect(() => {
+    console.log("firebase", firebase);
     if (firebase) {
+      console.log("ya");
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("token");
       if (token) {
@@ -24,6 +28,9 @@ const Login = ({ firebase }) => {
     }
   }, [firebase]);
 
+  const poo = useContext(FirebaseContext);
+  console.log("poo", poo);
+
   return (
     <Centered>
       <Logo size="medium" />
@@ -33,6 +40,7 @@ const Login = ({ firebase }) => {
 };
 
 const LoginPage = withFirebase(Login);
+console.log("withFirebase", withFirebase);
 
 export default () => (
   <Layout>
