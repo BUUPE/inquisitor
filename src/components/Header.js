@@ -27,7 +27,6 @@ const Navbar = styled.nav`
 
 const Header = ({ firebase }) => {
   const authUser = useContext(AuthUserContext);
-  //console.log("header authUser", authUser)
 
   return (
     <Navbar>

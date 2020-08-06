@@ -42,14 +42,12 @@ const WithAuthorizationWrapper = (props) => {
   return (
     <WithAuthorizationClass
       firebaseAuthNext={(authUser) => {
-        console.log("next fired");
         if (!authUser) {
           savePathname();
           navigate("/login");
         }
       }}
       firebaseAuthFallback={() => {
-        console.log("fallback fired");
         savePathname();
         navigate("/login");
       }}
