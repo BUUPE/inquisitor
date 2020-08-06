@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import { compose } from "recompose";
+import swal from "@sweetalert/with-react";
+
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
@@ -36,14 +38,14 @@ const CenteredForm = styled(Form)`
 const setFileValidity = (fileUpload) => {
   if (fileUpload.files.length === 0) {
     fileUpload.setCustomValidity("You must upload a file!");
-    alert("You must upload a file!");
+    swal("Uh oh!", "You must upload a file!", "error");
   } else if (fileUpload.files.length > 1) {
     fileUpload.setCustomValidity("You can only upload 1 file!");
-    alert("You can only upload 1 file!");
+    swal("Uh oh!", "You can only upload 1 file!", "error");
   } else if (fileUpload.files[0].size > 1048576) {
     fileUpload.setCustomValidity("Max file size is 1MB!");
     fileUpload.value = "";
-    alert("Max file size is 1MB!");
+    swal("Uh oh!", "Max file size is 1MB!", "error");
   } else {
     fileUpload.setCustomValidity("");
   }
@@ -168,8 +170,9 @@ class ApplicationForm extends Component {
         event.stopPropagation();
       } else {
         const inputs = Array.from(form.querySelectorAll(".form-control"));
-        const { uid } = this.context;
         const { semester, questions } = this.state.applicationFormConfig;
+        const { uid, roles } = this.context;
+        roles.applicant = true;
 
         let responses = inputs.map(({ id: inputId, value }) => {
           const id = parseInt(inputId);
@@ -214,7 +217,7 @@ class ApplicationForm extends Component {
             .set({ responses, semester });
           const setApplied = this.props.firebase
             .user(uid)
-            .update({ applied: true });
+            .update({ applied: true, roles });
 
           Promise.all([uploadApplicationData, setApplied]).then(() =>
             this.setState({ submitted: true, sending: false })
