@@ -31,25 +31,29 @@ const WithAuthorizationWrapper = (props) => {
       location.pathname.replace(pathPrefix, "")
     );
 
+  const AuthorizationFailed = () => (
+    <Centered>
+      <Logo size="medium" />
+      <h3>You don't have permission to view this page!</h3>
+      <p>If you believe you should have access, please contact an admin.</p>
+    </Centered>
+  );
+
   return (
     <WithAuthorizationClass
       firebaseAuthNext={(authUser) => {
+        console.log("next fired");
         if (!authUser) {
           savePathname();
           navigate("/login");
         }
       }}
       firebaseAuthFallback={() => {
+        console.log("fallback fired");
         savePathname();
         navigate("/login");
       }}
-      authorizationFailed={
-        <Centered>
-          <Logo size="medium" />
-          <h3>You don't have permission to view this page!</h3>
-          <p>If you believe you should have access, please contact an admin.</p>
-        </Centered>
-      }
+      authorizationFailed={<AuthorizationFailed />}
       {...props}
     />
   );
