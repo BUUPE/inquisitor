@@ -27,6 +27,7 @@ const ManageUsers = ({ firebase }) => {
     setShowModal(false);
     setCurrentUser(null);
   };
+
   const updateUser = async () => {
     const updateUser = { ...currentUser };
     delete updateUser.uid;
@@ -34,7 +35,8 @@ const ManageUsers = ({ firebase }) => {
       .user(currentUser.uid)
       .update(updateUser)
       .catch(console.error);
-    loadUsers();
+    const users = await loadUsers();
+    setUsers(users);
     handleClose();
   };
 
@@ -87,13 +89,18 @@ const ManageUsers = ({ firebase }) => {
         style={{ cursor: "pointer" }}
         onClick={() => {
           if (!user.roles) user.roles = {};
-          setCurrentUser(user);
+          setCurrentUser(JSON.parse(JSON.stringify(user)));
           handleShow();
         }}
       >
         <td>{user.name}</td>
         <td>{user.email}</td>
-        <td>{roles.map((role) => role[0]).join(", ")}</td>
+        <td>
+          {roles
+            .map((role) => role[0])
+            .sort()
+            .join(", ")}
+        </td>
       </tr>
     );
   };
@@ -106,7 +113,6 @@ const ManageUsers = ({ firebase }) => {
           let { roles } = currentUser;
           if (item.userOwned) delete roles[item.role[0]];
           else roles[item.role[0]] = item.role[1];
-
           setCurrentUser({
             ...currentUser,
             roles,
@@ -162,7 +168,12 @@ const ManageUsers = ({ firebase }) => {
           </tr>
         </thead>
         <tbody>
-          {users.sort((a, b) => (a.name > b.name ? 1 : -1)).map(renderRow)}
+          {users
+            .sort((a, b) => {
+              if (a.name === b.name) return a.uid > b.uid ? 1 : -1;
+              else return a.name > b.name ? 1 : -1;
+            })
+            .map(renderRow)}
         </tbody>
       </Table>
 
@@ -190,14 +201,17 @@ const ManageUsers = ({ firebase }) => {
                       (role) =>
                         !Object.keys(currentUser.roles).includes(role[0])
                     )
+                    .sort((a, b) => (a[0] > b[0] ? 1 : -1))
                     .map((role) => (
                       <DraggableRole userOwned={false} role={role} key={role} />
                     ))}
                 </DroppableColumn>
                 <DroppableColumn userOwned={true}>
-                  {Object.entries(currentUser.roles).map((role) => (
-                    <DraggableRole userOwned={true} role={role} key={role} />
-                  ))}
+                  {Object.entries(currentUser.roles)
+                    .sort((a, b) => (a[0] > b[0] ? 1 : -1))
+                    .map((role) => (
+                      <DraggableRole userOwned={true} role={role} key={role} />
+                    ))}
                 </DroppableColumn>
               </Row>
             </DndProvider>

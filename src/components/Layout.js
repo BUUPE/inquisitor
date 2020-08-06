@@ -54,6 +54,7 @@ const WithAuthorizationWrapper = (props) => {
     />
   );
 };
+// would've preferred to call this in gatsby-browser onClientEntry, but can't do Queries in there
 setWithAuthorizationWrapper(WithAuthorizationWrapper);
 
 const ErrorComponent = ({ error, errorInfo }) => (
