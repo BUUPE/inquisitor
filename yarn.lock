@@ -14021,7 +14021,7 @@ update-notifier@^3.0.1:
 
 upe-react-components@BUUPE/React-Components#dist:
   version "0.0.0"
-  resolved "https://codeload.github.com/BUUPE/React-Components/tar.gz/da6fbd7116fdb28a44ea6c4418c7eef6c672090a"
+  resolved "https://codeload.github.com/BUUPE/React-Components/tar.gz/64966699eda62d1aaea9d3b3fa6105d622500c7b"
 
 uri-js@^4.2.2:
   version "4.2.2"

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
+import isEqual from "lodash.isequal";
 import DayPicker, { DateUtils } from "react-day-picker";
 import "react-day-picker/lib/style.css";
 
@@ -25,20 +26,65 @@ const DEFAULT_GENERAL_SETTINGS = {
   timeslotEnd: 22,
 };
 
+const interceptAnchors = (interceptor) =>
+  Array.from(document.querySelectorAll("a")).forEach((link) =>
+    link.addEventListener("click", interceptor, true)
+  );
+const deinterceptAnchors = (interceptor) =>
+  Array.from(document.querySelectorAll("a")).forEach((link) =>
+    link.removeEventListener("click", interceptor, true)
+  );
+
 class GeneralSettings extends Component {
   _initFirebase = false;
   state = {
+    preSaveSettings: null,
     settings: null,
     loading: true,
     showToast: false,
   };
 
+  interceptor = async (e) => {
+    if (!isEqual(this.state.settings, this.state.preSaveSettings)) {
+      e.preventDefault();
+      swal({
+        title: "You have unsaved settings!",
+        text:
+          "Changes to settings will be lost! Are you sure you want to leave this page?",
+        icon: "warning",
+        buttons: {
+          cancel: {
+            text: "No",
+            value: false,
+            visible: true,
+          },
+          confirm: {
+            text: "Yes",
+            value: true,
+            visible: true,
+          },
+        },
+      }).then((confirm) => {
+        if (confirm) {
+          deinterceptAnchors(this.interceptor);
+          window.location.href = e.target.href;
+        }
+      });
+    }
+  };
+
   componentDidMount() {
     if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    interceptAnchors(this.interceptor);
   }
 
   componentDidUpdate() {
     if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    interceptAnchors(this.interceptor);
+  }
+
+  componentWillUnmount() {
+    deinterceptAnchors(this.interceptor);
   }
 
   loadSettings = async () => {
@@ -49,6 +95,7 @@ class GeneralSettings extends Component {
       await this.props.firebase.generalSettings().set(DEFAULT_GENERAL_SETTINGS);
       this.setState({
         settings: DEFAULT_GENERAL_SETTINGS,
+        preSaveSettings: DEFAULT_GENERAL_SETTINGS,
         loading: false,
       });
     } else {
@@ -56,6 +103,7 @@ class GeneralSettings extends Component {
       settings.timeslotDays = settings.timeslotDays.map((day) => day.toDate());
       this.setState({
         settings,
+        preSaveSettings: settings,
         loading: false,
       });
     }
@@ -85,6 +133,7 @@ class GeneralSettings extends Component {
           .set(DEFAULT_GENERAL_SETTINGS);
         this.setState({
           settings: DEFAULT_GENERAL_SETTINGS,
+          preSaveSettings: DEFAULT_GENERAL_SETTINGS,
           showToast: true,
         });
       }
@@ -112,7 +161,7 @@ class GeneralSettings extends Component {
     }
 
     await this.props.firebase.generalSettings().set(settings);
-    this.setState({ showToast: true });
+    this.setState({ showToast: true, preSaveSettings: settings });
   };
 
   handleDayClick = (day, { selected }) => {

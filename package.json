@@ -24,6 +24,7 @@
     "gatsby-source-filesystem": "^2.1.56",
     "gatsby-styled-components-dark-mode": "^1.1.1",
     "gatsby-transformer-sharp": "^2.3.19",
+    "lodash.isequal": "^4.5.0",
     "react": "^16.9.0",
     "react-bootstrap": "^1.2.2",
     "react-day-picker": "^7.4.8",
@@ -71,6 +72,7 @@
   },
   "scripts": {
     "build": "gatsby clean && gatsby build",
+    "buildProd": "gatsby clean && gatsby build --prefix-paths",
     "develop": "gatsby clean && gatsby develop",
     "serve": "gatsby serve",
     "clean": "gatsby clean",

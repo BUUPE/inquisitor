@@ -66,6 +66,7 @@ const ManageUsers = ({ firebase }) => {
         setLoading(false);
       })
       .catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firebase]);
 
   if (loading) return <Loader />;
