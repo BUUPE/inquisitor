@@ -142,7 +142,7 @@ class GeneralSettings extends Component {
 
   saveSettings = async (e) => {
     e.preventDefault();
-    const { settings } = this.state;
+    const { settings, preSaveSettings } = this.state;
 
     if (
       (settings.timeslotsOpen || settings.timeslotsOpenForApplicants) &&
@@ -155,13 +155,57 @@ class GeneralSettings extends Component {
       );
     }
 
+    if (settings.timeslotStart >= settings.timeslotEnd)
+      return swal(
+        "Uh oh!",
+        "Timeslot End Time must be greater than Timeslot Start Time!",
+        "error"
+      );
+
     if (!settings.timeslotsOpen) {
       settings.timeslotsOpenForApplicants = false;
       settings.timeslotDays = [];
     }
 
-    await this.props.firebase.generalSettings().set(settings);
-    this.setState({ showToast: true, preSaveSettings: settings });
+    let confirm = true;
+    if (
+      (settings.timeslotsOpenForApplicants &&
+        !preSaveSettings.timeslotsOpenForApplicants) ||
+      (!settings.timeslotsOpenForApplicants &&
+        preSaveSettings.timeslotsOpenForApplicants)
+    ) {
+      const action = settings.timeslotsOpenForApplicants
+        ? "opening"
+        : "closing";
+      const msg =
+        action === "opening"
+          ? "mean that applicants can start selecting their interview timeslots. This will trigger sending emails to every applicant to let them know."
+          : "close timeslot selection for applicants i.e. if there are those who have not yet picked a timeslot, they will no longer be able to do so.";
+      confirm = await swal({
+        title: "Modifying Timeslot Selection!",
+        text: `Saving these settings will ${msg} Are you sure you want to do this?`,
+        icon: "warning",
+        buttons: {
+          cancel: {
+            text: "No",
+            value: false,
+            visible: true,
+          },
+          confirm: {
+            text: "Yes",
+            value: true,
+            visible: true,
+          },
+        },
+      });
+    }
+
+    if (confirm) {
+      await this.props.firebase.generalSettings().set(settings);
+      this.setState({ showToast: true, preSaveSettings: settings });
+    } else {
+      this.setState({ settings: preSaveSettings });
+    }
   };
 
   handleDayClick = (day, { selected }) => {

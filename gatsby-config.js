@@ -5,7 +5,7 @@ module.exports = {
     author: `Rudhra Raveendran`,
     siteUrl: `https://upe.bu.edu/interview`,
   },
-  pathPrefix: `/Inquisitor`,
+  pathPrefix: `/interview`,
   plugins: [
     `gatsby-plugin-react-helmet`,
     `gatsby-transformer-sharp`,
