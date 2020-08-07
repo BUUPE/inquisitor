@@ -157,7 +157,7 @@ class ApplicationForm extends Component {
         </Container>
       );
 
-    const onSubmit = (event) => {
+    const onSubmit = async (event) => {
       this.setState({ sending: true });
       event.preventDefault();
       const form = event.currentTarget;
@@ -174,8 +174,13 @@ class ApplicationForm extends Component {
         const { uid, roles } = this.context;
         roles.applicant = true;
 
+        let firstName, email;
         let responses = inputs.map(({ id: inputId, value }) => {
           const id = parseInt(inputId);
+
+          if (id === 1) firstName = value.split(" ")[0];
+          else if (id === 2) email = value;
+
           const { name, order, type } = questions.find((q) => q.id === id);
           return {
             id,
@@ -209,20 +214,22 @@ class ApplicationForm extends Component {
             })
         );
 
-        Promise.all(uploadFiles).then((fileURLs) => {
-          responses = responses.concat(fileURLs);
+        const fileURLs = await Promise.all(uploadFiles);
+        responses = responses.concat(fileURLs);
 
-          const uploadApplicationData = this.props.firebase
-            .application(uid)
-            .set({ responses, semester });
-          const setApplied = this.props.firebase
-            .user(uid)
-            .update({ applied: true, roles });
-
-          Promise.all([uploadApplicationData, setApplied]).then(() =>
-            this.setState({ submitted: true, sending: false })
-          );
+        const uploadApplicationData = this.props.firebase
+          .application(uid)
+          .set({ responses, semester });
+        const setApplied = this.props.firebase
+          .user(uid)
+          .update({ applied: true, roles });
+        const sendReceipt = this.props.firebase.sendApplicationReceipt({
+          email,
+          firstName,
         });
+
+        await Promise.all([uploadApplicationData, setApplied, sendReceipt]);
+        this.setState({ submitted: true, sending: false });
       }
 
       this.setState({
@@ -337,7 +344,7 @@ class ApplicationForm extends Component {
             .map((question) => renderQuestion(question))}
 
           <Button type="submit" disabled={sending}>
-            Submit
+            {sending ? "Submitting..." : "Submit"}
           </Button>
         </CenteredForm>
       </Container>

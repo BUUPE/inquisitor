@@ -26,6 +26,9 @@ class Firebase extends FirebaseSuper {
     this.importInquisitorData = this.functions.httpsCallable(
       "importInquisitorData"
     );
+    this.sendApplicationReceipt = this.functions.httpsCallable(
+      "sendApplicationReceipt"
+    );
   }
 
   application = (uid) =>
