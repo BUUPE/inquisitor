@@ -29,6 +29,12 @@ class Firebase extends FirebaseSuper {
     this.sendApplicationReceipt = this.functions.httpsCallable(
       "sendApplicationReceipt"
     );
+    this.notifyTimeslotsAreOpen = this.functions.httpsCallable(
+      "notifyTimeslotsAreOpen"
+    );
+    this.notifyTimeslotsAreClosed = this.functions.httpsCallable(
+      "notifyTimeslotsAreClosed"
+    );
   }
 
   application = (uid) =>

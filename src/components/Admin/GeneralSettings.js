@@ -198,6 +198,10 @@ class GeneralSettings extends Component {
           },
         },
       });
+
+      action === "opening"
+        ? this.props.firebase.notifyTimeslotsAreOpen()
+        : this.props.firebase.notifyTimeslotsAreClosed();
     }
 
     if (confirm) {
