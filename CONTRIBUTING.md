@@ -2,25 +2,7 @@
 
 ## Git Practices
 
-Before contributing, note that we use the [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. Please read that article in its entirety if you are unfamiliar with the concept. Also, if you don't have the bindings installed already, you can get them [here](https://github.com/nvie/gitflow/wiki/Installation). If you need a quick refresher on Git Flow, check out this [cheatsheet](https://danielkummer.github.io/git-flow-cheatsheet/). If you haven't already done so, run `git flow init -d` in the project root. This will setup your local repository to match the branching model of the remote (`master` and `develop` with feature branches etc.). Make sure you follow the Git Flow model when making any features/changes (you won't have access to push changes directly to `master` or `develop` anyways).
-
-Note that you don't need the Git Flow bindings to follow the branching model. Essentially, whenever you are starting a new feature, grab the latest changes to `develop` and branch off it:
-
-```
-git checkout develop
-git pull
-git checkout -b feature/<NEW_FEATURE_NAME>
-```
-
-You can `git commit` and `git push` as normal on your feature branch. However, one caveat from the normal Git Flow model is that you can't use `git flow feature finish`. What that command does is merge your feature branch into `develop`, however you won't have write access to `develop`, which will prevent you from pushing your changes. Instead, when you are done with your feature, grab the latest changes to `develop`, merge them in to your branch, and push your changes:
-
-```
-git fetch origin develop:develop
-git merge develop
-git push
-```
-
-Merging `develop` before pushing makes sure you're not behind on any upadtes and will save a step during the pull request if merge conflicts occur. After your feature branch is pushed, go to GitHub and make a pull request from your branch into `develop` (`develop` should be set as the base). Once the PR passes code review, it will be merged in. After enough new features are added to `develop`, a PR will be made from `develop` into `master` (this can be considered a "release candidate"), after which a final round of reviews/bugfixes are made before merging.
+We use the [GitHub Flow](https://guides.github.com/introduction/flow/) branching model. It's pretty straightforward, so give it a read, but basically the idea is that `master` is a protected branch that is never written to directly. Whenever you want to add a feature/fix a bug/etc. you create a new branch off of master, make your changes, and then submit a Pull Request so that code owners can review the changes before merging.
 
 ## Code Style
 
@@ -28,6 +10,4 @@ For this project, we use 2 spaces for indentation (almost all text editors will 
 
 ## Libraries
 
-This project uses the [React Bootstrap](https://react-bootstrap.github.io/) design library, so try to use it as much as possible to ensure a uniform look throughout the app (i.e. don't make your own components when React Bootstrap has the same thing). Also, although this means Bootstrap is included in the project, don't use Bootstrap CSS classes/HTML elements. Use the React Bootstrap documentation to find the equivalent React way of doing it to ensure the code is consistent throughout the project. Reading through the list of available components would be a good first step.
-
-If you have any questions, please reach out to @ROODAY or @Warren-Partridge.
+This project uses the [React Bootstrap](https://react-bootstrap.github.io/) design library, so try to use it as much as possible to ensure a uniform look throughout the app (i.e. don't make your own components when React Bootstrap has the same thing). Also, although this means Bootstrap is included in the project, don't use Bootstrap CSS classes/HTML elements. Use the React Bootstrap documentation to find the equivalent React way of doing it to ensure the code is consistent throughout the project. If you do need to modify styling, don't create a CSS file, keep it in the scope of the element you're modifying (i.e. `style={}` prop on the component). If you notice that you're writing the same styles in multiple places, consider abstracting it into a [styled-component](https://styled-components.com/). If you have any questions, please reach out to the code owners.
