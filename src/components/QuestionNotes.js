@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Toast from 'react-bootstrap/Toast';
+import React, { useState, useEffect } from "react";
+import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Toast from "react-bootstrap/Toast";
 
-import { withFirebase } from './Firebase';
-import { saveQuestionNotes, saveComments } from '../util/api';
+import { withFirebase } from "./Firebase";
+import { saveQuestionNotes, saveComments } from "../util/api";
 
-const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebase, savedNotes }) => {
+const QuestionNotes = ({
+  interviewId,
+  problemNum,
+  commentsOnly,
+  dataKey,
+  firebase,
+  savedNotes,
+}) => {
   const [validated, setValidated] = useState(false);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [score, setScore] = useState(1);
   const [showToast, setShowToast] = useState(false);
 
@@ -18,9 +25,9 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
       setNotes(savedNotes.notes);
       setScore(savedNotes.score);
     }
-  }, [savedNotes])
+  }, [savedNotes]);
 
-  const handleSubmit = event => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
     const form = event.currentTarget;
@@ -30,27 +37,36 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
     } else {
       setValidated(false);
       if (!commentsOnly) {
-        saveQuestionNotes(firebase, { interviewId, problemNum, notes, score }).then(() => setShowToast(true));
+        saveQuestionNotes(firebase, {
+          interviewId,
+          problemNum,
+          notes,
+          score,
+        }).then(() => setShowToast(true));
       } else {
-        saveComments(firebase, { interviewId, dataKey, notes }).then(() => setShowToast(true));
+        saveComments(firebase, { interviewId, dataKey, notes }).then(() =>
+          setShowToast(true)
+        );
       }
     }
   };
 
-  const onNotesChange = event => setNotes(event.target.value);
-  const onScoreChange = event => setScore(event.target.value);
+  const onNotesChange = (event) => setNotes(event.target.value);
+  const onScoreChange = (event) => setScore(event.target.value);
 
   return (
     <Form noValidate validated={validated} onSubmit={handleSubmit}>
-      {!commentsOnly &&
+      {!commentsOnly && (
         <div className="note-wrapper">
           <Col sm={9}>
             <Form.Group controlId="formBasicEmail">
-              <Form.Label><strong>Notes</strong></Form.Label>
-              <Form.Control 
-                as="textarea" 
-                rows="10" 
-                placeholder="Enter notes here..." 
+              <Form.Label>
+                <strong>Notes</strong>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows="10"
+                placeholder="Enter notes here..."
                 name={`problem-${problemNum}-notes`}
                 value={notes}
                 onChange={onNotesChange}
@@ -61,8 +77,8 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
           <Col sm={3}>
             <strong>Score</strong>
 
-            {['1','2','3','4','5'].map(s => (
-              <Form.Check 
+            {["1", "2", "3", "4", "5"].map((s) => (
+              <Form.Check
                 type="radio"
                 key={`problem-${problemNum}-score-${s}`}
                 name={`problem-${problemNum}-score`}
@@ -75,43 +91,41 @@ const QuestionNotes = ({ interviewId, problemNum, commentsOnly, dataKey, firebas
             ))}
           </Col>
         </div>
-      }
+      )}
 
-      {commentsOnly &&
+      {commentsOnly && (
         <Form.Group controlId="formBasicEmail">
-          <Form.Label><strong>Comments</strong></Form.Label>
-          <Form.Control 
-            as="textarea" 
-            rows="10" 
-            placeholder="Enter comments here..." 
+          <Form.Label>
+            <strong>Comments</strong>
+          </Form.Label>
+          <Form.Control
+            as="textarea"
+            rows="10"
+            placeholder="Enter comments here..."
             name={dataKey}
             value={notes}
             onChange={onNotesChange}
             required
           />
         </Form.Group>
-      }
-      
+      )}
+
       <Button type="submit">Save</Button>
 
-      <Toast 
-        onClose={() => setShowToast(false)} 
-        show={showToast} 
+      <Toast
+        onClose={() => setShowToast(false)}
+        show={showToast}
         delay={3000}
         autohide
       >
         <Toast.Body>
-          {commentsOnly &&
-            <strong>Comments saved!</strong>
-          }
+          {commentsOnly && <strong>Comments saved!</strong>}
 
-          {!commentsOnly &&
-            <strong>Question notes saved!</strong>
-          }
+          {!commentsOnly && <strong>Question notes saved!</strong>}
         </Toast.Body>
       </Toast>
     </Form>
   );
-}
+};
 
 export default withFirebase(QuestionNotes);
