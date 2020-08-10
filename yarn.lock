@@ -14008,9 +14008,9 @@ update-notifier@^3.0.1:
     semver-diff "^2.0.0"
     xdg-basedir "^3.0.0"
 
-upe-react-components@BUUPE/React-Components#dist:
+"upe-react-components@https://github.com/BUUPE/React-Components.git#dist":
   version "0.0.0"
-  resolved "https://codeload.github.com/BUUPE/React-Components/tar.gz/64966699eda62d1aaea9d3b3fa6105d622500c7b"
+  resolved "https://github.com/BUUPE/React-Components.git#32efa189262003a7427ce5574f1a23228c9601f7"
 
 uri-js@^4.2.2:
   version "4.2.2"

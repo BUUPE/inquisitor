@@ -76,7 +76,7 @@ const ImportExport = ({ firebase }) => {
           Export to File
         </Button>
         <hr />
-        <Button disabled={loading} variant="danger" disabled>
+        <Button disabled variant="danger">
           Delete Inquisitor Data
         </Button>
       </Col>
