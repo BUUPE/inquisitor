@@ -20,6 +20,7 @@ class ApplicantView extends Component {
     loading: true,
     error: null,
     accepted: false,
+    application: null,
   };
   static contextType = AuthUserContext;
   unsub = null;
@@ -43,23 +44,37 @@ class ApplicantView extends Component {
     if (!doc.exists) this.setState({ error: "Failed to load timeslots!" });
     else {
       const settings = doc.data();
-      this.setState({ settings, loading: false }, () => {
+      this.setState({ settings }, () => {
         console.log("Settings loaded");
       });
+    }
+
+    if (!!this.context.inquisitor.application) {
+      const appDoc = await this.props.firebase
+        .application(this.context.inquisitor.application)
+        .get();
+
+      if (!appDoc.exists)
+        this.setState({ error: "Failed to load application" });
+      else {
+        const application = appDoc.data();
+        this.setState({ application, loading: false }, () => {
+          console.log("Application Loaded");
+        });
+      }
     }
   };
 
   accept = () => {
     const data = {
-      inquisitor: {
-        deliberation: {
-          applicantAccepted: true,
-        },
+      deliberation: {
+        applicantAccepted: true,
       },
     };
 
     this.props.firebase
-      .editUser(this.context.uid, data)
+      .application(this.context.inquisitor.application)
+      .set(data, { merge: true })
       .then(() => {
         console.log("Successfully updated Data");
         this.setState({ accepted: true });
@@ -70,7 +85,7 @@ class ApplicantView extends Component {
   };
 
   render() {
-    const { loading, error, accepted } = this.state;
+    const { loading, error, accepted, application } = this.state;
 
     if (loading) return <Loader />;
     if (error)
@@ -101,43 +116,41 @@ class ApplicantView extends Component {
         </Container>
       );
 
-    if (!deliberationsComplete || !authUser.inquisitor.deliberation.complete)
+    if (!deliberationsComplete || !application.deliberation.complete)
       return (
         <Container flexdirection="column">
           <h1>Deliberations are not yet complete!</h1>
         </Container>
       );
 
-    if (authUser.inquisitor.deliberation.accepted)
+    if (!application.deliberation.acceptedUPE)
       return (
-        <>
-          <Container flexdirection="column">
-            <div>
-              <h1>Your Deliberation</h1>
-            </div>
-            <br />
-            <div>
-              <h2>You have been accepted into UPE!</h2>
-              <br />
-              {!accepted ? (
-                <>
-                  <p>
-                    We are pleased to announce that you have been accepted to
-                    the latest class of UPE's chapter at BU. If you'd like to
-                    accept this, and proceed to start your onboarding period,
-                    please click the button bellow to continue
-                  </p>
-                  <Button onClick={() => this.accept()}>Accept</Button>
-                </>
-              ) : (
-                <p>
-                  You will be contacted shortly regarding future steps to take
-                  in relation to the onboarding period!
-                </p>
-              )}
-            </div>
-          </Container>
-        </>
+        <Container flexdirection="column">
+          <h1>You have been emailed your results.</h1>
+        </Container>
+      );
+
+    if (application.deliberation.applicantAccepted || accepted)
+      return (
+        <Container flexdirection="column">
+          <div>
+            <h1>Next Steps</h1>
+            <p>
+              Now that you've accepted to join UPE, you will continue on with
+              the onboarding period, during this time, and has mentioned during
+              the Info Sessions, you will be required to attend chapter, meet
+              current members, and contribute in some way to UPE. Further
+              details about this will be given to you shortly by our Recruitment
+              Team.
+            </p>
+            <p>
+              For the time being however, we ask that you fill out the form
+              bellow, so that once onboarding is over, we can induct you and add
+              you to our database & website.
+            </p>
+          </div>
+          <br />
+        </Container>
       );
 
     return (
@@ -147,27 +160,15 @@ class ApplicantView extends Component {
         </div>
         <br />
         <div>
-          <h2>
-            {" "}
-            We regret to inform you that you have not been accepted into UPE
-            this semester{" "}
-          </h2>
+          <h2>You have been accepted into UPE!</h2>
           <br />
           <p>
-            {" "}
-            Despite this decision, we encourage you to apply again next semester
-            if you so feel inclined.
+            We are pleased to announce that you have been accepted to the latest
+            class of UPE's chapter at BU. If you'd like to accept this, and
+            proceed to start your onboarding period, please click the button
+            bellow to continue
           </p>
-          <p>
-            {" "}
-            As a part of our decision process, we always provide feedback to
-            applicants who are not accepted, bellow you can find the feedback
-            written by our recruitment team in regards to your applicantion and
-            interview.
-          </p>
-          <br />
-          <h2>Feedback</h2>
-          {authUser.inquisitor.deliberation.feedback}
+          <Button onClick={() => this.accept()}>Accept</Button>
         </div>
       </Container>
     );
