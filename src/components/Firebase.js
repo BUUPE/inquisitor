@@ -61,6 +61,9 @@ class Firebase extends FirebaseSuper {
   editUser = (uid, data) =>
     this.firestore.collection("users").doc(uid).set(data, { merge: true });
 
+  uploadImage = (className, fileName) =>
+    this.storage.ref("profiles").child(className).child(fileName);
+
   // *** Storage API ***
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
   questionImage = (name) => this.storage.child(`Questions/${name}`);

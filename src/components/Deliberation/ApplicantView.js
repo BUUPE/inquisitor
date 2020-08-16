@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { compose } from "recompose";
 import { Link } from "gatsby";
 import Button from "react-bootstrap/Button";
+import DataForm from "./DataForm";
 import { Centered } from "../../styles/global";
 import { isApplicant } from "../../util/conditions";
 import {
@@ -150,6 +151,7 @@ class ApplicantView extends Component {
             </p>
           </div>
           <br />
+          <DataForm />
         </Container>
       );
 
