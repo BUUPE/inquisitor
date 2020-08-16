@@ -23,6 +23,7 @@ const StyledFormRow = styled(Form.Row)`
 
 // TODO: refactor settings to have sub sections
 const DEFAULT_GENERAL_SETTINGS = {
+  deliberationOpen: false,
   applicationsOpen: false,
   timeslotsOpen: false,
   timeslotsOpenForApplicants: false,
@@ -552,6 +553,23 @@ class GeneralSettings extends Component {
               />
             </FullWidthFormGroup>
           </StyledFormRow>
+          <hr />
+          <Form.Row>
+            <Form.Check
+              custom
+              checked={settings.deliberationOpen}
+              type="switch"
+              label={`Deliberations are ${
+                settings.deliberationOpen ? "open" : "closed"
+              }`}
+              id="deliberationOpen"
+              onChange={(e) =>
+                this.setState({
+                  settings: { ...settings, deliberationOpen: e.target.checked },
+                })
+              }
+            />
+          </Form.Row>
           <hr />
           <FlexDiv>
             <FlexDiv
