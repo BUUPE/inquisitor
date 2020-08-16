@@ -58,6 +58,9 @@ class Firebase extends FirebaseSuper {
 
   allRoles = () => this.firestore.doc("config/roles");
 
+  editUser = (uid, data) =>
+    this.firestore.collection("users").doc(uid).set(data, { merge: true });
+
   // *** Storage API ***
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
   questionImage = (name) => this.storage.child(`Questions/${name}`);

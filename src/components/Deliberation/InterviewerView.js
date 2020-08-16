@@ -15,9 +15,6 @@ import { isRecruitmentTeam } from "../../util/conditions";
 import Loader from "../Loader";
 import { Container } from "../../styles/global";
 
-import ScrollableRow from "./ScrollableRow";
-import ScheduleColumn from "./ScheduleColumn";
-
 class InterviewerView extends Component {
   _initFirebase = false;
   state = {
