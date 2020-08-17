@@ -141,7 +141,7 @@ class InterviewerView extends Component {
       // run all of this inside a transaction so it will restart if someone makes changes at the same time
       await firebase.firestoreRoot.runTransaction(async (transaction) => {
         // first remove timeslots the user no longer is in
-        asyncForEach(
+        await asyncForEach(
           existingTimeslots.filter((ts) =>
             // filter for timeslots this user is a part of
             ts.interviewers.hasOwnProperty(authUser.uid)
