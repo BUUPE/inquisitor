@@ -3,6 +3,7 @@ import { compose } from "recompose";
 import styled from "styled-components";
 
 import Loader from "../Loader";
+import QuestionDisplay from "./QuestionDisplay";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -74,6 +75,7 @@ class ApplicationDisplay extends Component {
     var values = this.state.values;
     var interview = this.state.interview;
     var questions = {};
+    var counter = 0;
 
     data.responses.map((val) => {
       if (val.id === 1) {
@@ -110,7 +112,9 @@ class ApplicationDisplay extends Component {
 
     questionsList.forEach(async (item, index) => {
       if (item === "finalNotes") {
-        questions[item] = {};
+        questions[item] = {
+          uid: index,
+        };
 
         questions[item][interviewers[0].uid] = {
           score: data.interview.scores[interviewers[0].uid][item],
@@ -121,7 +125,9 @@ class ApplicationDisplay extends Component {
           notes: data.interview.notes[interviewers[1].uid][item],
         };
       } else if (item === "resume") {
-        questions[item] = {};
+        questions[item] = {
+          uid: index,
+        };
 
         questions[item][interviewers[0].uid] = {
           score: data.interview.scores[interviewers[0].uid][item],
@@ -132,6 +138,10 @@ class ApplicationDisplay extends Component {
           notes: data.interview.notes[interviewers[1].uid][item],
         };
       } else {
+        var name = "";
+        var description = "";
+        var answer = "";
+        var img = "";
         var generalAvrg = 0;
         var classAvrg = 0;
         var levelAvrg = 0;
@@ -140,12 +150,20 @@ class ApplicationDisplay extends Component {
         if (!doc.exists) this.setState({ error: "Failed to load question!" });
         else {
           const docData = doc.data();
+          name = docData.name;
+          description = docData.description;
+          answer = docData.answer;
+          img = docData.image;
           generalAvrg = docData.scores["general"].avrg;
           classAvrg = docData.scores[this.state.values.classYear].avrg;
           levelAvrg = docData.scores[data.interview.level].avrg;
         }
 
+        questions[item] = {};
+
         questions[item] = {
+          uid: item,
+          name: name,
           generalAvrg: generalAvrg,
           classAvrg: classAvrg,
           levelAvrg: levelAvrg,
@@ -182,34 +200,17 @@ class ApplicationDisplay extends Component {
 
     const authUser = this.context;
 
+    Object.entries(interview.questions).forEach((k, v) => {
+      console.log(k, v);
+    });
+
     const InterviewResponsesComp = () => {
-      const renderResponse = (response) => {
-        let responseComponent;
-        if (response.type === "file") {
-          responseComponent = (
-            <embed
-              src={response.value}
-              width="100%"
-              height="500"
-              type="application/pdf"
-              title={response.name}
-            />
-          );
-        } else {
-          responseComponent = <p>{response.value}</p>;
-        }
-
-        return (
-          <Fragment key={response.id}>
-            <h4>{response.name}</h4>
-            {responseComponent}
-          </Fragment>
-        );
-      };
-
+      console.log(interview.questions);
       return (
         <Fragment>
-          {formResponses.map((response) => renderResponse(response))}
+          {Object.entries(interview.questions).map((question) => (
+            <QuestionDisplay key={question.uid} question={question} />
+          ))}
         </Fragment>
       );
     };
@@ -326,6 +327,11 @@ class ApplicationDisplay extends Component {
         <Row>
           <Col>
             <h2> Question Details </h2>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <InterviewResponsesComp />
           </Col>
         </Row>
       </Container>
