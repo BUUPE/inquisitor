@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { compose } from "recompose";
 import styled from "styled-components";
 
@@ -32,6 +32,11 @@ class ApplicationDisplay extends Component {
       classYear: "",
       file: null,
     },
+    interview: {
+      level: "",
+      interviewers: [],
+      questions: {},
+    },
     formResponses: [],
   };
   static contextType = AuthUserContext;
@@ -64,9 +69,11 @@ class ApplicationDisplay extends Component {
     }
   };
 
-  sortData = () => {
+  sortData = async () => {
     const { data } = this.state;
     var values = this.state.values;
+    var interview = this.state.interview;
+    var questions = {};
 
     data.responses.map((val) => {
       if (val.id === 1) {
@@ -79,7 +86,7 @@ class ApplicationDisplay extends Component {
         values.major = val.value;
         this.setState({ values });
       } else if (val.id === 4) {
-        values.minor = val.value;
+        values.minors = val.value;
         this.setState({ values });
       } else if (val.id === 5) {
         values.classYear = val.value;
@@ -89,15 +96,81 @@ class ApplicationDisplay extends Component {
         this.setState({ values });
       } else {
         const formResponses = this.state.formResponses;
-        formResponses.push({ val: val.value, name: val.name });
+        formResponses.push({ value: val.value, name: val.name, id: val.id });
         this.setState({ formResponses });
       }
     });
-    this.setState({ loading: false });
+
+    const interviewers = Object.entries(
+      data.interview.interviewers
+    ).map((a) => ({ uid: a[0], name: a[1] }));
+    const questionsList = Object.entries(
+      data.interview.notes[interviewers[0].uid]
+    ).map((a) => a[0]);
+
+    questionsList.forEach(async (item, index) => {
+      if (item === "finalNotes") {
+        questions[item] = {};
+
+        questions[item][interviewers[0].uid] = {
+          score: data.interview.scores[interviewers[0].uid][item],
+          notes: data.interview.notes[interviewers[0].uid][item],
+        };
+        questions[item][interviewers[1].uid] = {
+          score: data.interview.scores[interviewers[1].uid][item],
+          notes: data.interview.notes[interviewers[1].uid][item],
+        };
+      } else if (item === "resume") {
+        questions[item] = {};
+
+        questions[item][interviewers[0].uid] = {
+          score: data.interview.scores[interviewers[0].uid][item],
+          notes: data.interview.notes[interviewers[0].uid][item],
+        };
+        questions[item][interviewers[1].uid] = {
+          score: data.interview.scores[interviewers[1].uid][item],
+          notes: data.interview.notes[interviewers[1].uid][item],
+        };
+      } else {
+        var generalAvrg = 0;
+        var classAvrg = 0;
+        var levelAvrg = 0;
+
+        const doc = await this.props.firebase.question(item).get();
+        if (!doc.exists) this.setState({ error: "Failed to load question!" });
+        else {
+          const docData = doc.data();
+          generalAvrg = docData.scores["general"].avrg;
+          classAvrg = docData.scores[this.state.values.classYear].avrg;
+          levelAvrg = docData.scores[data.interview.level].avrg;
+        }
+
+        questions[item] = {
+          generalAvrg: generalAvrg,
+          classAvrg: classAvrg,
+          levelAvrg: levelAvrg,
+        };
+
+        questions[item][interviewers[0].uid] = {
+          score: data.interview.scores[interviewers[0].uid][item],
+          notes: data.interview.notes[interviewers[0].uid][item],
+        };
+        questions[item][interviewers[1].uid] = {
+          score: data.interview.scores[interviewers[1].uid][item],
+          notes: data.interview.notes[interviewers[1].uid][item],
+        };
+      }
+    });
+
+    interview.level = data.interview.level;
+    interview.interviewers = [interviewers[0].name, interviewers[1].name];
+    interview.questions = questions;
+
+    this.setState({ interview, loading: false });
   };
 
   render() {
-    const { loading, error, values, formResponses } = this.state;
+    const { loading, error, values, formResponses, interview } = this.state;
 
     if (loading) return <Loader />;
     if (error)
@@ -108,6 +181,70 @@ class ApplicationDisplay extends Component {
       );
 
     const authUser = this.context;
+
+    const InterviewResponsesComp = () => {
+      const renderResponse = (response) => {
+        let responseComponent;
+        if (response.type === "file") {
+          responseComponent = (
+            <embed
+              src={response.value}
+              width="100%"
+              height="500"
+              type="application/pdf"
+              title={response.name}
+            />
+          );
+        } else {
+          responseComponent = <p>{response.value}</p>;
+        }
+
+        return (
+          <Fragment key={response.id}>
+            <h4>{response.name}</h4>
+            {responseComponent}
+          </Fragment>
+        );
+      };
+
+      return (
+        <Fragment>
+          {formResponses.map((response) => renderResponse(response))}
+        </Fragment>
+      );
+    };
+
+    const FormResponsesComp = () => {
+      const renderResponse = (response) => {
+        let responseComponent;
+        if (response.type === "file") {
+          responseComponent = (
+            <embed
+              src={response.value}
+              width="100%"
+              height="500"
+              type="application/pdf"
+              title={response.name}
+            />
+          );
+        } else {
+          responseComponent = <p>{response.value}</p>;
+        }
+
+        return (
+          <Fragment key={response.id}>
+            <h4>{response.name}</h4>
+            {responseComponent}
+          </Fragment>
+        );
+      };
+
+      return (
+        <Fragment>
+          {formResponses.map((response) => renderResponse(response))}
+        </Fragment>
+      );
+    };
 
     return (
       <Container>
@@ -149,6 +286,46 @@ class ApplicationDisplay extends Component {
               height="300"
               type="application/pdf"
             />
+          </Col>
+        </Row>
+
+        <br />
+
+        <Row>
+          <Col>
+            <h1> Application Responses </h1>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <FormResponsesComp />
+          </Col>
+        </Row>
+
+        <br />
+
+        <Row>
+          <Col>
+            <h1> Interview Details </h1>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <h4> Level </h4>
+            <p> {interview.level} </p>
+          </Col>
+          <Col>
+            <h4> Interviewers </h4>
+            <p>
+              {" "}
+              {interview.interviewers[0]} | {interview.interviewers[1]}{" "}
+            </p>
+          </Col>
+        </Row>
+
+        <Row>
+          <Col>
+            <h2> Question Details </h2>
           </Col>
         </Row>
       </Container>

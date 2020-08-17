@@ -55,6 +55,8 @@ class Firebase extends FirebaseSuper {
       .orderBy("interview.level")
       .orderBy("applicant.name");
 
+  question = (uid) => this.inquisitorData.collection("questions").doc(uid);
+
   timeslot = (uid) => this.inquisitorData.collection("timeslots").doc(uid);
   timeslots = () => this.inquisitorData.collection("timeslots");
 
