@@ -15,6 +15,7 @@ import {
   withAuthorization,
 } from "upe-react-components";
 import { isRecruitmentTeam } from "../../util/conditions";
+import { asyncForEach } from "../../util/helper";
 
 class ApplicationDisplay extends Component {
   constructor(props) {
@@ -44,18 +45,18 @@ class ApplicationDisplay extends Component {
   unsub = null;
 
   componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadApplication();
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadApplication();
   }
 
   componentWillUnmount() {
     if (typeof this.unsub === "function") this.unsub();
   }
 
-  loadSettings = async () => {
+  loadApplication = async () => {
     this._initFirebase = true;
 
     const doc = await this.props.firebase.application(this.props.data).get();
@@ -64,7 +65,7 @@ class ApplicationDisplay extends Component {
     else {
       const data = doc.data();
       this.setState({ data }, () => {
-        console.log("Data loaded");
+        console.log("Application loaded");
         this.sortData();
       });
     }
@@ -110,7 +111,7 @@ class ApplicationDisplay extends Component {
       data.interview.notes[interviewers[0].uid]
     ).map((a) => a[0]);
 
-    questionsList.forEach(async (item, index) => {
+    await asyncForEach(questionsList, async (item, index) => {
       if (item === "finalNotes") {
         questions[item] = {
           uid: index,
@@ -162,7 +163,7 @@ class ApplicationDisplay extends Component {
         questions[item] = {};
 
         questions[item] = {
-          uid: item,
+          uid: index,
           name: name,
           generalAvrg: generalAvrg,
           classAvrg: classAvrg,
@@ -200,12 +201,7 @@ class ApplicationDisplay extends Component {
 
     const authUser = this.context;
 
-    Object.entries(interview.questions).forEach((k, v) => {
-      console.log(k, v);
-    });
-
-    const InterviewResponsesComp = () => {
-      console.log(interview.questions);
+    const InterviewResponses = () => {
       return (
         <Fragment>
           {Object.entries(interview.questions).map((question) => (
@@ -215,7 +211,7 @@ class ApplicationDisplay extends Component {
       );
     };
 
-    const FormResponsesComp = () => {
+    const FormResponses = () => {
       const renderResponse = (response) => {
         let responseComponent;
         if (response.type === "file") {
@@ -299,7 +295,7 @@ class ApplicationDisplay extends Component {
         </Row>
         <Row>
           <Col>
-            <FormResponsesComp />
+            <FormResponses />
           </Col>
         </Row>
 
@@ -326,12 +322,12 @@ class ApplicationDisplay extends Component {
 
         <Row>
           <Col>
-            <h2> Question Details </h2>
+            <h2> Questions </h2>
           </Col>
         </Row>
         <Row>
           <Col>
-            <InterviewResponsesComp />
+            <InterviewResponses />
           </Col>
         </Row>
       </Container>
