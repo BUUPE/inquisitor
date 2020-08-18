@@ -1,4 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  font-size: 2rem;
+  display: flex;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 9;
+  opacity: 0.75;
+`;
+
+const TimeDisplay = styled.p`
+  padding: 5px;
+  color: ${(props) => (props.overtime ? "red" : "black")};
+  border: ${(props) => (props.overtime ? "2px solid red" : "none")};
+  text-decoration: ${(props) => (props.overtime ? "underline" : "none")};
+`;
 
 const formatTimeSegment = (segment) => segment.toString().padStart(2, 0);
 
@@ -24,14 +42,17 @@ const Stopwatch = () => {
   const [time, setTime] = useState(window.performance.now());
   const limit = 1;
 
-  setInterval(() => setTime(window.performance.now()), 1000);
+  useEffect(() => {
+    const timer = setInterval(() => setTime(window.performance.now()), 1000);
+    return () => clearInterval(timer);
+  }, [time]);
 
   return (
-    <div className="stopwatch">
-      <p className={getMinutes(time) >= limit ? "overtime" : "intime"}>
+    <Wrapper>
+      <TimeDisplay overtime={getMinutes(time) >= limit}>
         Time Elapsed: {msToHMS(time)}
-      </p>
-    </div>
+      </TimeDisplay>
+    </Wrapper>
   );
 };
 
