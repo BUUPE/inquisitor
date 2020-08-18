@@ -5,13 +5,9 @@ import { AuthUserContext } from "upe-react-components";
 import Layout from "../components/Layout";
 import { InterviewerView, ApplicantView } from "../components/Timeslots";
 
-const TimeslotPage = ({ location }) => {
+const TimeslotPage = () => {
   const authUser = useContext(AuthUserContext);
-  return isRecruitmentTeam(authUser) ? (
-    <InterviewerView location={location} />
-  ) : (
-    <ApplicantView location={location} />
-  );
+  return isRecruitmentTeam(authUser) ? <InterviewerView /> : <ApplicantView />;
 };
 
 export default () => (
