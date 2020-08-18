@@ -114,27 +114,29 @@ class ApplicationDisplay extends Component {
     await asyncForEach(questionsList, async (item, index) => {
       if (item === "finalNotes") {
         questions[item] = {
-          uid: index,
+          uid: index + 100,
+          interviewers: {},
         };
 
-        questions[item][interviewers[0].uid] = {
+        questions[item]["interviewers"][interviewers[0].uid] = {
           score: data.interview.scores[interviewers[0].uid][item],
           notes: data.interview.notes[interviewers[0].uid][item],
         };
-        questions[item][interviewers[1].uid] = {
+        questions[item]["interviewers"][interviewers[1].uid] = {
           score: data.interview.scores[interviewers[1].uid][item],
           notes: data.interview.notes[interviewers[1].uid][item],
         };
       } else if (item === "resume") {
         questions[item] = {
-          uid: index,
+          uid: index + 100,
+          interviewers: {},
         };
 
-        questions[item][interviewers[0].uid] = {
+        questions[item]["interviewers"][interviewers[0].uid] = {
           score: data.interview.scores[interviewers[0].uid][item],
           notes: data.interview.notes[interviewers[0].uid][item],
         };
-        questions[item][interviewers[1].uid] = {
+        questions[item]["interviewers"][interviewers[1].uid] = {
           score: data.interview.scores[interviewers[1].uid][item],
           notes: data.interview.notes[interviewers[1].uid][item],
         };
@@ -165,16 +167,20 @@ class ApplicationDisplay extends Component {
         questions[item] = {
           uid: index,
           name: name,
+          description: description,
+          answer: answer,
+          img: img,
           generalAvrg: generalAvrg,
           classAvrg: classAvrg,
           levelAvrg: levelAvrg,
+          interviewers: {},
         };
 
-        questions[item][interviewers[0].uid] = {
+        questions[item]["interviewers"][interviewers[0].uid] = {
           score: data.interview.scores[interviewers[0].uid][item],
           notes: data.interview.notes[interviewers[0].uid][item],
         };
-        questions[item][interviewers[1].uid] = {
+        questions[item]["interviewers"][interviewers[1].uid] = {
           score: data.interview.scores[interviewers[1].uid][item],
           notes: data.interview.notes[interviewers[1].uid][item],
         };
@@ -204,9 +210,11 @@ class ApplicationDisplay extends Component {
     const InterviewResponses = () => {
       return (
         <Fragment>
-          {Object.entries(interview.questions).map((question) => (
-            <QuestionDisplay key={question.uid} question={question} />
-          ))}
+          {Object.entries(interview.questions)
+            .sort((a, b) => (b[1].uid < a[1].uid ? 1 : -1))
+            .map((question) => (
+              <QuestionDisplay key={question.uid} question={question} />
+            ))}
         </Fragment>
       );
     };
