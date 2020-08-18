@@ -4,6 +4,8 @@ import swal from "@sweetalert/with-react";
 
 import Button from "react-bootstrap/Button";
 import Toast from "react-bootstrap/Toast";
+import Modal from "react-bootstrap/Modal";
+import Card from "react-bootstrap/Card";
 
 import {
   AuthUserContext,
@@ -12,6 +14,7 @@ import {
 } from "upe-react-components";
 
 import { isRecruitmentTeam } from "../../util/conditions";
+import { formatTime } from "../../util/helper";
 import Loader from "../Loader";
 import { Container } from "../../styles/global";
 
@@ -28,9 +31,14 @@ class InterviewerView extends Component {
     selectedTimeslots: {},
     firstDataLoad: true,
     runningTransaction: false,
+    showModal: false,
+    timeslotOptions: [],
   };
   static contextType = AuthUserContext;
   unsub = null;
+
+  handleClose = () => this.setState({ showModal: false });
+  handleShow = () => this.setState({ showModal: true });
 
   componentDidMount() {
     if (this.props.firebase && !this._initFirebase) this.loadSettings();
@@ -214,7 +222,26 @@ class InterviewerView extends Component {
     window.scrollTo(0, document.body.scrollHeight);
   };
 
-  selectTimeslot = (date) => {
+  selectTimeslot = (timeslot) => {
+    const day = timeslot.time.toDateString();
+    const { selectedTimeslots } = this.state;
+    const authUser = this.context;
+
+    selectedTimeslots[day].map((ts) => {
+      if (
+        ts.id === timeslot.id &&
+        !ts.interviewers.hasOwnProperty(authUser.uid)
+      ) {
+        ts.interviewers[authUser.uid] = authUser.name;
+        return ts;
+      } else return ts;
+    });
+
+    // TODO: save before setstate
+    this.setState({ selectedTimeslots, showModal: false, timeslotOptions: [] });
+  };
+
+  selectTimeslotByDate = (date) => {
     const day = date.toDateString();
     const {
       selectedTimeslots,
@@ -222,23 +249,15 @@ class InterviewerView extends Component {
     } = this.state;
     const authUser = this.context;
 
-    // iterate over timeslots interviewer is not in and add interviewer if possible
-    let saved = false;
-    selectedTimeslots[day]
-      .filter((ts) => !ts.interviewers.hasOwnProperty(authUser.uid))
-      .forEach((ts) => {
-        if (
-          ts.time.getTime() === date.getTime() &&
-          Object.keys(ts.interviewers).length < 2 &&
-          !saved
-        ) {
-          ts.interviewers[authUser.uid] = authUser.name;
-          saved = true;
-        }
-      });
+    // show timeslots that match time and have an opening
+    const matchingTimeslots = selectedTimeslots[day].filter(
+      (ts) =>
+        !ts.interviewers.hasOwnProperty(authUser.uid) &&
+        ts.time.getTime() === date.getTime()
+    );
 
-    // if interviewer hasn't been added yet, push a new timeslot
-    if (!saved) {
+    // if no matching timeslots, push a new one. otherwise show options to user
+    if (matchingTimeslots.length === 0) {
       const interviewers = {};
       interviewers[authUser.uid] = authUser.name;
       selectedTimeslots[day].push({
@@ -246,8 +265,11 @@ class InterviewerView extends Component {
         interviewers,
         timeslotLength,
       });
-    }
-    this.setState({ selectedTimeslots });
+
+      // TODO: save before setstate
+      this.setState({ selectedTimeslots });
+    } else
+      this.setState({ showModal: true, timeslotOptions: matchingTimeslots });
   };
 
   unselectTimeslot = (date) => {
@@ -294,6 +316,8 @@ class InterviewerView extends Component {
       error,
       selectedTimeslots,
       showToast,
+      showModal,
+      timeslotOptions,
     } = this.state;
 
     if (loading || runningTransaction) return <Loader />;
@@ -360,7 +384,7 @@ class InterviewerView extends Component {
                 timeslotLength={timeslotLength}
                 userSelectedSlots={userSelectedSlots}
                 slotsWithOpening={slotsWithOpening}
-                selectTimeslot={this.selectTimeslot}
+                selectTimeslot={this.selectTimeslotByDate}
                 unselectTimeslot={this.unselectTimeslot}
                 startHour={timeslotStart}
                 endHour={timeslotEnd}
@@ -368,6 +392,7 @@ class InterviewerView extends Component {
             );
           })}
         </ScrollableRow>
+
         <div style={{ display: "flex", alignItems: "center" }}>
           <Button
             style={{ width: "fit-content", marginTop: 20, marginBottom: 20 }}
@@ -391,6 +416,46 @@ class InterviewerView extends Component {
             </Toast.Header>
           </Toast>
         </div>
+
+        <Modal show={showModal} onHide={this.handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Multiple openings available</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <ScrollableRow>
+              {timeslotOptions.map((ts) => (
+                <Card
+                  key={ts.id}
+                  style={{
+                    minWidth: "15rem",
+                    margin: "0 10px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => this.selectTimeslot(ts)}
+                >
+                  <Card.Body>
+                    <Card.Title>
+                      Interviewers: {Object.values(ts.interviewers).join(", ")}
+                    </Card.Title>
+                    {ts.applicant && (
+                      <Card.Subtitle className="mb-2 text-muted">
+                        Applicant: {ts.applicant}
+                      </Card.Subtitle>
+                    )}
+                    <Card.Subtitle className="mb-2 text-muted">
+                      {formatTime(ts.time)}
+                    </Card.Subtitle>
+                  </Card.Body>
+                </Card>
+              ))}
+            </ScrollableRow>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={this.handleClose}>
+              Cancel
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     );
   }

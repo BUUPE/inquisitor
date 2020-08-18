@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import Col from "react-bootstrap/Col";
 import Toast from "react-bootstrap/Toast";
 
+import { formatTime } from "../../util/helper";
+
 const ScheduleColumn = ({
   date,
   timeslotLength,
@@ -30,15 +32,6 @@ const ScheduleColumn = ({
       hours,
       minutes
     );
-  };
-
-  // formats a date into a AM/PM time string
-  const formatTime = (date) => {
-    let hours = date.getHours() % 12;
-    if (hours === 0) hours = 12;
-    hours = hours.toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes} ${date.getHours() >= 12 ? "PM" : "AM"}`;
   };
 
   const handleSelect = (slot, i) => {
@@ -107,21 +100,24 @@ const ScheduleColumn = ({
         cursor: "pointer",
         display: "flex",
         justifyContent: "space-between",
+        background: "white",
       };
 
-      const { isTop, isMiddle, isBottom } = getPositions(
-        slot,
-        userSelectedSlots
-      );
-      const borderStyle = "1px solid black";
+      let collection = slotsWithOpening;
+      if (slotsWithOpening.hasOwnProperty(slot)) baseStyle.background = "blue";
+      if (userSelectedSlots.hasOwnProperty(slot)) {
+        baseStyle.background = "green";
+        collection = userSelectedSlots;
+      }
 
+      const { isTop, isMiddle, isBottom } = getPositions(slot, collection);
+      const borderStyle = "1px solid black";
       return {
         ...baseStyle,
         borderLeft: borderStyle,
         borderRight: borderStyle,
         borderTop: isBottom || isMiddle ? "none" : borderStyle,
         borderBottom: isTop || isMiddle ? "none" : borderStyle,
-        background: userSelectedSlots.hasOwnProperty(slot) ? "green" : "white",
       };
     };
 
