@@ -3,6 +3,7 @@ import BootstrapContainer from "react-bootstrap/Container";
 
 export const Container = styled(BootstrapContainer)`
   margin-top: 25px;
+  margin-bottom: 25px;
   display: flex;
   flex: 1 0 auto;
   flex-direction: ${(props) => props.flexdirection};

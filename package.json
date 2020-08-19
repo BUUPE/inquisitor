@@ -24,6 +24,7 @@
     "gatsby-source-filesystem": "^2.1.56",
     "gatsby-styled-components-dark-mode": "^1.1.1",
     "gatsby-transformer-sharp": "^2.3.19",
+    "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.5.0",
     "react": "^16.9.0",
     "react-bootstrap": "^1.2.2",

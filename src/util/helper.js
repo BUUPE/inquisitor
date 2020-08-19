@@ -6,3 +6,10 @@ export const formatTime = (date) => {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes} ${date.getHours() >= 12 ? "PM" : "AM"}`;
 };
+
+// helper function that does for each and waits
+export const asyncForEach = async (array, callback) => {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+};
