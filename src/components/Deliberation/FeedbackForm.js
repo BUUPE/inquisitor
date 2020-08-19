@@ -54,7 +54,7 @@ class FeedbackForm extends Component {
   loadData = async () => {
     this._initFirebase = true;
 
-    const doc = await this.props.firebase.application(this.props.uid).get();
+    const doc = await this.props.firebase.application(this.props.data).get();
 
     if (!doc.exists) this.setState({ error: "Failed to load application!" });
     else {
