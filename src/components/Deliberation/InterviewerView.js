@@ -179,7 +179,11 @@ class InterviewerView extends Component {
         </Container>
       );
 
-    const { deliberationOpen, deliberationsComplete } = this.state.settings;
+    const {
+      deliberationOpen,
+      deliberationsComplete,
+      votingComplete,
+    } = this.state.settings;
 
     const authUser = this.context;
 
@@ -252,7 +256,7 @@ class InterviewerView extends Component {
       </Container>
     );
 
-    if (deliberationsComplete) {
+    if (votingComplete) {
       return (
         <StyledContainer fluid flexdirection="row">
           {sidebarTwo}

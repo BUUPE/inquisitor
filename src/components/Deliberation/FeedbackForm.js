@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import { compose } from "recompose";
 
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -16,6 +15,10 @@ import Loader from "../Loader";
 import Logo from "../Logo";
 import { Container } from "../../styles/global";
 
+const StyledContainer = styled(Container)`
+  text-align: center;
+`;
+
 const CenteredForm = styled(Form)`
   display: flex;
   flex-direction: column;
@@ -26,11 +29,6 @@ const CenteredForm = styled(Form)`
 `;
 
 class FeedbackForm extends Component {
-  constructor(props) {
-    super(props);
-    console.log(props);
-  }
-
   _initFirebase = false;
   state = {
     data: null,
@@ -61,9 +59,10 @@ class FeedbackForm extends Component {
       const data = doc.data();
       this.setState({ data }, () => {
         console.log("Application loaded");
-        this.sortData();
       });
     }
+
+    this.setState({ loading: false });
   };
 
   onSubmit = (event) => {
@@ -79,13 +78,15 @@ class FeedbackForm extends Component {
     };
 
     this.props.firebase
-      .application(this.props.data.id)
+      .application(this.props.data)
+      .set(data, { merge: true })
       .then(() => {
         console.log("Edited Data");
         this.setState({
           submitted: true,
           sending: false,
         });
+        this.props.loadData();
       })
       .catch((error) => {
         this.setState({ error });
@@ -112,18 +113,12 @@ class FeedbackForm extends Component {
       sending,
     } = this.state;
 
-    console.log(this);
-
     if (loading) return <Loader />;
 
     const successMessage = (
-      <Container flexdirection="column">
-        <div style={{ alignSelf: "center" }}>
-          <Logo size="medium" />
-        </div>
-
-        <h1>Form Submitted!</h1>
-      </Container>
+      <StyledContainer>
+        <h3> {data.applicant.name} - Form Complete </h3>
+      </StyledContainer>
     );
 
     if (errorMsg)
@@ -143,8 +138,7 @@ class FeedbackForm extends Component {
     return (
       <Container flexdirection="column">
         <CenteredForm noValidate validated={validated} onSubmit={this.onSubmit}>
-          <Logo size="medium" />
-          <h1>Feedback Form</h1>
+          <h3>{data.applicant.name}</h3>
 
           <Form.Row style={{ width: "100%" }} key={4}>
             <Form.Group controlId={4} style={{ width: "100%" }}>
@@ -152,8 +146,9 @@ class FeedbackForm extends Component {
                 <h5> Feedback </h5>
               </Form.Label>
               <Form.Control
+                rows={5}
                 name="feedback"
-                type="text"
+                as="textarea"
                 placeholder="..."
                 value={feedback}
                 onChange={this.onChange}
@@ -170,7 +165,4 @@ class FeedbackForm extends Component {
   }
 }
 
-export default compose(
-  withAuthorization(isLoggedIn),
-  withFirebase
-)(FeedbackForm);
+export default withFirebase(FeedbackForm);

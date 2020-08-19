@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from "react";
-import { compose } from "recompose";
 import styled from "styled-components";
 
 import Loader from "../Loader";
@@ -17,6 +16,10 @@ import {
 } from "upe-react-components";
 import { isRecruitmentTeam } from "../../util/conditions";
 import { asyncForEach } from "../../util/helper";
+
+const StyledContainer = styled(Container)`
+  text-align: center;
+`;
 
 class AdminSettings extends Component {
   constructor(props) {
@@ -83,11 +86,10 @@ class AdminSettings extends Component {
       });
   };
 
-  finishDeliberation = async () => {
+  finishVoting = async () => {
     this.setState({ loading: true });
-    console.log("test");
 
-    const { settings, applicationList, applicationList2 } = this.state;
+    const { settings, applicationList } = this.state;
     const authUser = this.context;
 
     const dataOne = {
@@ -97,7 +99,6 @@ class AdminSettings extends Component {
     this.props.firebase.generalSettings().set(dataOne, { merge: true });
 
     await asyncForEach(applicationList, async (application, index) => {
-      console.log("test 2");
       const dataTwo = {
         deliberation: {
           applicantAccepted: false,
@@ -122,7 +123,27 @@ class AdminSettings extends Component {
         .set(dataTwo, { merge: true });
     });
 
-    console.log("test 3");
+    this.loadData();
+  };
+
+  finishDeliberation = async () => {
+    this.setState({ loading: true });
+
+    const { settings, applicationList } = this.state;
+    const authUser = this.context;
+
+    const dataOne = {
+      deliberationsComplete: true,
+    };
+
+    this.props.firebase.generalSettings().set(dataOne, { merge: true });
+
+    await asyncForEach(applicationList, async (application, index) => {
+      console.log(
+        "This is where you need to check whether or not they were accepted, and send the email regarding this."
+      );
+    });
+
     this.loadData();
   };
 
@@ -216,19 +237,12 @@ class AdminSettings extends Component {
         <Container>
           <Row>
             <Col>
-              <Button onClick={this.finishDeliberation}>
-                Finish Deliberation
-              </Button>
+              <Button onClick={this.finishVoting}>Finish Voting</Button>
             </Col>
           </Row>
         </Container>
       </>
     );
-
-    const FeedbackFormBase = ({ data }) => {
-      console.log(data.id);
-      return <FeedbackForm data={data.id} />;
-    };
 
     const feedbackFormList = (
       <Container>
@@ -236,10 +250,8 @@ class AdminSettings extends Component {
           <Col>
             {applicationList2.map((application) => (
               <Fragment key={application.id}>
-                {application.deliberation.acceptedUPE ? (
-                  <> </>
-                ) : (
-                  <FeedbackFormBase data={application} />
+                {application.deliberation.complete ? null : (
+                  <FeedbackForm data={application.id} dataGet={this.loadData} />
                 )}
               </Fragment>
             ))}
@@ -247,6 +259,8 @@ class AdminSettings extends Component {
         </Row>
       </Container>
     );
+
+    console.log(applicationList2);
 
     const feedbackForms = (
       <>
@@ -256,7 +270,24 @@ class AdminSettings extends Component {
               <h2> Feedback Forms </h2>
             </Col>
           </Row>
-          <Row>{!!applicationList2 ? feedbackFormList : <> </>}</Row>
+          <Row>
+            {applicationList2.length !== 0 ? (
+              feedbackFormList
+            ) : (
+              <StyledContainer>
+                <h3> All forms filled </h3>
+              </StyledContainer>
+            )}
+          </Row>
+
+          <br />
+          <br />
+
+          <Row>
+            <Button onClick={this.finishDeliberation}>
+              Finish Deliberation
+            </Button>
+          </Row>
         </Container>
       </>
     );
@@ -265,4 +296,4 @@ class AdminSettings extends Component {
   }
 }
 
-export default compose(withFirebase)(AdminSettings);
+export default withFirebase(AdminSettings);

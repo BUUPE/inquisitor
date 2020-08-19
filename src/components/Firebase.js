@@ -59,6 +59,7 @@ class Firebase extends FirebaseSuper {
     this.inquisitorData
       .collection("applications")
       .where("deliberation.voted", "==", true)
+      .where("deliberation.complete", "==", false)
       .orderBy("interview.level")
       .orderBy("applicant.name");
 
