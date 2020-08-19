@@ -48,10 +48,17 @@ class Firebase extends FirebaseSuper {
     this.inquisitorData.collection("applications").doc(uid);
   applications = () => this.inquisitorData.collection("applications");
 
-  finalApplications = () =>
+  interviewedApplicants = () =>
     this.inquisitorData
       .collection("applications")
       .where("interview.interviewed", "==", true)
+      .orderBy("interview.level")
+      .orderBy("applicant.name");
+
+  deliberatedApplicants = () =>
+    this.inquisitorData
+      .collection("applications")
+      .where("deliberation.voted", "==", true)
       .orderBy("interview.level")
       .orderBy("applicant.name");
 

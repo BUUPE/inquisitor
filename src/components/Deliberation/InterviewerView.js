@@ -16,6 +16,7 @@ import {
 
 import { isRecruitmentTeam } from "../../util/conditions";
 import Loader from "../Loader";
+import AdminSettings from "./AdminSettings";
 import ApplicationDisplay from "./ApplicationDisplay";
 import { Container } from "../../styles/global";
 
@@ -88,7 +89,7 @@ class InterviewerView extends Component {
     }
 
     this.props.firebase
-      .finalApplications()
+      .interviewedApplicants()
       .get()
       .then((querySnapshot) => {
         const applicationList = querySnapshot.docs.map((doc) => {
@@ -146,13 +147,17 @@ class InterviewerView extends Component {
 
     if (uid === "admin") {
       const display = (
-        <Container>
-          <Row>
-            <Col>
-              <h1> Deliberations Admin Panel </h1>
-            </Col>
-          </Row>
-        </Container>
+        <>
+          <Container>
+            <Row>
+              <Col>
+                <h1> Deliberations Admin Panel </h1>
+              </Col>
+            </Row>
+          </Container>
+          <br />
+          <AdminSettings />
+        </>
       );
 
       this.setState({ display });
@@ -219,6 +224,42 @@ class InterviewerView extends Component {
         ))}
       </StyledCol>
     );
+
+    const sidebarTwo = (
+      <StyledCol className="flex-column" md={3}>
+        <h1> Applicantions </h1>
+        <li onClick={() => this.setCurrentDisplay("details")}>
+          Voting Instructions
+        </li>
+        {adminStatus ? (
+          <li onClick={() => this.setCurrentDisplay("admin")}>
+            Admin Settings
+          </li>
+        ) : (
+          <> </>
+        )}
+        <hr />
+      </StyledCol>
+    );
+
+    const complete = (
+      <Container>
+        <Row>
+          <Col>
+            <h1> Deliberations Complete! </h1>
+          </Col>
+        </Row>
+      </Container>
+    );
+
+    if (deliberationsComplete) {
+      return (
+        <StyledContainer fluid flexdirection="row">
+          {sidebarTwo}
+          <Col md={9}>{display ? display : complete}</Col>
+        </StyledContainer>
+      );
+    }
 
     return (
       <StyledContainer fluid flexdirection="row">

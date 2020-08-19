@@ -9,12 +9,7 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
-import {
-  AuthUserContext,
-  withFirebase,
-  withAuthorization,
-} from "upe-react-components";
-import { isRecruitmentTeam } from "../../util/conditions";
+import { AuthUserContext, withFirebase } from "upe-react-components";
 import { asyncForEach } from "../../util/helper";
 
 class ApplicationDisplay extends Component {
@@ -194,8 +189,92 @@ class ApplicationDisplay extends Component {
     this.setState({ interview, loading: false });
   };
 
+  acceptApplicant = () => {
+    const { data } = this.state;
+    const deliberation = data.deliberation;
+    const authUser = this.context;
+
+    const hasVoted = authUser.uid in deliberation.votes;
+
+    const updatedData = {
+      deliberation: {
+        count: {
+          accept: 0,
+          deny: 0,
+        },
+        votes: {},
+      },
+    };
+
+    if (hasVoted) {
+      updatedData.deliberation.count.accept =
+        data.deliberation.count.accept + 1;
+      updatedData.deliberation.count.deny = data.deliberation.count.deny - 1;
+    } else {
+      updatedData.deliberation.count.accept =
+        data.deliberation.count.accept + 1;
+    }
+
+    updatedData.deliberation.votes[authUser.uid] = true;
+
+    this.props.firebase
+      .application(this.props.data)
+      .set(updatedData, { merge: true })
+      .then(() => {
+        console.log("Successfully updated deliberation data!");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  denyApplicant = () => {
+    const { data } = this.state;
+    const deliberation = data.deliberation;
+    const authUser = this.context;
+
+    const hasVoted = authUser.uid in deliberation.votes;
+
+    const updatedData = {
+      deliberation: {
+        count: {
+          accept: 0,
+          deny: 0,
+        },
+        votes: {},
+      },
+    };
+
+    if (hasVoted) {
+      updatedData.deliberation.count.accept =
+        data.deliberation.count.accept - 1;
+      updatedData.deliberation.count.deny = data.deliberation.count.deny + 1;
+    } else {
+      updatedData.deliberation.count.accept = data.deliberation.count.deny + 1;
+    }
+
+    updatedData.deliberation.votes[authUser.uid] = false;
+
+    this.props.firebase
+      .application(this.props.data)
+      .set(updatedData, { merge: true })
+      .then(() => {
+        console.log("Successfully updated deliberation data!");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   render() {
-    const { loading, error, values, formResponses, interview } = this.state;
+    const {
+      loading,
+      error,
+      values,
+      formResponses,
+      interview,
+      data,
+    } = this.state;
 
     if (loading) return <Loader />;
     if (error)
@@ -338,6 +417,24 @@ class ApplicationDisplay extends Component {
             <InterviewResponses />
           </Col>
         </Row>
+
+        <Row>
+          <Col>
+            <h2> Deliberation </h2>
+            <br />
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <Button onClick={this.acceptApplicant}>Accept</Button>
+          </Col>
+          <Col>
+            <Button onClick={this.denyApplicant}>Deny</Button>
+          </Col>
+        </Row>
+
+        <br />
+        <br />
       </Container>
     );
   }
