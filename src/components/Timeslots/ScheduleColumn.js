@@ -24,12 +24,14 @@ const StyledSlot = styled.div`
   border-bottom: ${(props) =>
     props.isTop || props.isMiddle ? "none" : borderStyle};
 
-  &:hover {
-    background: rgba(0, 128, 0, 0.5);
-    border-bottom: none;
-  }
   ${(props) => {
-    let css = "";
+    if (props.userSelected) return;
+    let css = `
+      &:hover {
+        background: rgba(0, 128, 0, 0.5);
+        border-bottom: none;
+      }
+    `;
     let siblingSelector = " + div";
     for (let i = 1; i < props.slotsPerTimeslot; i++) {
       css += `&:hover ${siblingSelector} {
