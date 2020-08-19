@@ -135,33 +135,6 @@ const ScheduleColumn = ({
       };
     };
 
-    const generateSlotStyle = (slot) => {
-      const baseStyle = {
-        padding: 10,
-        cursor: "pointer",
-        display: "flex",
-        justifyContent: "space-between",
-        background: "white",
-      };
-
-      let collection = slotsWithOpening;
-      if (slotsWithOpening.hasOwnProperty(slot)) baseStyle.background = "blue";
-      if (userSelectedSlots.hasOwnProperty(slot)) {
-        baseStyle.background = "green";
-        collection = userSelectedSlots;
-      }
-
-      const { isTop, isMiddle, isBottom } = getPositions(slot, collection);
-      const borderStyle = "1px solid black";
-      return {
-        ...baseStyle,
-        borderLeft: borderStyle,
-        borderRight: borderStyle,
-        borderTop: isBottom || isMiddle ? "none" : borderStyle,
-        borderBottom: isTop || isMiddle ? "none" : borderStyle,
-      };
-    };
-
     const { isSelected, isTop, isMiddle, isBottom } = getPositions(
       slot,
       userSelectedSlots
@@ -200,20 +173,11 @@ const ScheduleColumn = ({
     }
 
     return (
-      <StyledSlot
-        slotsPerTimeslot={slotsPerTimeslot}
-        hasOpening={slotsWithOpening.hasOwnProperty(slot)}
-        userSelected={userSelectedSlots.hasOwnProperty(slot)}
-        isTop={isTop}
-        isMiddle={isMiddle}
-        isBottom={isBottom}
-        key={slot}
-        onClick={() => handleSelect(slot, i)}
-      >
+      <SlotBase key={slot}>
         <span>{formatTime(dateFromSlot(slot))}</span>
         <span>-</span>
         <span>{formatTime(dateFromSlot(slot + 15))}</span>
-      </StyledSlot>
+      </SlotBase>
     );
   };
 
