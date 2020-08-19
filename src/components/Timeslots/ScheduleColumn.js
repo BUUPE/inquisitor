@@ -1,9 +1,49 @@
 import React, { useState } from "react";
+import styled from "styled-components";
 
 import Col from "react-bootstrap/Col";
 import Toast from "react-bootstrap/Toast";
 
 import { formatTime } from "../../util/helper";
+
+const borderStyle = "1px solid black";
+const StyledSlot = styled.div`
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  background: ${(props) => {
+    if (props.userSelected) return "green";
+    else if (props.hasOpening) return "blue";
+    else return "white";
+  }};
+  border-left: ${borderStyle};
+  border-right: ${borderStyle};
+  border-top: ${(props) =>
+    props.isBottom || props.isMiddle ? "none" : borderStyle};
+  border-bottom: ${(props) =>
+    props.isTop || props.isMiddle ? "none" : borderStyle};
+
+  &:hover {
+    background: rgba(0, 128, 0, 0.5);
+    border-bottom: none;
+  }
+  ${(props) => {
+    let css = "";
+    let siblingSelector = " + div";
+    for (let i = 1; i < props.slotsPerTimeslot; i++) {
+      css += `&:hover ${siblingSelector} {
+        background: rgba(0, 128, 0, 0.5);
+        border-top: none;
+        border-bottom: ${
+          i + 1 === props.slotsPerTimeslot ? borderStyle : "none"
+        };
+      }`;
+      siblingSelector += siblingSelector;
+    }
+    return css;
+  }}
+`;
 
 const ScheduleColumn = ({
   date,
@@ -79,7 +119,6 @@ const ScheduleColumn = ({
     setShowToast(true);
   };
 
-  // TODO: render slots selected by others/with openings, show 1/2 2/2
   const renderSlot = (slot, i) => {
     const getPositions = (slot, collection) => {
       const isSelected = collection.hasOwnProperty(slot);
@@ -127,14 +166,17 @@ const ScheduleColumn = ({
     );
 
     const SlotBase = ({ children }) => (
-      <div
-        style={{
-          ...generateSlotStyle(slot),
-        }}
+      <StyledSlot
+        slotsPerTimeslot={slotsPerTimeslot}
+        hasOpening={slotsWithOpening.hasOwnProperty(slot)}
+        userSelected={userSelectedSlots.hasOwnProperty(slot)}
+        isTop={isTop}
+        isMiddle={isMiddle}
+        isBottom={isBottom}
         onClick={() => handleSelect(slot, i)}
       >
         {children}
-      </div>
+      </StyledSlot>
     );
 
     if (isSelected) {
@@ -156,17 +198,20 @@ const ScheduleColumn = ({
     }
 
     return (
-      <div
-        style={{
-          ...generateSlotStyle(slot),
-        }}
+      <StyledSlot
+        slotsPerTimeslot={slotsPerTimeslot}
+        hasOpening={slotsWithOpening.hasOwnProperty(slot)}
+        userSelected={userSelectedSlots.hasOwnProperty(slot)}
+        isTop={isTop}
+        isMiddle={isMiddle}
+        isBottom={isBottom}
         key={slot}
         onClick={() => handleSelect(slot, i)}
       >
         <span>{formatTime(dateFromSlot(slot))}</span>
         <span>-</span>
         <span>{formatTime(dateFromSlot(slot + 15))}</span>
-      </div>
+      </StyledSlot>
     );
   };
 
