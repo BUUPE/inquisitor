@@ -117,7 +117,7 @@ class ApplicantView extends Component {
         </Container>
       );
 
-    if (!deliberationsComplete || !application.deliberation.complete)
+    if (!application.deliberation.complete)
       return (
         <Container flexdirection="column">
           <h1>Deliberations are not yet complete!</h1>

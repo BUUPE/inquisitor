@@ -260,8 +260,6 @@ class AdminSettings extends Component {
       </Container>
     );
 
-    console.log(applicationList2);
-
     const feedbackForms = (
       <>
         <Container>

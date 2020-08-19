@@ -102,6 +102,8 @@ class InterviewerView extends Component {
   };
 
   setCurrentDisplay = (uid) => {
+    const { settings } = this.state;
+
     if (uid === "details") {
       const display = (
         <Container>
@@ -201,6 +203,13 @@ class InterviewerView extends Component {
         </Container>
       );
 
+    if (deliberationsComplete)
+      return (
+        <Container flexdirection="column">
+          <h1>Deliberations are complete</h1>
+        </Container>
+      );
+
     const adminStatus = authUser.roles.admin || authUser.roles.eboard;
 
     const AppListItem = ({ data }) => (
@@ -250,7 +259,7 @@ class InterviewerView extends Component {
       <Container>
         <Row>
           <Col>
-            <h1> Deliberations Complete! </h1>
+            <h1> Voting Complete! </h1>
           </Col>
         </Row>
       </Container>
