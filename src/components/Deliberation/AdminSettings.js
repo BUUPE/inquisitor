@@ -132,19 +132,75 @@ class AdminSettings extends Component {
     const { settings, applicationList } = this.state;
     const authUser = this.context;
 
+    await asyncForEach(applicationList, async (application, index) => {
+      if (application.deliberation.acceptedUPE) {
+        var email = "";
+        var name = application.applicant.name.split(" ")[0];
+
+        application.responses.forEach((item, i) => {
+          if (item.name === "Email") email = item.value;
+        });
+
+        const sendEmail = this.props.firebase.sendAcceptedEmail({
+          email,
+          name,
+        });
+
+        await Promise.all([sendEmail])
+          .then(() => {
+            console.log(
+              "Finished processing deliberation of applicant: ",
+              name
+            );
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        var email = "";
+        var name = application.applicant.name.split(" ")[0];
+        var feedback = application.deliberation.feedback;
+
+        application.responses.forEach((item, i) => {
+          if (item.name === "Email") email = item.value;
+        });
+
+        const sendEmail = this.props.firebase.sendDeniedEmail({
+          email,
+          name,
+          feedback,
+        });
+
+        const updatedData = {
+          roles: {
+            applicant: false,
+          },
+        };
+
+        const removeRoles = this.props.firebase.editUser(
+          application.applicant.uid,
+          updatedData
+        );
+
+        await Promise.all([sendEmail, removeRoles])
+          .then(() => {
+            console.log(
+              "Finished processing deliberation of applicant: ",
+              name
+            );
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    });
+
     const dataOne = {
       deliberationsComplete: true,
     };
 
     this.props.firebase.generalSettings().set(dataOne, { merge: true });
-
-    await asyncForEach(applicationList, async (application, index) => {
-      console.log(
-        "This is where you need to check whether or not they were accepted, and send the email regarding this."
-      );
-    });
-
-    this.loadData();
+    this.props.updatePage();
   };
 
   render() {

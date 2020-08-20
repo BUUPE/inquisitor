@@ -39,6 +39,8 @@ class Firebase extends FirebaseSuper {
     this.timeslotUnselected = this.functions.httpsCallable(
       "timeslotUnselected"
     );
+    this.sendAcceptedEmail = this.functions.httpsCallable("applicantAccepted");
+    this.sendDeniedEmail = this.functions.httpsCallable("applicantDenied");
   }
 
   question = (uid) => this.inquisitorData.collection("questions").doc(uid);

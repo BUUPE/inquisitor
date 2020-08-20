@@ -53,6 +53,12 @@ const StyledContainer = styled(Container)`
 `;
 
 class InterviewerView extends Component {
+  constructor(props) {
+    super(props);
+
+    this.updatePage = this.updatePage.bind(this);
+  }
+
   _initFirebase = false;
   state = {
     applicationList: null,
@@ -75,6 +81,10 @@ class InterviewerView extends Component {
   componentWillUnmount() {
     if (typeof this.unsub === "function") this.unsub();
   }
+
+  updatePage = () => {
+    this.loadSettings();
+  };
 
   loadSettings = async () => {
     this._initFirebase = true;
@@ -158,7 +168,7 @@ class InterviewerView extends Component {
             </Row>
           </Container>
           <br />
-          <AdminSettings />
+          <AdminSettings updatePage={this.updatePage} />
         </>
       );
 
