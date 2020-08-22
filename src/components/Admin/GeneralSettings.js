@@ -593,6 +593,51 @@ class GeneralSettings extends Component {
               }
             />
           </Form.Row>
+
+          <br />
+
+          <Form.Row>
+            <Form.Check
+              custom
+              checked={settings.secondDeliberationRound}
+              type="switch"
+              label={`Is there a second round of deliberation? ${
+                settings.secondDeliberationRound ? "Yes" : "No"
+              }`}
+              id="secondDeliberationRound"
+              onChange={(e) =>
+                this.setState({
+                  settings: {
+                    ...settings,
+                    secondDeliberationRound: e.target.checked,
+                  },
+                })
+              }
+            />
+          </Form.Row>
+
+          <br />
+
+          <Form.Row>
+            <Form.Check
+              custom
+              checked={settings.secondDeliberationComplete}
+              type="switch"
+              label={`Second round of deliberations is ${
+                settings.secondDeliberationComplete ? "complete" : "underway"
+              }`}
+              id="secondDeliberationComplete"
+              onChange={(e) =>
+                this.setState({
+                  settings: {
+                    ...settings,
+                    secondDeliberationComplete: e.target.checked,
+                  },
+                })
+              }
+            />
+          </Form.Row>
+
           <hr />
           <FlexDiv>
             <FlexDiv

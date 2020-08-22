@@ -4,7 +4,7 @@ import { Link } from "gatsby";
 import Button from "react-bootstrap/Button";
 import DataForm from "./DataForm";
 import { Centered } from "../../styles/global";
-import { isApplicant } from "../../util/conditions";
+import { isAppOrMem } from "../../util/conditions";
 import {
   AuthUserContext,
   withFirebase,
@@ -13,6 +13,7 @@ import {
 
 import { Container } from "../../styles/global";
 import Loader from "../Loader";
+import SecondDeliberationInterviewer from "./SecondDeliberationInterviewer";
 
 class ApplicantView extends Component {
   _initFirebase = false;
@@ -85,6 +86,42 @@ class ApplicantView extends Component {
       });
   };
 
+  acceptTwo = () => {
+    const data = {
+      deliberation: {
+        secondRound: {
+          applicantAccepted: true,
+        },
+      },
+    };
+
+    const dataTwo = {
+      roles: {
+        provisionalMember: true,
+        applicant: false,
+        upemember: true,
+      },
+    };
+
+    this.props.firebase
+      .application(this.context.inquisitor.application)
+      .set(data, { merge: true })
+      .then(() => {
+        this.props.firebase
+          .editUser(this.context.uid, dataTwo)
+          .then(() => {
+            console.log("Successfully updated Data");
+            this.setState({ accepted: true });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   render() {
     const { loading, error, accepted, application } = this.state;
 
@@ -96,9 +133,73 @@ class ApplicantView extends Component {
         </Container>
       );
 
-    const { deliberationOpen, deliberationsComplete } = this.state.settings;
+    const {
+      deliberationOpen,
+      deliberationsComplete,
+      secondDeliberationRound,
+    } = this.state.settings;
 
     const authUser = this.context;
+
+    if (secondDeliberationRound && deliberationsComplete) {
+      if (authUser.roles.applicant) {
+        if (!application.deliberation.secondRound.complete)
+          return (
+            <Container flexdirection="column">
+              <h1>Deliberations are not yet complete!</h1>
+            </Container>
+          );
+        if (!application.deliberation.secondRound.acceptedUPE)
+          return (
+            <Container flexdirection="column">
+              <h1>You have been emailed your results.</h1>
+            </Container>
+          );
+
+        if (application.deliberation.secondRound.applicantAccepted || accepted)
+          return (
+            <Container flexdirection="column">
+              <div>
+                <h1>Next Steps</h1>
+                <p>
+                  Now that the onboarding period is complete, you will soon be
+                  contacted by our E-Board with specifics about this semester's
+                  induction.
+                </p>
+                <br />
+                <h2>WARNING</h2>
+                <p>
+                  Upon reloading this page you will lose access to it, do not
+                  worry about it, it's by design as you are no longer an
+                  applicant!
+                </p>
+              </div>
+            </Container>
+          );
+
+        return (
+          <Container flexdirection="column">
+            <div>
+              <h1>Your Deliberation</h1>
+            </div>
+            <br />
+            <div>
+              <h2>You have been officially accepted into UPE!</h2>
+              <br />
+              <p>
+                We are pleased to announce that you have made it passed the
+                provisional period, and have been officially accepted into UPE.
+                In order for us to complete this process, we require that you
+                confirm your acceptance by clicking bellow.
+              </p>
+              <Button onClick={() => this.acceptTwo()}>Accept</Button>
+            </div>
+          </Container>
+        );
+      } else if (authUser.roles.upemember) {
+        return <SecondDeliberationInterviewer />;
+      }
+    }
 
     if (!authUser.inquisitor.applied)
       return (
@@ -178,6 +279,6 @@ class ApplicantView extends Component {
 }
 
 export default compose(
-  withAuthorization(isApplicant),
+  withAuthorization(isAppOrMem),
   withFirebase
 )(ApplicantView);

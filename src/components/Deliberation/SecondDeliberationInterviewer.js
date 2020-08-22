@@ -17,7 +17,6 @@ import {
 import { isRecruitmentTeam } from "../../util/conditions";
 import Loader from "../Loader";
 import AdminSettings from "./AdminSettings";
-import SecondDeliberationInterviewer from "./SecondDeliberationInterviewer";
 import ApplicationDisplay from "./ApplicationDisplay";
 import { Container } from "../../styles/global";
 
@@ -53,7 +52,7 @@ const StyledContainer = styled(Container)`
   margin-top: 0;
 `;
 
-class InterviewerView extends Component {
+class SecondDeliberationInterviewer extends Component {
   constructor(props) {
     super(props);
 
@@ -302,4 +301,4 @@ class InterviewerView extends Component {
 export default compose(
   withAuthorization(isRecruitmentTeam),
   withFirebase
-)(InterviewerView);
+)(SecondDeliberationInterviewer);
