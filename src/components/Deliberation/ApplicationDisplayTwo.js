@@ -12,7 +12,7 @@ import Row from "react-bootstrap/Row";
 import { AuthUserContext, withFirebase } from "upe-react-components";
 import { asyncForEach } from "../../util/helper";
 
-class ApplicationDisplay extends Component {
+class ApplicationDisplayTwo extends Component {
   constructor(props) {
     super(props);
   }
@@ -268,4 +268,4 @@ class ApplicationDisplay extends Component {
   }
 }
 
-export default compose(withFirebase)(ApplicationDisplay);
+export default compose(withFirebase)(ApplicationDisplayTwo);

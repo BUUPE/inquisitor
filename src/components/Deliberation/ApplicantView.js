@@ -97,7 +97,7 @@ class ApplicantView extends Component {
 
     const dataTwo = {
       roles: {
-        provisionalMember: true,
+        provisionalMember: false,
         applicant: false,
         upemember: true,
       },

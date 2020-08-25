@@ -14,14 +14,13 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
-import { isRecruitmentTeam } from "../../util/conditions";
 import { asyncForEach } from "../../util/helper";
 
 const StyledContainer = styled(Container)`
   text-align: center;
 `;
 
-class AdminSettings extends Component {
+class AdminSettingsTwo extends Component {
   constructor(props) {
     super(props);
   }
@@ -62,7 +61,7 @@ class AdminSettings extends Component {
     }
 
     this.props.firebase
-      .interviewedApplicants()
+      .secondRoundApplicants()
       .get()
       .then((querySnapshot) => {
         const applicationList = querySnapshot.docs.map((doc) => {
@@ -74,7 +73,7 @@ class AdminSettings extends Component {
       });
 
     this.props.firebase
-      .deliberatedApplicants()
+      .deliberatedApplicantsTwo()
       .get()
       .then((querySnapshot) => {
         const applicationList2 = querySnapshot.docs.map((doc) => {
@@ -93,7 +92,7 @@ class AdminSettings extends Component {
     const authUser = this.context;
 
     const dataOne = {
-      votingComplete: true,
+      secondVotingComplete: true,
     };
 
     this.props.firebase.generalSettings().set(dataOne, { merge: true });
@@ -101,20 +100,21 @@ class AdminSettings extends Component {
     await asyncForEach(applicationList, async (application, index) => {
       const dataTwo = {
         deliberation: {
-          applicantAccepted: false,
-          acceptedUPE:
-            application.deliberation.count.accept /
-              (application.deliberation.count.accept +
-                application.deliberation.count.deny) >=
-            0.75,
-          complete:
-            application.deliberation.count.accept /
-              (application.deliberation.count.accept +
-                application.deliberation.count.deny) >=
-            0.75,
-          voted: true,
-          feedback: "",
-          submittedForm: false,
+          secondRound: {
+            applicantAccepted: false,
+            acceptedUPE:
+              application.deliberation.secondRound.count.accept /
+                (application.deliberation.secondRound.count.accept +
+                  application.deliberation.secondRound.count.deny) >=
+              0.75,
+            complete:
+              application.deliberation.secondRound.count.accept /
+                (application.deliberation.secondRound.count.accept +
+                  application.deliberation.secondRound.count.deny) >=
+              0.75,
+            voted: true,
+            feedback: "",
+          },
         },
       };
 
@@ -141,7 +141,7 @@ class AdminSettings extends Component {
           if (item.name === "Email") email = item.value;
         });
 
-        const sendEmail = this.props.firebase.sendAcceptedEmail({
+        const sendEmail = this.props.firebase.sendFinalAcceptedEmail({
           email,
           name,
         });
@@ -165,7 +165,7 @@ class AdminSettings extends Component {
           if (item.name === "Email") email = item.value;
         });
 
-        const sendEmail = this.props.firebase.sendDeniedEmail({
+        const sendEmail = this.props.firebase.sendFinalDeniedEmail({
           email,
           name,
           feedback,
@@ -174,6 +174,8 @@ class AdminSettings extends Component {
         const updatedData = {
           roles: {
             applicant: false,
+            provisionalMember: false,
+            nonmember: true,
           },
         };
 
@@ -236,20 +238,20 @@ class AdminSettings extends Component {
           <Row>
             <Col>
               <h4> Positive Votes </h4>
-              <p> {data.deliberation.count.accept} </p>
+              <p> {data.deliberation.secondRound.count.accept} </p>
             </Col>
             <Col>
               <h4> Negative Votes </h4>
-              <p> {data.deliberation.count.deny} </p>
+              <p> {data.deliberation.secondRound.count.deny} </p>
             </Col>
           </Row>
           <Row>
             <Col>
               <h4> Status </h4>
               <p>
-                {data.deliberation.count.accept /
-                  (data.deliberation.count.accept +
-                    data.deliberation.count.deny) >=
+                {data.deliberation.secondRound.count.accept /
+                  (data.deliberation.secondRound.count.accept +
+                    data.deliberation.secondRound.count.deny) >=
                 0.75
                   ? "Accepted"
                   : "Not Accepted"}
@@ -306,11 +308,11 @@ class AdminSettings extends Component {
           <Col>
             {applicationList2.map((application) => (
               <Fragment key={application.id}>
-                {application.deliberation.complete ? null : (
+                {application.deliberation.secondRound.complete ? null : (
                   <FeedbackForm
                     data={application.id}
                     dataGet={this.loadData}
-                    round={1}
+                    round={2}
                   />
                 )}
               </Fragment>
@@ -350,8 +352,10 @@ class AdminSettings extends Component {
       </>
     );
 
-    return <>{settings.votingComplete ? feedbackForms : applicationStatus}</>;
+    return (
+      <>{settings.secondVotingComplete ? feedbackForms : applicationStatus}</>
+    );
   }
 }
 
-export default withFirebase(AdminSettings);
+export default withFirebase(AdminSettingsTwo);

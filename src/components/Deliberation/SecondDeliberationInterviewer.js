@@ -16,7 +16,7 @@ import {
 
 import { isAppOrMem } from "../../util/conditions";
 import Loader from "../Loader";
-import AdminSettings from "./AdminSettings";
+import AdminSettingsTwo from "./AdminSettingsTwo";
 import ApplicationDisplayTwo from "./ApplicationDisplayTwo";
 import { Container } from "../../styles/global";
 
@@ -168,7 +168,7 @@ class SecondDeliberationInterviewer extends Component {
             </Row>
           </Container>
           <br />
-          <AdminSettings updatePage={this.updatePage} round={2} />
+          <AdminSettingsTwo updatePage={this.updatePage} />
         </>
       );
 

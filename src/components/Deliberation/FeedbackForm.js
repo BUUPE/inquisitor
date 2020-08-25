@@ -70,12 +70,25 @@ class FeedbackForm extends Component {
 
     const { feedback } = this.state;
 
-    const data = {
-      deliberation: {
-        feedback: feedback,
-        complete: true,
-      },
-    };
+    var data = null;
+
+    if (this.props.round === 1) {
+      data = {
+        deliberation: {
+          feedback: feedback,
+          complete: true,
+        },
+      };
+    } else {
+      data = {
+        deliberation: {
+          secondRound: {
+            feedback: feedback,
+            complete: true,
+          },
+        },
+      };
+    }
 
     this.props.firebase
       .application(this.props.data)
@@ -129,11 +142,20 @@ class FeedbackForm extends Component {
         </Container>
       );
 
-    if (
-      submitted ||
-      (data.deliberation.complete && data.deliberation.feedback !== "")
-    )
-      return successMessage;
+    if (this.props.round === 1) {
+      if (
+        submitted ||
+        (data.deliberation.complete && data.deliberation.feedback !== "")
+      )
+        return successMessage;
+    } else {
+      if (
+        submitted ||
+        (data.deliberation.secondRound.complete &&
+          data.deliberation.secondRound.feedback !== "")
+      )
+        return successMessage;
+    }
 
     return (
       <Container flexdirection="column">

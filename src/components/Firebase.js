@@ -41,6 +41,13 @@ class Firebase extends FirebaseSuper {
     );
     this.sendAcceptedEmail = this.functions.httpsCallable("applicantAccepted");
     this.sendDeniedEmail = this.functions.httpsCallable("applicantDenied");
+
+    this.sendFinalAcceptedEmail = this.functions.httpsCallable(
+      "applicantFinalAccepted"
+    );
+    this.sendFinalDeniedEmail = this.functions.httpsCallable(
+      "applicantFinalDenied"
+    );
   }
 
   question = (uid) => this.inquisitorData.collection("questions").doc(uid);
@@ -70,6 +77,14 @@ class Firebase extends FirebaseSuper {
       .collection("applications")
       .where("deliberation.voted", "==", true)
       .where("deliberation.complete", "==", false)
+      .orderBy("interview.level")
+      .orderBy("applicant.name");
+
+  deliberatedApplicantsTwo = () =>
+    this.inquisitorData
+      .collection("applications")
+      .where("deliberation.secondRound.voted", "==", true)
+      .where("deliberation.secondRound.complete", "==", false)
       .orderBy("interview.level")
       .orderBy("applicant.name");
 

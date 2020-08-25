@@ -123,6 +123,7 @@ class DataForm extends Component {
         nonMember: false,
         provisionalMember: true && settings.secondDeliberationRound,
         upemember: !settings.secondDeliberationRound,
+        applicant: settings.secondDeliberationRound,
       },
     };
 
