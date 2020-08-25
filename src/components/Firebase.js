@@ -57,6 +57,14 @@ class Firebase extends FirebaseSuper {
       .orderBy("interview.level")
       .orderBy("applicant.name");
 
+  secondRoundApplicants = () =>
+    this.inquisitorData
+      .collection("applications")
+      .where("deliberation.acceptedUPE", "==", true)
+      .where("deliberation.applicantAccepted", "==", true)
+      .orderBy("interview.level")
+      .orderBy("applicant.name");
+
   deliberatedApplicants = () =>
     this.inquisitorData
       .collection("applications")

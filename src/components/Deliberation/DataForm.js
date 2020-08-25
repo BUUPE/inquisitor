@@ -48,6 +48,7 @@ class DataForm extends Component {
     sending: false,
     submitted: false,
     errorMsg: "",
+    settings: null,
   };
   static contextType = AuthUserContext;
 
@@ -74,8 +75,18 @@ class DataForm extends Component {
     if (!doc.exists) this.setState({ errorMsg: "Failed loading application" });
     else {
       const application = doc.data();
-      this.setState({ application, loading: false }, () => {
+      this.setState({ application }, () => {
         console.log("Loaded Application");
+      });
+    }
+
+    const docTwo = await this.props.firebase.generalSettings().get();
+
+    if (!docTwo.exists) this.setState({ error: "Failed to load timeslots!" });
+    else {
+      const settings = docTwo.data();
+      this.setState({ settings, loading: false }, () => {
+        console.log("Settings loaded");
       });
     }
   };
@@ -90,6 +101,7 @@ class DataForm extends Component {
       twitter,
       file,
       fileExtension,
+      settings,
     } = this.state;
 
     const im = this.context.name.split(" ")[0] + "." + fileExtension;
@@ -109,7 +121,8 @@ class DataForm extends Component {
       },
       roles: {
         nonMember: false,
-        provisionalMember: true,
+        provisionalMember: true && settings.secondDeliberationRound,
+        upemember: !settings.secondDeliberationRound,
       },
     };
 

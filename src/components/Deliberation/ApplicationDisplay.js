@@ -199,20 +199,23 @@ class ApplicationDisplay extends Component {
     const updatedData = {
       deliberation: {
         count: {
-          accept: 0,
-          deny: 0,
+          accept: data.deliberation.count.accept,
+          deny: data.deliberation.count.deny,
         },
-        votes: {},
+        votes: data.deliberation.votes,
       },
     };
 
     if (hasVoted) {
-      updatedData.deliberation.count.accept =
-        data.deliberation.count.accept + 1;
-      updatedData.deliberation.count.deny = data.deliberation.count.deny - 1;
+      if (!updatedData.deliberation.votes[authUser.uid]) {
+        updatedData.deliberation.count.accept =
+          updatedData.deliberation.count.accept + 1;
+        updatedData.deliberation.count.deny =
+          updatedData.deliberation.count.deny - 1;
+      }
     } else {
       updatedData.deliberation.count.accept =
-        data.deliberation.count.accept + 1;
+        updatedData.deliberation.count.accept + 1;
     }
 
     updatedData.deliberation.votes[authUser.uid] = true;
@@ -238,19 +241,23 @@ class ApplicationDisplay extends Component {
     const updatedData = {
       deliberation: {
         count: {
-          accept: 0,
-          deny: 0,
+          accept: data.deliberation.count.accept,
+          deny: data.deliberation.count.deny,
         },
-        votes: {},
+        votes: data.deliberation.votes,
       },
     };
 
     if (hasVoted) {
-      updatedData.deliberation.count.accept =
-        data.deliberation.count.accept - 1;
-      updatedData.deliberation.count.deny = data.deliberation.count.deny + 1;
+      if (updatedData.deliberation.votes[authUser.uid]) {
+        updatedData.deliberation.count.accept =
+          updatedData.deliberation.count.accept - 1;
+        updatedData.deliberation.count.deny =
+          updatedData.deliberation.count.deny + 1;
+      }
     } else {
-      updatedData.deliberation.count.accept = data.deliberation.count.deny + 1;
+      updatedData.deliberation.count.deny =
+        updatedData.deliberation.count.deny + 1;
     }
 
     updatedData.deliberation.votes[authUser.uid] = false;

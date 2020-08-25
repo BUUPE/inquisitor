@@ -14,7 +14,7 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
-import { isRecruitmentTeam } from "../../util/conditions";
+import { isAppOrMem } from "../../util/conditions";
 import Loader from "../Loader";
 import AdminSettings from "./AdminSettings";
 import ApplicationDisplay from "./ApplicationDisplay";
@@ -176,7 +176,7 @@ class SecondDeliberationInterviewer extends Component {
       return null;
     }
 
-    const display = <ApplicationDisplay data={uid} />;
+    const display = <h1> test </h1>;
     this.setState({ display });
   };
 
@@ -192,33 +192,28 @@ class SecondDeliberationInterviewer extends Component {
       );
 
     const {
-      deliberationOpen,
-      deliberationsComplete,
-      votingComplete,
+      secondDeliberationComplete,
+      secondVotingComplete,
       secondDeliberationRound,
     } = this.state.settings;
 
     const authUser = this.context;
 
-    if (secondDeliberationRound && deliberationsComplete) {
-      return <SecondDeliberationInterviewer />;
-    }
-
-    if (!deliberationOpen)
+    if (!secondDeliberationRound)
       return (
         <Container flexdirection="column">
           <h1>Deliberations are closed!</h1>
         </Container>
       );
 
-    if (authUser.roles.applicant && !deliberationsComplete)
+    if (authUser.roles.applicant && !secondDeliberationComplete)
       return (
         <Container flexdirection="column">
           <h1>Deliberations are not yet complete.</h1>
         </Container>
       );
 
-    if (deliberationsComplete)
+    if (secondDeliberationComplete)
       return (
         <Container flexdirection="column">
           <h1>Deliberations are complete</h1>
@@ -280,7 +275,7 @@ class SecondDeliberationInterviewer extends Component {
       </Container>
     );
 
-    if (votingComplete) {
+    if (secondVotingComplete) {
       return (
         <StyledContainer fluid flexdirection="row">
           {sidebarTwo}
@@ -299,6 +294,6 @@ class SecondDeliberationInterviewer extends Component {
 }
 
 export default compose(
-  withAuthorization(isRecruitmentTeam),
+  withAuthorization(isAppOrMem),
   withFirebase
 )(SecondDeliberationInterviewer);
