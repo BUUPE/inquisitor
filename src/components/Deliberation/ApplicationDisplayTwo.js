@@ -75,7 +75,7 @@ class ApplicationDisplay extends Component {
         values.major = val.value;
         this.setState({ values });
       } else if (val.id === 4) {
-        values.minors = val.value;
+        values.minor = val.value;
         this.setState({ values });
       } else if (val.id === 5) {
         values.classYear = val.value;
@@ -90,6 +90,7 @@ class ApplicationDisplay extends Component {
   };
 
   acceptApplicant = () => {
+    this.setState({ loading: true });
     const { data } = this.state;
     const deliberation = data.deliberation;
     const authUser = this.context;
@@ -127,6 +128,7 @@ class ApplicationDisplay extends Component {
       .set(updatedData, { merge: true })
       .then(() => {
         console.log("Successfully updated deliberation data!");
+        this.loadApplication();
       })
       .catch((err) => {
         console.log(err);
@@ -134,6 +136,7 @@ class ApplicationDisplay extends Component {
   };
 
   denyApplicant = () => {
+    this.setState({ loading: true });
     const { data } = this.state;
     const deliberation = data.deliberation;
     const authUser = this.context;
@@ -171,6 +174,7 @@ class ApplicationDisplay extends Component {
       .set(updatedData, { merge: true })
       .then(() => {
         console.log("Successfully updated deliberation data!");
+        this.loadApplication();
       })
       .catch((err) => {
         console.log(err);

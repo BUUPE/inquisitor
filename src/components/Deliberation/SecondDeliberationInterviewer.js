@@ -17,7 +17,7 @@ import {
 import { isAppOrMem } from "../../util/conditions";
 import Loader from "../Loader";
 import AdminSettings from "./AdminSettings";
-import ApplicationDisplay from "./ApplicationDisplay";
+import ApplicationDisplayTwo from "./ApplicationDisplayTwo";
 import { Container } from "../../styles/global";
 
 const StyledCol = styled(Col)`
@@ -168,7 +168,7 @@ class SecondDeliberationInterviewer extends Component {
             </Row>
           </Container>
           <br />
-          <AdminSettings updatePage={this.updatePage} />
+          <AdminSettings updatePage={this.updatePage} round={2} />
         </>
       );
 
@@ -176,7 +176,7 @@ class SecondDeliberationInterviewer extends Component {
       return null;
     }
 
-    const display = <h1> test </h1>;
+    const display = <ApplicationDisplayTwo data={uid} />;
     this.setState({ display });
   };
 

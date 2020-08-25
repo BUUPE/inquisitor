@@ -169,7 +169,7 @@ class InterviewerView extends Component {
             </Row>
           </Container>
           <br />
-          <AdminSettings updatePage={this.updatePage} />
+          <AdminSettings updatePage={this.updatePage} round={1} />
         </>
       );
 
