@@ -198,11 +198,12 @@ class AdminSettingsTwo extends Component {
     });
 
     const dataOne = {
-      deliberationsComplete: true,
+      secondDeliberationComplete: true,
     };
 
     this.props.firebase.generalSettings().set(dataOne, { merge: true });
     this.props.updatePage();
+    this.setState({ loading: false });
   };
 
   render() {
@@ -215,6 +216,7 @@ class AdminSettingsTwo extends Component {
     } = this.state;
 
     if (loading) return <Loader />;
+
     if (error)
       return (
         <Container flexdirection="column">

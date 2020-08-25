@@ -201,6 +201,7 @@ class AdminSettings extends Component {
 
     this.props.firebase.generalSettings().set(dataOne, { merge: true });
     this.props.updatePage();
+    this.setState({ loading: false });
   };
 
   render() {
