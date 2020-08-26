@@ -7,17 +7,23 @@ import Row from "react-bootstrap/Row";
 import Toast from "react-bootstrap/Toast";
 import AdminLayout from "./AdminLayout";
 import QuestionDisplay from "./QuestionDisplay";
+import AddQuestion from "./AddQuestion";
 
 import { AuthUserContext, withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
 import { Container } from "../../styles/global";
 
+const StyledDiv = styled.div`
+  text-align: right;
+`;
+
 class ManagerQuestions extends Component {
   constructor(props) {
     super(props);
 
     this.updatePage = this.updatePage.bind(this);
+    this.toggleAdd = this.toggleAdd.bind(this);
   }
 
   _initFirebase = false;
@@ -44,6 +50,7 @@ class ManagerQuestions extends Component {
   }
 
   updatePage = () => {
+    this.setState({ addQuestion: false });
     this.loadSettings();
   };
 
@@ -63,8 +70,12 @@ class ManagerQuestions extends Component {
       });
   };
 
+  toggleAdd = () => {
+    this.setState({ addQuestion: !this.state.addQuestion });
+  };
+
   render() {
-    const { loading, error, questionList } = this.state;
+    const { loading, error, questionList, addQuestion } = this.state;
 
     if (loading) return <Loader />;
     if (error)
@@ -97,6 +108,18 @@ class ManagerQuestions extends Component {
           <Row>
             <Col>
               <h1> Interview Questions </h1>
+              <br />
+              <StyledDiv>
+                <Button onClick={this.toggleAdd}>Add Question</Button>
+              </StyledDiv>
+              <br />
+
+              {addQuestion ? (
+                <AddQuestion updateFunc={this.updatePage} />
+              ) : (
+                <> </>
+              )}
+
               <br />
               <Questions />
             </Col>

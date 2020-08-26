@@ -50,6 +50,7 @@ class QuestionDisplay extends Component {
     super(props);
 
     this.toggleEdit = this.toggleEdit.bind(this);
+    this.toggleDelete = this.toggleDelete.bind(this);
     this.updateData = this.updateData.bind(this);
   }
 
