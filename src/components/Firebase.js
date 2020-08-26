@@ -37,6 +37,9 @@ class Firebase extends FirebaseSuper {
     );
   }
 
+  question = (uid) => this.inquisitorData.collection("questions").doc(uid);
+  questions = () => this.inquisitorData.collection("questions");
+
   application = (uid) =>
     this.inquisitorData.collection("applications").doc(uid);
   applications = () => this.inquisitorData.collection("applications");

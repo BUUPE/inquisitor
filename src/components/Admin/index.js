@@ -5,6 +5,7 @@ import ManageRoles from "./ManageRoles";
 import ManageTimeslots from "./ManageTimeslots";
 import ViewApplications from "./ViewApplications";
 import ImportExport from "./ImportExport";
+import ManageQuestions from "./ManageQuestions";
 
 export {
   GeneralSettings,
@@ -14,4 +15,5 @@ export {
   ManageRoles,
   ManageTimeslots,
   ImportExport,
+  ManageQuestions,
 };
