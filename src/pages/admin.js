@@ -13,6 +13,7 @@ import {
   ManageTimeslots,
   ImportExport,
   ManageQuestions,
+  ManageLevels,
 } from "../components/Admin";
 
 const FullSizeRouter = styled(Router)`
@@ -30,6 +31,7 @@ export default ({ location }) => (
       <ManageTimeslots path="/manage-timeslots" />
       <ImportExport path="/import-export" />
       <ManageQuestions path="/manage-questions" />
+      <ManageLevels path="/manage-levels" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
   </Layout>

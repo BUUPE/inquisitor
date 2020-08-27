@@ -35,6 +35,7 @@ const Sidebar = () => (
     <Link to="/admin/manage-timeslots">Manage Timeslots</Link>
     <Link to="/admin/import-export">Import/Export</Link>
     <Link to="/admin/manage-questions">Manage Questions</Link>
+    <Link to="/admin/manage-levels">Manage Levels</Link>
   </StyledNav>
 );
 
