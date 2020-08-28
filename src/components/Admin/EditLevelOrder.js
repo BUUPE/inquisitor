@@ -100,134 +100,135 @@ export const Example = ({
   levelName,
   allQuestions,
   firebase,
+  updateFunc,
 }) => {
-  {
-    const [cards, setCards] = useState([...questions]);
-    const [adding, setAdding] = useState("");
+  const [cards, setCards] = useState([...questions]);
+  const [adding, setAdding] = useState("");
 
-    const moveCard = useCallback(
-      (dragIndex, hoverIndex) => {
-        const dragCard = cards[dragIndex];
-        setCards(
-          update(cards, {
-            $splice: [
-              [dragIndex, 1],
-              [hoverIndex, 0, dragCard],
-            ],
-          })
-        );
-      },
-      [cards]
-    );
-    const removeQuestion = useCallback(
-      (index) => {
-        const temp = [...cards];
-        temp.splice(index, 1);
-        setCards(temp);
-      },
-      [cards]
-    );
-
-    const renderCard = (card, index) => {
-      return (
-        <Card
-          key={card.id}
-          index={index}
-          id={card.id}
-          text={questionMap[card.id]}
-          moveCard={moveCard}
-          removeQuestion={removeQuestion}
-        />
-      );
-    };
-
-    function testSubmit() {
-      var orderedList = [];
-      {
-        cards.map((card, i) => {
-          orderedList.push({ id: card.id, order: i });
-        });
-      }
-
-      delete levelConfig[levelName];
-      levelConfig[levelName] = orderedList;
-
-      that.props.firebase
-        .levelConfig()
-        .set(levelConfig)
-        .then(() => {
-          console.log("Level Updated: ", levelName);
-          that.props.updateFunc();
+  const moveCard = useCallback(
+    (dragIndex, hoverIndex) => {
+      const dragCard = cards[dragIndex];
+      setCards(
+        update(cards, {
+          $splice: [
+            [dragIndex, 1],
+            [hoverIndex, 0, dragCard],
+          ],
         })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+      );
+    },
+    [cards]
+  );
 
-    function addQuestions(event) {
-      console.log("Added Questions");
+  const removeQuestion = useCallback(
+    (index) => {
       const temp = [...cards];
-      temp.push(allQuestions[adding]);
+      temp.splice(index, 1);
       setCards(temp);
-      event.preventDefault();
-    }
+    },
+    [cards]
+  );
 
-    function onChange(event) {
-      setAdding(event.target.value);
-    }
-
-    function checkIn(val) {
-      for (var i = 0; i < cards.length; i++) {
-        if (val.id && cards[i].id === val.id) {
-          return true;
-        }
-      }
-      return false;
-    }
-
+  const renderCard = (card, index) => {
     return (
-      <div styled={{ textAlign: "center", itemAlign: "center" }}>
-        <CenteredForm onSubmit={addQuestions}>
-          <Form.Row style={{ width: "100%" }} key={0}>
-            <Form.Group controlId={4} style={{ width: "100%" }}>
-              <Form.Label>
-                <h5> Name </h5>
-              </Form.Label>
-              <Form.Control
-                required
-                name={"addQ"}
-                as="select"
-                onChange={onChange}
-              >
-                <option value={0}> - </option>
-                {allQuestions.map((item, index) => {
-                  if (checkIn(item)) {
-                    return <> </>;
-                  } else {
-                    return (
-                      <option key={index} value={index}>
-                        {" "}
-                        {questionMap[item.id]}{" "}
-                      </option>
-                    );
-                  }
-                })}
-              </Form.Control>
-            </Form.Group>
-          </Form.Row>
-
-          <Button type="submit">Add Question</Button>
-        </CenteredForm>
-
-        <br />
-
-        <div style={style} style={{ textAlign: "center" }}>
-          {cards.map((card, i) => renderCard(card, i))}
-        </div>
-        <Button onClick={testSubmit} style={{ width: "50%" }}>
-          Submit
-        </Button>
-      </div>
+      <Card
+        key={card.id}
+        index={index}
+        id={card.id}
+        text={questionMap[card.id]}
+        moveCard={moveCard}
+        removeQuestion={removeQuestion}
+      />
     );
+  };
+
+  function testSubmit() {
+    var orderedList = [];
+    {
+      cards.map((card, i) => {
+        orderedList.push({ id: card.id, order: i });
+      });
+    }
+
+    delete levelConfig[levelName];
+    levelConfig[levelName] = orderedList;
+
+    firebase
+      .levelConfig()
+      .set(levelConfig)
+      .then(() => {
+        console.log("Level Updated: ", levelName);
+        updateFunc();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
+
+  function addQuestions(event) {
+    console.log("Added Questions");
+    const temp = [...cards];
+    temp.push(allQuestions[adding]);
+    setCards(temp);
+    event.preventDefault();
+  }
+
+  function onChange(event) {
+    setAdding(event.target.value);
+  }
+
+  function checkIn(val) {
+    for (var i = 0; i < cards.length; i++) {
+      if (val.id && cards[i].id === val.id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  return (
+    <div styled={{ textAlign: "center", itemAlign: "center" }}>
+      <CenteredForm onSubmit={addQuestions}>
+        <Form.Row style={{ width: "100%" }} key={0}>
+          <Form.Group controlId={4} style={{ width: "100%" }}>
+            <Form.Label>
+              <h5> Other Questions </h5>
+            </Form.Label>
+            <Form.Control
+              required
+              name={"addQ"}
+              as="select"
+              onChange={onChange}
+            >
+              <option value={0}> - </option>
+              {allQuestions.map((item, index) => {
+                if (checkIn(item)) {
+                  return <> </>;
+                } else {
+                  return (
+                    <option key={index} value={index}>
+                      {" "}
+                      {questionMap[item.id]}{" "}
+                    </option>
+                  );
+                }
+              })}
+            </Form.Control>
+          </Form.Group>
+        </Form.Row>
+
+        <Button type="submit">Add Question</Button>
+      </CenteredForm>
+
+      <br />
+
+      <div style={style} style={{ textAlign: "center" }}>
+        <h5> Level Questions </h5>
+        {cards.map((card, i) => renderCard(card, i))}
+      </div>
+      <Button onClick={testSubmit} style={{ width: "50%" }}>
+        Submit
+      </Button>
+    </div>
+  );
 };
