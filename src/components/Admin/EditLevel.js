@@ -102,6 +102,7 @@ export const LevelAdder = ({
   const [cards, setCards] = useState([]);
   const [adding, setAdding] = useState("");
   const [name, setName] = useState("");
+  const [msg, setMsg] = useState("");
 
   const moveCard = useCallback(
     (dragIndex, hoverIndex) => {
@@ -141,24 +142,28 @@ export const LevelAdder = ({
   };
 
   function testSubmit() {
-    var orderedList = [];
-    {
-      cards.map((card, i) => {
-        orderedList.push({ id: card.id, order: i });
-      });
-    }
-    levelConfig[name] = orderedList;
+    if (name === "") {
+      setMsg("Please provide a valid Level Name");
+    } else {
+      var orderedList = [];
+      {
+        cards.map((card, i) => {
+          orderedList.push({ id: card.id, order: i });
+        });
+      }
+      levelConfig[name] = orderedList;
 
-    firebase
-      .levelConfig()
-      .set(levelConfig)
-      .then(() => {
-        console.log("Level Updated: ", name);
-        updateFunc();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      firebase
+        .levelConfig()
+        .set(levelConfig)
+        .then(() => {
+          console.log("Level Updated: ", name);
+          updateFunc();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   }
 
   function addQuestions(event) {
@@ -242,6 +247,9 @@ export const LevelAdder = ({
         {cards.length === 0 ? <p> No questions added. </p> : <> </>}
         {cards.map((card, i) => renderCard(card, i))}
       </div>
+
+      {msg ? <h5> {msg} </h5> : <></>}
+
       <Button onClick={testSubmit} style={{ width: "50%" }}>
         Submit
       </Button>
