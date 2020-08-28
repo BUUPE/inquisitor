@@ -6,9 +6,11 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
 import { withFirebase } from "upe-react-components";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 import Loader from "../Loader";
-import EditLevelOrder from "./EditLevelOrder";
+import { Example } from "./EditLevelOrder";
 import { Container } from "../../styles/global";
 import { asyncForEach } from "../../util/helper.js";
 
@@ -170,6 +172,7 @@ class LevelDisplay extends Component {
       deleteLevel,
       questionList,
       questionMap,
+      levelConfig,
     } = this.state;
 
     if (loading) return <Loader />;
@@ -186,13 +189,22 @@ class LevelDisplay extends Component {
           <StyledDiv>
             <h2>Edit Level</h2>
 
-            <EditLevelOrder
-              questionList={level}
-              levelName={levelName}
-              questionMap={questionMap}
-              updateFunc={this.updateData}
-              allQuestions={questionList}
-            />
+            <Container flexdirection="column">
+              <DndProvider
+                backend={HTML5Backend}
+                styled={{ textAlign: "center", itemAlign: "center" }}
+              >
+                <Example
+                  questions={level}
+                  questionMap={questionMap}
+                  firebase={this.props.firebase}
+                  updateFunc={this.updateData}
+                  levelConfig={levelConfig}
+                  levelName={levelName}
+                  allQuestions={questionList}
+                />
+              </DndProvider>
+            </Container>
 
             <StyledHr />
             <Button onClick={this.toggleEdit}>Edit Level</Button>

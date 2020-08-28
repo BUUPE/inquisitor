@@ -87,255 +87,147 @@ export const Card = ({ id, text, index, moveCard, removeQuestion }) => {
   );
 };
 
-class EditLevelOrder extends Component {
-  _initFirebase = false;
+const style = {
+  textAlign: "center",
+  itemAlign: "center",
+};
 
-  state = {
-    questionMap: null,
-    questionList: null,
-    loading: true,
-    sending: false,
-    submitted: false,
-    error: null,
-    levelConfig: null,
-    msg: "",
-    allQuestions: null,
-  };
+export const Example = ({
+  questions,
+  questionMap,
+  that,
+  levelConfig,
+  levelName,
+  allQuestions,
+  firebase,
+}) => {
+  {
+    const [cards, setCards] = useState([...questions]);
+    const [adding, setAdding] = useState("");
 
-  componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadData();
-  }
+    const moveCard = useCallback(
+      (dragIndex, hoverIndex) => {
+        const dragCard = cards[dragIndex];
+        setCards(
+          update(cards, {
+            $splice: [
+              [dragIndex, 1],
+              [hoverIndex, 0, dragCard],
+            ],
+          })
+        );
+      },
+      [cards]
+    );
+    const removeQuestion = useCallback(
+      (index) => {
+        const temp = [...cards];
+        temp.splice(index, 1);
+        setCards(temp);
+      },
+      [cards]
+    );
 
-  componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadData();
-    if (typeof window !== "undefined") {
-      import("bs-custom-file-input").then((bsCustomFileInput) => {
-        bsCustomFileInput.init();
-      });
-    }
-  }
-
-  loadData = async () => {
-    this._initFirebase = true;
-
-    const doc = await this.props.firebase.levelConfig().get();
-
-    if (doc.exists) {
-      const levelConfig = doc.data();
-      this.setState({
-        availableOrder: Array.from(
-          Array(this.props.questionList.length),
-          (_, i) => i + 1
-        ),
-        questionList: this.props.questionList,
-        questionMap: this.props.questionMap,
-        levelName: this.props.levelName,
-        loading: false,
-        levelConfig,
-        allQuestions: this.props.allQuestions,
-      });
-    } else {
-      this.setState({
-        error: "No levelConfig",
-        loading: false,
-      });
-    }
-  };
-
-  render() {
-    const {
-      availableOrder,
-      questionList,
-      questionMap,
-      levelConfig,
-      levelName,
-      loading,
-      validated,
-      sending,
-      submitted,
-      error,
-      msg,
-      allQuestions,
-    } = this.state;
-
-    if (loading) return <Loader />;
-
-    if (error)
+    const renderCard = (card, index) => {
       return (
-        <Container flexdirection="column">
-          <h1>Uh oh!</h1>
-          <p>{error}</p>
-        </Container>
+        <Card
+          key={card.id}
+          index={index}
+          id={card.id}
+          text={questionMap[card.id]}
+          moveCard={moveCard}
+          removeQuestion={removeQuestion}
+        />
       );
-
-    const style = {
-      textAlign: "center",
-      itemAlign: "center",
     };
 
-    const Example = ({
-      questions,
-      questionMap,
-      that,
-      levelConfig,
-      levelName,
-      allQuestions,
-    }) => {
+    function testSubmit() {
+      var orderedList = [];
       {
-        const [cards, setCards] = useState([...questions]);
-        const [adding, setAdding] = useState("");
-        const [msg, setMsg] = useState([""]);
-        const moveCard = useCallback(
-          (dragIndex, hoverIndex) => {
-            const dragCard = cards[dragIndex];
-            setCards(
-              update(cards, {
-                $splice: [
-                  [dragIndex, 1],
-                  [hoverIndex, 0, dragCard],
-                ],
-              })
-            );
-          },
-          [cards]
-        );
-        const removeQuestion = useCallback(
-          (index) => {
-            const temp = [...cards];
-            temp.splice(index, 1);
-            setCards(temp);
-          },
-          [cards]
-        );
-        const renderCard = (card, index) => {
-          return (
-            <Card
-              key={card.id}
-              index={index}
-              id={card.id}
-              text={questionMap[card.id]}
-              moveCard={moveCard}
-              removeQuestion={removeQuestion}
-            />
-          );
-        };
-        function testSubmit() {
-          var orderedList = [];
-          {
-            cards.map((card, i) => {
-              orderedList.push({ id: card.id, order: i });
-            });
-          }
-
-          delete levelConfig[levelName];
-          levelConfig[levelName] = orderedList;
-
-          that.props.firebase
-            .levelConfig()
-            .set(levelConfig)
-            .then(() => {
-              console.log("Level Updated: ", levelName);
-              that.props.updateFunc();
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        }
-        function addQuestions(event) {
-          console.log("Added Questions");
-          const temp = [...cards];
-          temp.push(allQuestions[adding]);
-          setCards(temp);
-          event.preventDefault();
-        }
-        function onChange(event) {
-          setAdding(event.target.value);
-        }
-
-        function checkIn(val) {
-          for (var i = 0; i < cards.length; i++) {
-            if (val.id && cards[i].id === val.id) {
-              return true;
-            }
-          }
-          return false;
-        }
-        return (
-          <div styled={{ textAlign: "center", itemAlign: "center" }}>
-            <CenteredForm
-              noValidate
-              validated={validated}
-              onSubmit={addQuestions}
-            >
-              <Form.Row style={{ width: "100%" }} key={0}>
-                <Form.Group controlId={4} style={{ width: "100%" }}>
-                  <Form.Label>
-                    <h5> Name </h5>
-                  </Form.Label>
-                  <Form.Control
-                    required
-                    name={"addQ"}
-                    as="select"
-                    onChange={onChange}
-                  >
-                    <option value={0}> - </option>
-                    {allQuestions.map((item, index) => {
-                      if (checkIn(item)) {
-                        return <> </>;
-                      } else {
-                        return (
-                          <option key={index} value={index}>
-                            {" "}
-                            {questionMap[item.id]}{" "}
-                          </option>
-                        );
-                      }
-                    })}
-                  </Form.Control>
-                </Form.Group>
-              </Form.Row>
-
-              <Button type="submit" disabled={sending}>
-                {sending ? "Submitting..." : "Submit"}
-              </Button>
-            </CenteredForm>
-
-            <br />
-
-            <div style={style} style={{ textAlign: "center" }}>
-              {cards.map((card, i) => renderCard(card, i))}
-            </div>
-            {msg ? <h5>{msg}</h5> : <> </>}
-            <Button
-              onClick={testSubmit}
-              disabled={sending}
-              style={{ width: "50%" }}
-            >
-              {sending ? "Submitting..." : "Submit"}
-            </Button>
-          </div>
-        );
+        cards.map((card, i) => {
+          orderedList.push({ id: card.id, order: i });
+        });
       }
-    };
+
+      delete levelConfig[levelName];
+      levelConfig[levelName] = orderedList;
+
+      that.props.firebase
+        .levelConfig()
+        .set(levelConfig)
+        .then(() => {
+          console.log("Level Updated: ", levelName);
+          that.props.updateFunc();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    function addQuestions(event) {
+      console.log("Added Questions");
+      const temp = [...cards];
+      temp.push(allQuestions[adding]);
+      setCards(temp);
+      event.preventDefault();
+    }
+
+    function onChange(event) {
+      setAdding(event.target.value);
+    }
+
+    function checkIn(val) {
+      for (var i = 0; i < cards.length; i++) {
+        if (val.id && cards[i].id === val.id) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     return (
-      <Container flexdirection="column">
-        <DndProvider
-          backend={HTML5Backend}
-          styled={{ textAlign: "center", itemAlign: "center" }}
-        >
-          <Example
-            questions={questionList}
-            questionMap={questionMap}
-            that={this}
-            levelConfig={levelConfig}
-            levelName={levelName}
-            allQuestions={allQuestions}
-          />
-        </DndProvider>
-      </Container>
+      <div styled={{ textAlign: "center", itemAlign: "center" }}>
+        <CenteredForm onSubmit={addQuestions}>
+          <Form.Row style={{ width: "100%" }} key={0}>
+            <Form.Group controlId={4} style={{ width: "100%" }}>
+              <Form.Label>
+                <h5> Name </h5>
+              </Form.Label>
+              <Form.Control
+                required
+                name={"addQ"}
+                as="select"
+                onChange={onChange}
+              >
+                <option value={0}> - </option>
+                {allQuestions.map((item, index) => {
+                  if (checkIn(item)) {
+                    return <> </>;
+                  } else {
+                    return (
+                      <option key={index} value={index}>
+                        {" "}
+                        {questionMap[item.id]}{" "}
+                      </option>
+                    );
+                  }
+                })}
+              </Form.Control>
+            </Form.Group>
+          </Form.Row>
+
+          <Button type="submit">Add Question</Button>
+        </CenteredForm>
+
+        <br />
+
+        <div style={style} style={{ textAlign: "center" }}>
+          {cards.map((card, i) => renderCard(card, i))}
+        </div>
+        <Button onClick={testSubmit} style={{ width: "50%" }}>
+          Submit
+        </Button>
+      </div>
     );
   }
-}
-
-export default withFirebase(EditLevelOrder);
+};
