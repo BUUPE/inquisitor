@@ -186,6 +186,14 @@ class EditLevelOrder extends Component {
           },
           [cards]
         );
+        const removeQuestion = useCallback(
+          (index) => {
+            const temp = [...cards];
+            temp.splice(index, 1);
+            setCards(temp);
+          },
+          [cards]
+        );
         const renderCard = (card, index) => {
           return (
             <Card
@@ -194,6 +202,7 @@ class EditLevelOrder extends Component {
               id={card.id}
               text={questionMap[card.id]}
               moveCard={moveCard}
+              removeQuestion={removeQuestion}
             />
           );
         };
@@ -218,12 +227,6 @@ class EditLevelOrder extends Component {
             .catch((error) => {
               console.log(error);
             });
-        }
-
-        function removeQuestion(index) {
-          const newCards = { ...cards };
-          delete newCards[index];
-          setCards(newCards);
         }
         return (
           <div styled={{ textAlign: "center", itemAlign: "center" }}>
