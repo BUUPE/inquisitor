@@ -8,6 +8,7 @@ import Row from "react-bootstrap/Row";
 import { withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
+import EditLevelOrder from "./EditLevelOrder";
 import { Container } from "../../styles/global";
 import { asyncForEach } from "../../util/helper.js";
 
@@ -50,6 +51,7 @@ class LevelDisplay extends Component {
   constructor(props) {
     super(props);
 
+    this.toggleOrder = this.toggleOrder.bind(this);
     this.toggleEdit = this.toggleEdit.bind(this);
     this.toggleDelete = this.toggleDelete.bind(this);
     this.updateData = this.updateData.bind(this);
@@ -63,6 +65,7 @@ class LevelDisplay extends Component {
     levelName: "",
     editLevel: false,
     deleteQuestion: false,
+    editOrder: false,
     questionList: null,
     questionMap: null,
     levelConfig: null,
@@ -141,6 +144,10 @@ class LevelDisplay extends Component {
     this.setState({ deleteLevel: !this.state.deleteLevel });
   };
 
+  toggleOrder = () => {
+    this.setState({ editOrder: !this.state.editOrder });
+  };
+
   deleteL = () => {
     const { levelName, levelConfig } = this.state;
     delete levelConfig[levelName];
@@ -169,6 +176,7 @@ class LevelDisplay extends Component {
       deleteLevel,
       questionList,
       questionMap,
+      editOrder,
     } = this.state;
 
     if (loading) return <Loader />;
@@ -181,9 +189,29 @@ class LevelDisplay extends Component {
 
     if (editLevel) {
       return (
-        <StyledCol md={4}>
+        <StyledCol>
           <StyledDiv>
             <h2>Edit Level</h2>
+          </StyledDiv>
+        </StyledCol>
+      );
+    }
+
+    if (editOrder) {
+      return (
+        <StyledCol>
+          <StyledDiv>
+            <h2>Edit Order</h2>
+            <EditLevelOrder
+              questionList={level}
+              levelName={levelName}
+              questionMap={questionMap}
+              updateFunc={this.updateData}
+            />
+
+            <StyledHr />
+            <Button onClick={this.toggleOrder}>Edit Order</Button>
+            <StyledHr />
           </StyledDiv>
         </StyledCol>
       );
@@ -223,10 +251,13 @@ class LevelDisplay extends Component {
           <Questions />
 
           <StyledHr />
-          <Button onClick={this.toggleEdit}>Edit Question</Button>
+          <Button onClick={this.toggleEdit}>Edit Questions</Button>
           <br />
           <br />
-          <Button onClick={this.toggleDelete}>Delete Question</Button>
+          <Button onClick={this.toggleOrder}>Edit Order</Button>
+          <br />
+          <br />
+          <Button onClick={this.toggleDelete}>Delete Level</Button>
           <StyledHr />
 
           {deleteLevel ? <Delete /> : <> </>}
