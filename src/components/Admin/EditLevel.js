@@ -92,10 +92,166 @@ const style = {
   itemAlign: "center",
 };
 
-export const Example = ({
+export const LevelAdder = ({
+  questionMap,
+  levelConfig,
+  allQuestions,
+  firebase,
+  updateFunc,
+}) => {
+  const [cards, setCards] = useState([]);
+  const [adding, setAdding] = useState("");
+  const [name, setName] = useState("");
+
+  const moveCard = useCallback(
+    (dragIndex, hoverIndex) => {
+      const dragCard = cards[dragIndex];
+      setCards(
+        update(cards, {
+          $splice: [
+            [dragIndex, 1],
+            [hoverIndex, 0, dragCard],
+          ],
+        })
+      );
+    },
+    [cards]
+  );
+
+  const removeQuestion = useCallback(
+    (index) => {
+      const temp = [...cards];
+      temp.splice(index, 1);
+      setCards(temp);
+    },
+    [cards]
+  );
+
+  const renderCard = (card, index) => {
+    return (
+      <Card
+        key={card.id}
+        index={index}
+        id={card.id}
+        text={questionMap[card.id]}
+        moveCard={moveCard}
+        removeQuestion={removeQuestion}
+      />
+    );
+  };
+
+  function testSubmit() {
+    var orderedList = [];
+    {
+      cards.map((card, i) => {
+        orderedList.push({ id: card.id, order: i });
+      });
+    }
+    levelConfig[name] = orderedList;
+
+    firebase
+      .levelConfig()
+      .set(levelConfig)
+      .then(() => {
+        console.log("Level Updated: ", name);
+        updateFunc();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  function addQuestions(event) {
+    console.log("Added Questions");
+    const temp = [...cards];
+    temp.push(allQuestions[adding]);
+    setCards(temp);
+    event.preventDefault();
+  }
+
+  function onChange(event) {
+    setAdding(event.target.value);
+  }
+
+  function onChangeName(event) {
+    setName(event.target.value);
+  }
+
+  function checkIn(val) {
+    for (var i = 0; i < cards.length; i++) {
+      if (val.id && cards[i].id === val.id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  return (
+    <div styled={{ textAlign: "center", itemAlign: "center" }}>
+      <CenteredForm onSubmit={addQuestions}>
+        <Form.Row style={{ width: "100%" }} key={1}>
+          <Form.Group controlId={3} style={{ width: "100%" }}>
+            <Form.Label>
+              <h5> Level Name </h5>
+            </Form.Label>
+            <Form.Control
+              required
+              name={"name"}
+              type="text"
+              placeholder="..."
+              value={name}
+              onChange={onChangeName}
+            />
+          </Form.Group>
+        </Form.Row>
+        <Form.Row style={{ width: "100%" }} key={0}>
+          <Form.Group controlId={4} style={{ width: "100%" }}>
+            <Form.Label>
+              <h5> Other Questions </h5>
+            </Form.Label>
+            <Form.Control
+              required
+              name={"addQ"}
+              as="select"
+              onChange={onChange}
+            >
+              <option value={0}> - </option>
+              {allQuestions.map((item, index) => {
+                if (checkIn(item)) {
+                  return <> </>;
+                } else {
+                  return (
+                    <option key={index} value={index}>
+                      {" "}
+                      {questionMap[item.id]}{" "}
+                    </option>
+                  );
+                }
+              })}
+            </Form.Control>
+          </Form.Group>
+        </Form.Row>
+
+        <Button type="submit">Add Question</Button>
+      </CenteredForm>
+
+      <br />
+
+      <div style={style} style={{ textAlign: "center" }}>
+        <h5> Level Questions </h5>
+        {cards.length === 0 ? <p> No questions added. </p> : <> </>}
+        {cards.map((card, i) => renderCard(card, i))}
+      </div>
+      <Button onClick={testSubmit} style={{ width: "50%" }}>
+        Submit
+      </Button>
+    </div>
+  );
+};
+
+export const LevelEditor = ({
   questions,
   questionMap,
-  that,
   levelConfig,
   levelName,
   allQuestions,

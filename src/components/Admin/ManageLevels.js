@@ -12,10 +12,49 @@ import AddQuestion from "./AddQuestion";
 import { AuthUserContext, withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
+import { LevelAdder } from "./EditLevel";
+import { asyncForEach } from "../../util/helper.js";
 import { Container } from "../../styles/global";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 const StyledDiv = styled.div`
   text-align: right;
+`;
+
+const StyledCol = styled(Col)`
+  padding: 10px 10px 10px 10px;
+  width: 200px;
+`;
+
+const StyledHr = styled.hr`
+  border: 2px solid #333;
+  border-radius: 5px;
+`;
+
+const StyledDivCard = styled.div`
+  width: 90%;
+  padding: 15px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  border-radius: 15px;
+  text-align: center;
+  &:hover {
+    -webkit-transform: translateY(-5px);
+    transform: translateY(-5px);
+    transition: all 0.3s linear;
+  }
+
+  a {
+    color: white;
+    font-weight: bold;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid grey;
+  }
+
+  a[aria-current="page"] {
+    color: ${(props) => props.theme.palette.mainBrand};
+  }
 `;
 
 class ManageLevels extends Component {
@@ -32,6 +71,8 @@ class ManageLevels extends Component {
     settings: null,
     loading: true,
     error: null,
+    questionList: null,
+    questionMap: null,
     addLevel: false,
   };
   static contextType = AuthUserContext;
@@ -62,7 +103,6 @@ class ManageLevels extends Component {
       const levelConfig = doc.data();
       this.setState({
         levelConfig,
-        loading: false,
       });
     } else {
       this.setState({
@@ -70,6 +110,35 @@ class ManageLevels extends Component {
         loading: false,
       });
     }
+
+    this.props.firebase
+      .questions()
+      .get()
+      .then((querySnapshot) => {
+        const questionList = querySnapshot.docs.map((doc) => {
+          return { id: doc.id, ...doc.data() };
+        });
+        this.setState(
+          {
+            questionList,
+          },
+          () => {
+            console.log("Data Loaded");
+            this.sortData();
+          }
+        );
+      });
+  };
+
+  sortData = async () => {
+    const { questionList } = this.state;
+    var questionMap = {};
+
+    await asyncForEach(questionList, async (item, index) => {
+      questionMap[item.id] = item.name;
+    });
+
+    this.setState({ loading: false, questionMap });
   };
 
   toggleAdd = () => {
@@ -77,7 +146,14 @@ class ManageLevels extends Component {
   };
 
   render() {
-    const { loading, error, levelConfig, addLevel } = this.state;
+    const {
+      loading,
+      error,
+      levelConfig,
+      addLevel,
+      questionMap,
+      questionList,
+    } = this.state;
 
     if (loading) return <Loader />;
     if (error)
@@ -89,6 +165,33 @@ class ManageLevels extends Component {
 
     const authUser = this.context;
 
+    const AddLevel = () => {
+      return (
+        <Row>
+          <StyledCol>
+            <StyledDivCard>
+              <h2>Add Level</h2>
+
+              <Container flexdirection="column">
+                <DndProvider
+                  backend={HTML5Backend}
+                  styled={{ textAlign: "center", itemAlign: "center" }}
+                >
+                  <LevelAdder
+                    questionMap={questionMap}
+                    firebase={this.props.firebase}
+                    updateFunc={this.updateData}
+                    levelConfig={levelConfig}
+                    allQuestions={questionList}
+                  />
+                </DndProvider>
+              </Container>
+            </StyledDivCard>
+          </StyledCol>
+        </Row>
+      );
+    };
+
     const Levels = () => {
       return (
         <Row>
@@ -98,6 +201,9 @@ class ManageLevels extends Component {
               levelName={level[0]}
               level={level[1]}
               updateFunc={this.updatePage}
+              levelConfig={levelConfig}
+              questionMap={questionMap}
+              questionList={questionList}
             />
           ))}
         </Row>
@@ -114,7 +220,7 @@ class ManageLevels extends Component {
           </StyledDiv>
           <br />
 
-          {addLevel ? <h2> Add Level </h2> : <> </>}
+          {addLevel ? <AddLevel /> : <> </>}
 
           <br />
           <Levels />

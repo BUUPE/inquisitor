@@ -10,9 +10,8 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import Loader from "../Loader";
-import { Example } from "./EditLevelOrder";
+import { LevelEditor } from "./EditLevel";
 import { Container } from "../../styles/global";
-import { asyncForEach } from "../../util/helper.js";
 
 const StyledCol = styled(Col)`
   padding: 10px 10px 10px 10px;
@@ -90,50 +89,20 @@ class LevelDisplay extends Component {
 
   loadSettings = async () => {
     this._initFirebase = true;
-    const docOne = await this.props.firebase.levelConfig().get();
 
-    if (docOne.exists) {
-      const levelConfig = docOne.data();
-      this.setState({
-        levelConfig,
-      });
-    } else {
-      this.setState({
-        error: "No levelConfig",
+    this.setState(
+      {
+        questionList: this.props.questionList,
+        level: this.props.level,
+        levelName: this.props.levelName,
+        levelConfig: this.props.levelConfig,
+        questionMap: this.props.questionMap,
         loading: false,
-      });
-    }
-
-    this.props.firebase
-      .questions()
-      .get()
-      .then((querySnapshot) => {
-        const questionList = querySnapshot.docs.map((doc) => {
-          return { id: doc.id, ...doc.data() };
-        });
-        this.setState(
-          {
-            questionList,
-            level: this.props.level,
-            levelName: this.props.levelName,
-          },
-          () => {
-            console.log("Data Loaded");
-            this.sortData();
-          }
-        );
-      });
-  };
-
-  sortData = async () => {
-    const { questionList } = this.state;
-    var questionMap = {};
-
-    await asyncForEach(questionList, async (item, index) => {
-      questionMap[item.id] = item.name;
-    });
-
-    this.setState({ loading: false, questionMap });
+      },
+      () => {
+        console.log("Loaded data");
+      }
+    );
   };
 
   toggleEdit = () => {
@@ -194,7 +163,7 @@ class LevelDisplay extends Component {
                 backend={HTML5Backend}
                 styled={{ textAlign: "center", itemAlign: "center" }}
               >
-                <Example
+                <LevelEditor
                   questions={level}
                   questionMap={questionMap}
                   firebase={this.props.firebase}
