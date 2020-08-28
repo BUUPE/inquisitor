@@ -202,6 +202,8 @@ class LevelDisplay extends Component {
         <StyledCol>
           <StyledDiv>
             <h2>Edit Order</h2>
+            <br />
+
             <EditLevelOrder
               questionList={level}
               levelName={levelName}
