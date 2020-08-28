@@ -191,6 +191,7 @@ class LevelDisplay extends Component {
               levelName={levelName}
               questionMap={questionMap}
               updateFunc={this.updateData}
+              allQuestions={questionList}
             />
 
             <StyledHr />

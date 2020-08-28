@@ -29,6 +29,14 @@ const styleOne = {
   paddingBottom: "5px",
 };
 
+const CenteredForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;
+  margin: 0 auto;
+`;
+
 export const Card = ({ id, text, index, moveCard, removeQuestion }) => {
   const ref = useRef(null);
   const [, drop] = useDrop({
@@ -91,6 +99,7 @@ class EditLevelOrder extends Component {
     error: null,
     levelConfig: null,
     msg: "",
+    allQuestions: null,
   };
 
   componentDidMount() {
@@ -123,6 +132,7 @@ class EditLevelOrder extends Component {
         levelName: this.props.levelName,
         loading: false,
         levelConfig,
+        allQuestions: this.props.allQuestions,
       });
     } else {
       this.setState({
@@ -145,6 +155,7 @@ class EditLevelOrder extends Component {
       submitted,
       error,
       msg,
+      allQuestions,
     } = this.state;
 
     if (loading) return <Loader />;
@@ -168,9 +179,11 @@ class EditLevelOrder extends Component {
       that,
       levelConfig,
       levelName,
+      allQuestions,
     }) => {
       {
         const [cards, setCards] = useState([...questions]);
+        const [adding, setAdding] = useState("");
         const [msg, setMsg] = useState([""]);
         const moveCard = useCallback(
           (dragIndex, hoverIndex) => {
@@ -228,8 +241,67 @@ class EditLevelOrder extends Component {
               console.log(error);
             });
         }
+        function addQuestions(event) {
+          console.log("Added Questions");
+          const temp = [...cards];
+          temp.push(allQuestions[adding]);
+          setCards(temp);
+          event.preventDefault();
+        }
+        function onChange(event) {
+          setAdding(event.target.value);
+        }
+
+        function checkIn(val) {
+          for (var i = 0; i < cards.length; i++) {
+            if (val.id && cards[i].id === val.id) {
+              return true;
+            }
+          }
+          return false;
+        }
         return (
           <div styled={{ textAlign: "center", itemAlign: "center" }}>
+            <CenteredForm
+              noValidate
+              validated={validated}
+              onSubmit={addQuestions}
+            >
+              <Form.Row style={{ width: "100%" }} key={0}>
+                <Form.Group controlId={4} style={{ width: "100%" }}>
+                  <Form.Label>
+                    <h5> Name </h5>
+                  </Form.Label>
+                  <Form.Control
+                    required
+                    name={"addQ"}
+                    as="select"
+                    onChange={onChange}
+                  >
+                    <option value={0}> - </option>
+                    {allQuestions.map((item, index) => {
+                      if (checkIn(item)) {
+                        return <> </>;
+                      } else {
+                        return (
+                          <option key={index} value={index}>
+                            {" "}
+                            {questionMap[item.id]}{" "}
+                          </option>
+                        );
+                      }
+                    })}
+                  </Form.Control>
+                </Form.Group>
+              </Form.Row>
+
+              <Button type="submit" disabled={sending}>
+                {sending ? "Submitting..." : "Submit"}
+              </Button>
+            </CenteredForm>
+
+            <br />
+
             <div style={style} style={{ textAlign: "center" }}>
               {cards.map((card, i) => renderCard(card, i))}
             </div>
@@ -258,6 +330,7 @@ class EditLevelOrder extends Component {
             that={this}
             levelConfig={levelConfig}
             levelName={levelName}
+            allQuestions={allQuestions}
           />
         </DndProvider>
       </Container>
