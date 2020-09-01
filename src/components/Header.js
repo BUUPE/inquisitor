@@ -36,7 +36,6 @@ const Header = ({ firebase }) => {
       <Link to="/interest-form">
         <Button>Interest Form</Button>
       </Link>
-
       <Link to="/apply">
         <Button>Apply</Button>
       </Link>
