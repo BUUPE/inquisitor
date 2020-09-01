@@ -79,11 +79,11 @@ const InterestFormBase = () => {
             </div>
             <div className="mc-field-group">
               <label htmlFor="mce-FNAME">First Name </label>
-              <input type="text" name="FNAME" className="" id="mce-FNAME" />
+              <input type="text" name="FNAME" id="mce-FNAME" />
             </div>
             <div className="mc-field-group">
               <label htmlFor="mce-LNAME">Last Name </label>
-              <input type="text" name="LNAME" className="" id="mce-LNAME" />
+              <input type="text" name="LNAME" id="mce-LNAME" />
             </div>
             <div className="mc-field-group">
               <label htmlFor="mce-EMAIL">
@@ -98,11 +98,11 @@ const InterestFormBase = () => {
             </div>
             <div className="mc-field-group">
               <label htmlFor="mce-MMERGE3">Year of Graduation </label>
-              <input type="text" name="MMERGE3" className="" id="mce-MMERGE3" />
+              <input type="text" name="MMERGE3" id="mce-MMERGE3" />
             </div>
             <div className="mc-field-group">
               <label htmlFor="mce-MMERGE4">Major </label>
-              <input type="text" name="MMERGE4" className="" id="mce-MMERGE4" />
+              <input type="text" name="MMERGE4" id="mce-MMERGE4" />
             </div>
             <div id="mce-responses" className="clear">
               <div
@@ -138,7 +138,6 @@ const InterestFormBase = () => {
           </div>
         </form>
       </div>
-      <script type="text/javascript" src=""></script>
     </StyledContainer>
   );
 };
