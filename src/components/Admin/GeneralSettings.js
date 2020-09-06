@@ -205,6 +205,7 @@ class GeneralSettings extends Component {
     }
 
     if (confirm) {
+      // TODO actually send an email for this
       await this.props.firebase.generalSettings().set(settings);
       this.setState({ showToast: true, preSaveSettings: settings });
     } else {
