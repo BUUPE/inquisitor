@@ -19,13 +19,6 @@ const StyledDiv = styled.div`
 `;
 
 class ManagerQuestions extends Component {
-  constructor(props) {
-    super(props);
-
-    this.updatePage = this.updatePage.bind(this);
-    this.toggleAdd = this.toggleAdd.bind(this);
-  }
-
   _initFirebase = false;
   state = {
     questionList: null,
@@ -38,11 +31,11 @@ class ManagerQuestions extends Component {
   unsub = null;
 
   componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadQuestions();
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadQuestions();
   }
 
   componentWillUnmount() {
@@ -51,22 +44,23 @@ class ManagerQuestions extends Component {
 
   updatePage = () => {
     this.setState({ addQuestion: false });
-    this.loadSettings();
+    this.loadQuestions();
   };
 
-  loadSettings = async () => {
+  loadQuestions = async () => {
     this._initFirebase = true;
 
     this.props.firebase
       .questions()
       .get()
       .then((querySnapshot) => {
-        const questionList = querySnapshot.docs.map((doc) => {
-          return { id: doc.id, ...doc.data() };
-        });
-        this.setState({ questionList, loading: false }, () => {
-          console.log("Questions Loaded");
-        });
+        const questionList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        this.setState({ questionList, loading: false }, () =>
+          console.log("Questions Loaded")
+        );
       });
   };
 
@@ -79,8 +73,6 @@ class ManagerQuestions extends Component {
 
     if (error) return <Error error={error} />;
     if (loading) return <Loader />;
-
-    const authUser = this.context;
 
     const Questions = () => {
       return (
@@ -109,11 +101,7 @@ class ManagerQuestions extends Component {
               </StyledDiv>
               <br />
 
-              {addQuestion ? (
-                <AddQuestion updateFunc={this.updatePage} />
-              ) : (
-                <> </>
-              )}
+              {addQuestion && <AddQuestion updateFunc={this.updatePage} />}
 
               <br />
               <Questions />
