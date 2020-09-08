@@ -1,15 +1,13 @@
-import React, { Component, Fragment } from "react";
+import React, { Component } from "react";
 import styled from "styled-components";
 
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import Toast from "react-bootstrap/Toast";
 import AdminLayout from "./AdminLayout";
 import LevelDisplay from "./LevelDisplay";
-import AddQuestion from "./AddQuestion";
 
-import { AuthUserContext, withFirebase } from "upe-react-components";
+import { withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
 import Error from "../Error";
@@ -26,11 +24,6 @@ const StyledDiv = styled.div`
 const StyledCol = styled(Col)`
   padding: 10px 10px 10px 10px;
   width: 200px;
-`;
-
-const StyledHr = styled.hr`
-  border: 2px solid #333;
-  border-radius: 5px;
 `;
 
 const StyledDivCard = styled.div`
@@ -59,32 +52,23 @@ const StyledDivCard = styled.div`
 `;
 
 class ManageLevels extends Component {
-  constructor(props) {
-    super(props);
-
-    this.updatePage = this.updatePage.bind(this);
-    this.toggleAdd = this.toggleAdd.bind(this);
-  }
-
   _initFirebase = false;
   state = {
     levelConfig: null,
-    settings: null,
     loading: true,
     error: null,
     questionList: null,
     questionMap: null,
     addLevel: false,
   };
-  static contextType = AuthUserContext;
   unsub = null;
 
   componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadData();
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadData();
   }
 
   componentWillUnmount() {
@@ -93,10 +77,10 @@ class ManageLevels extends Component {
 
   updatePage = () => {
     this.setState({ addQuestion: false });
-    this.loadSettings();
+    this.loadData();
   };
 
-  loadSettings = async () => {
+  loadData = async () => {
     this._initFirebase = true;
     const doc = await this.props.firebase.levelConfig().get();
 
@@ -159,8 +143,6 @@ class ManageLevels extends Component {
     if (error) return <Error error={error} />;
     if (loading) return <Loader />;
 
-    const authUser = this.context;
-
     const AddLevel = () => {
       return (
         <Row>
@@ -188,24 +170,6 @@ class ManageLevels extends Component {
       );
     };
 
-    const Levels = () => {
-      return (
-        <Row>
-          {Object.entries(levelConfig).map((level) => (
-            <LevelDisplay
-              key={level[0]}
-              levelName={level[0]}
-              level={level[1]}
-              updateFunc={this.updatePage}
-              levelConfig={levelConfig}
-              questionMap={questionMap}
-              questionList={questionList}
-            />
-          ))}
-        </Row>
-      );
-    };
-
     return (
       <AdminLayout>
         <Container flexdirection="column">
@@ -216,10 +180,23 @@ class ManageLevels extends Component {
           </StyledDiv>
           <br />
 
-          {addLevel ? <AddLevel /> : <> </>}
+          {addLevel && <AddLevel />}
 
           <br />
-          <Levels />
+
+          <Row>
+            {Object.entries(levelConfig).map((level) => (
+              <LevelDisplay
+                key={level[0]}
+                levelName={level[0]}
+                level={level[1]}
+                updateFunc={this.updatePage}
+                levelConfig={levelConfig}
+                questionMap={questionMap}
+                questionList={questionList}
+              />
+            ))}
+          </Row>
         </Container>
       </AdminLayout>
     );
