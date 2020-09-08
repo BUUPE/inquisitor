@@ -1,16 +1,13 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import { compose } from "recompose";
 
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
 import { withFirebase } from "upe-react-components";
 
-import { isLoggedIn } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
-import Logo from "../Logo";
 import { Container } from "../../styles/global";
 
 export const RequiredAsterisk = styled.span`
@@ -41,7 +38,7 @@ const CenteredForm = styled(Form)`
   margin: 0 auto;
 `;
 
-class EditQuestion extends Component {
+class AddQuestion extends Component {
   _initFirebase = false;
   state = {
     fileExtension: "",
@@ -162,14 +159,11 @@ class EditQuestion extends Component {
 
   render() {
     const {
-      fileExtension,
-      file,
       name,
       answer,
       description,
       loading,
       error,
-      submitted,
       validated,
       sending,
     } = this.state;
@@ -189,7 +183,7 @@ class EditQuestion extends Component {
               <Form.Control
                 name="name"
                 type="text"
-                placeholder="..."
+                placeholder="Enter Question Name..."
                 value={name}
                 onChange={this.onChange}
               />
@@ -205,7 +199,7 @@ class EditQuestion extends Component {
                 rows={5}
                 name="answer"
                 type="textarea"
-                placeholder="..."
+                placeholder="Enter Answer.."
                 value={answer}
                 onChange={this.onChange}
               />
@@ -221,7 +215,7 @@ class EditQuestion extends Component {
                 rows={5}
                 name="description"
                 type="textarea"
-                placeholder="..."
+                placeholder="Enter Small Description..."
                 value={description}
                 onChange={this.onChange}
               />
@@ -250,4 +244,4 @@ class EditQuestion extends Component {
   }
 }
 
-export default withFirebase(EditQuestion);
+export default withFirebase(AddQuestion);

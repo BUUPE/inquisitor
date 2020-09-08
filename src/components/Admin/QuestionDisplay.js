@@ -47,14 +47,6 @@ const StyledDiv = styled.div`
 `;
 
 class QuestionDisplay extends Component {
-  constructor(props) {
-    super(props);
-
-    this.toggleEdit = this.toggleEdit.bind(this);
-    this.toggleDelete = this.toggleDelete.bind(this);
-    this.updateData = this.updateData.bind(this);
-  }
-
   _initFirebase = false;
   state = {
     loading: true,
@@ -119,8 +111,7 @@ class QuestionDisplay extends Component {
     if (error) return <Error error={error} />;
     if (loading) return <Loader />;
 
-    var hasIMG = false;
-    if (question.image !== "") hasIMG = true;
+    const hasIMG = question.image !== "";
 
     if (editQuestion) {
       return (
@@ -142,24 +133,6 @@ class QuestionDisplay extends Component {
         </StyledCol>
       );
     }
-
-    const Levels = () => {
-      return (
-        <Row>
-          <Col>
-            <h3> Level Scores </h3>
-
-            {Object.entries(question.scores).map((level) => (
-              <p key={level[0]}>
-                {" "}
-                {level[0]} | Average: {level[1].avrg} | Amount:{" "}
-                {level[1].amount}{" "}
-              </p>
-            ))}
-          </Col>
-        </Row>
-      );
-    };
 
     const Delete = () => {
       return (
@@ -183,7 +156,19 @@ class QuestionDisplay extends Component {
           {hasIMG ? <img src={question.image} alt="Question" /> : <> </>}
           <p> {question.description} </p>
 
-          <Levels />
+          <Row>
+            <Col>
+              <h3> Level Scores </h3>
+
+              {Object.entries(question.scores).map((level) => (
+                <p key={level[0]}>
+                  {" "}
+                  {level[0]} | Average: {level[1].avrg} | Amount:{" "}
+                  {level[1].amount}{" "}
+                </p>
+              ))}
+            </Col>
+          </Row>
 
           <StyledHr />
           <Button onClick={this.toggleEdit}>Edit Question</Button>
@@ -192,7 +177,12 @@ class QuestionDisplay extends Component {
           <Button onClick={this.toggleDelete}>Delete Question</Button>
           <StyledHr />
 
-          {delQuestion ? <Delete /> : <> </>}
+          {delQuestion && (
+            <Fragment>
+              <Button onClick={this.deleteQuestion}>Are you sure?</Button>
+              <StyledHr />
+            </Fragment>
+          )}
         </StyledDiv>
       </StyledCol>
     );
