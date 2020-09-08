@@ -61,7 +61,7 @@ class QuestionDisplay extends Component {
     error: null,
     question: null,
     editQuestion: false,
-    deleteQuestion: false,
+    delQuestion: false,
   };
   unsub = null;
 
@@ -92,10 +92,10 @@ class QuestionDisplay extends Component {
   };
 
   toggleDelete = () => {
-    this.setState({ deleteQuestion: !this.state.deleteQuestion });
+    this.setState({ delQuestion: !this.state.delQuestion });
   };
 
-  deleteQ = () => {
+  deleteQuestion = () => {
     this.props.firebase
       .question(this.props.question.id)
       .delete()
@@ -109,18 +109,12 @@ class QuestionDisplay extends Component {
   };
 
   updateData = () => {
-    this.setState({ deleteQuestion: false, editQuestion: false });
+    this.setState({ delQuestion: false, editQuestion: false });
     this.props.updateFunc();
   };
 
   render() {
-    const {
-      loading,
-      error,
-      editQuestion,
-      question,
-      deleteQuestion,
-    } = this.state;
+    const { loading, error, editQuestion, question, delQuestion } = this.state;
 
     if (error) return <Error error={error} />;
     if (loading) return <Loader />;
@@ -170,7 +164,7 @@ class QuestionDisplay extends Component {
     const Delete = () => {
       return (
         <Fragment>
-          <Button onClick={this.deleteQ}>Are you sure?</Button>
+          <Button onClick={this.deleteQuestion}>Are you sure?</Button>
           <StyledHr />
         </Fragment>
       );
@@ -198,7 +192,7 @@ class QuestionDisplay extends Component {
           <Button onClick={this.toggleDelete}>Delete Question</Button>
           <StyledHr />
 
-          {deleteQuestion ? <Delete /> : <> </>}
+          {delQuestion ? <Delete /> : <> </>}
         </StyledDiv>
       </StyledCol>
     );
