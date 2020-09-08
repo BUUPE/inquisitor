@@ -9,6 +9,7 @@ import { withFirebase } from "upe-react-components";
 
 import { isLoggedIn } from "../../util/conditions";
 import Loader from "../Loader";
+import Error from "../Error";
 import Logo from "../Logo";
 import { Container } from "../../styles/global";
 
@@ -181,15 +182,8 @@ class EditQuestion extends Component {
       sending,
     } = this.state;
 
+    if (error) return <Error error={error} />;
     if (loading) return <Loader />;
-
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>Uh oh!</h1>
-          <p>{error}</p>
-        </Container>
-      );
 
     return (
       <Container flexdirection="column">

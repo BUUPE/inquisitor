@@ -14,6 +14,7 @@ import {
 
 import { isLoggedIn } from "../util/conditions";
 import Loader from "./Loader";
+import Error from "./Error";
 import Logo from "./Logo";
 import { Container } from "../styles/global";
 
@@ -254,13 +255,7 @@ class ApplicationForm extends Component {
       </Container>
     );
 
-    if (errorMsg)
-      return (
-        <Container flexdirection="column">
-          <h1>Uh oh!</h1>
-          <p>{errorMsg}</p>
-        </Container>
-      );
+    if (errorMsg) return <Error error={errorMsg} />;
 
     if (submitted) return successMessage;
 

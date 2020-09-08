@@ -11,6 +11,7 @@ import AddQuestion from "./AddQuestion";
 import { AuthUserContext, withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
+import Error from "../Error";
 import { Container } from "../../styles/global";
 
 const StyledDiv = styled.div`
@@ -76,13 +77,8 @@ class ManagerQuestions extends Component {
   render() {
     const { loading, error, questionList, addQuestion } = this.state;
 
+    if (error) return <Error error={error} />;
     if (loading) return <Loader />;
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>{error}</h1>
-        </Container>
-      );
 
     const authUser = this.context;
 

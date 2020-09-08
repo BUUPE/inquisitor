@@ -8,6 +8,7 @@ import Row from "react-bootstrap/Row";
 import { withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
+import Error from "../Error";
 import EditQuestion from "./EditQuestion";
 import { Container } from "../../styles/global";
 
@@ -121,13 +122,8 @@ class QuestionDisplay extends Component {
       deleteQuestion,
     } = this.state;
 
+    if (error) return <Error error={error} />;
     if (loading) return <Loader />;
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>{error}</h1>
-        </Container>
-      );
 
     var hasIMG = false;
     if (question.image !== "") hasIMG = true;

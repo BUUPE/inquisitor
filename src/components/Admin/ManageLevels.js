@@ -12,6 +12,7 @@ import AddQuestion from "./AddQuestion";
 import { AuthUserContext, withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
+import Error from "../Error";
 import { LevelAdder } from "./EditLevel";
 import { asyncForEach } from "../../util/helper.js";
 import { Container } from "../../styles/global";
@@ -155,13 +156,8 @@ class ManageLevels extends Component {
       questionList,
     } = this.state;
 
+    if (error) return <Error error={error} />;
     if (loading) return <Loader />;
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>{error}</h1>
-        </Container>
-      );
 
     const authUser = this.context;
 

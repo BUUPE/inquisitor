@@ -9,6 +9,7 @@ import { withFirebase } from "upe-react-components";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
+import Error from "../Error";
 import Loader from "../Loader";
 import { LevelEditor } from "./EditLevel";
 import { Container } from "../../styles/global";
@@ -144,13 +145,8 @@ class LevelDisplay extends Component {
       levelConfig,
     } = this.state;
 
+    if (error) return <Error error={error} />;
     if (loading) return <Loader />;
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>{error}</h1>
-        </Container>
-      );
 
     if (editLevel) {
       return (
