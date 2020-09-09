@@ -259,12 +259,7 @@ export const LevelAdder = ({
 
 export const LevelEditor = ({
   questions,
-  questionMap,
-  levelConfig,
-  levelName,
-  allQuestions,
-  firebase,
-  updateFunc,
+saveLevel
 }) => {
   const [cards, setCards] = useState([...questions]);
   const [adding, setAdding] = useState("");
@@ -386,11 +381,11 @@ export const LevelEditor = ({
 
       <br />
 
-      <div style={style} style={{ textAlign: "center" }}>
+      <div  style={{ textAlign: "center" }}>
         <h5> Level Questions </h5>
         {cards.map((card, i) => renderCard(card, i))}
       </div>
-      <Button onClick={testSubmit} style={{ width: "50%" }}>
+      <Button onClick={() => saveLevel()} style={{ width: "50%" }}>
         Submit
       </Button>
     </div>

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
 import Button from "react-bootstrap/Button";
@@ -12,7 +12,6 @@ import { withFirebase } from "upe-react-components";
 import Loader from "../Loader";
 import Error from "../Error";
 import { LevelAdder } from "./EditLevel";
-import { asyncForEach } from "../../util/helper.js";
 import { Container } from "../../styles/global";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -51,94 +50,44 @@ const StyledDivCard = styled.div`
   }
 `;
 
-class ManageLevels extends Component {
-  _initFirebase = false;
-  state = {
-    levelConfig: null,
-    loading: true,
-    error: null,
-    questionList: null,
-    questionMap: null,
-    addLevel: false,
-  };
-  unsub = null;
+const ManageLevels = ({firebase}) => {
+  const [levelConfig, setLevelConfig] = useState(null);
+  const [questionList, setQuestionList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadData();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadData();
-  }
-
-  componentWillUnmount() {
-    if (typeof this.unsub === "function") this.unsub();
-  }
-
-  updatePage = () => {
-    this.setState({ addQuestion: false });
-    this.loadData();
-  };
-
-  loadData = async () => {
-    this._initFirebase = true;
-    const doc = await this.props.firebase.levelConfig().get();
-
-    if (doc.exists) {
-      const levelConfig = doc.data();
-      this.setState({
-        levelConfig,
+  useEffect(() => {
+    if (firebase) {
+      const levelConfigUnsub = firebase.levelConfig().onSnapshot(docSnapshot => {
+        if (docSnapshot.exists) setLevelConfig(docSnapshot.data())
+        else setError("No levelConfig");
+        setLoading(false)
       });
-    } else {
-      this.setState({
-        error: "No levelConfig",
-        loading: false,
-      });
-    }
 
-    this.props.firebase
-      .questions()
-      .get()
-      .then((querySnapshot) => {
-        const questionList = querySnapshot.docs.map((doc) => {
-          return { id: doc.id, ...doc.data() };
+      const questionsUnsub = firebase
+        .questions()
+        .onSnapshot((querySnapshot) => {
+          const questionList = querySnapshot.docs.map((doc) => {
+            return { id: doc.id, ...doc.data() };
+          });
+
+          setQuestionList(questionList);
         });
-        this.setState(
-          {
-            questionList,
-          },
-          () => {
-            console.log("Data Loaded");
-            this.sortData();
-          }
-        );
-      });
-  };
 
-  sortData = async () => {
-    const { questionList } = this.state;
-    var questionMap = {};
+      return () => {
+        levelConfigUnsub();
+        questionsUnsub();
+      }
+    }
+  }, [firebase]);
 
-    await asyncForEach(questionList, async (item, index) => {
-      questionMap[item.id] = item.name;
-    });
-
-    this.setState({ loading: false, questionMap });
-  };
-
-  toggleAdd = () => {
+  const toggleAdd = () => {
     this.setState({ addLevel: !this.state.addLevel });
   };
 
-  render() {
-    const {
-      loading,
-      error,
-      levelConfig,
-      addLevel,
-      questionMap,
-      questionList,
-    } = this.state;
+  const saveLevel = (level) => {
+
+  }
 
     if (error) return <Error error={error} />;
     if (loading) return <Loader />;
@@ -156,9 +105,6 @@ class ManageLevels extends Component {
                   styled={{ textAlign: "center", itemAlign: "center" }}
                 >
                   <LevelAdder
-                    questionMap={questionMap}
-                    firebase={this.props.firebase}
-                    updateFunc={this.updateData}
                     levelConfig={levelConfig}
                     allQuestions={questionList}
                   />
@@ -176,31 +122,38 @@ class ManageLevels extends Component {
           <h1> Interview Levels </h1>
           <br />
           <StyledDiv>
-            <Button onClick={this.toggleAdd}>Add Interview Level</Button>
+            <Button onClick={toggleAdd}>Add Interview Level</Button>
           </StyledDiv>
           <br />
 
-          {addLevel && <AddLevel />}
+          {/*addLevel && <AddLevel />*/}
 
           <br />
 
           <Row>
-            {Object.entries(levelConfig).map((level) => (
-              <LevelDisplay
-                key={level[0]}
-                levelName={level[0]}
-                level={level[1]}
-                updateFunc={this.updatePage}
-                levelConfig={levelConfig}
-                questionMap={questionMap}
-                questionList={questionList}
-              />
-            ))}
+            {Object.entries(levelConfig).map(([name, questions]) => {
+              const populatedQuestions = questions.map(question => {
+                const fullQuestion = questionList.find(q => q.id === question.id);
+                return {
+                  ...fullQuestion,
+                  order: question.order
+                }
+              });
+
+
+              return (
+                <LevelDisplay
+                  key={name}
+                  name={name}
+                  questions={populatedQuestions}
+                  saveLevel={saveLevel}
+                />
+              )
+            })}
           </Row>
         </Container>
       </AdminLayout>
     );
-  }
 }
 
 export default withFirebase(ManageLevels);
