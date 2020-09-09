@@ -1,116 +1,203 @@
-import React, { Component } from "react";
-import styled from "styled-components";
+import React, { useState, useEffect } from "react";
+import swal from "@sweetalert/with-react";
 
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import AdminLayout from "./AdminLayout";
-import QuestionDisplay from "./QuestionDisplay";
-import AddQuestion from "./AddQuestion";
+import Modal from "react-bootstrap/Modal";
 
-import { AuthUserContext, withFirebase } from "upe-react-components";
+import AdminLayout from "./AdminLayout";
+import QuestionDisplay, { QuestionForm } from "./QuestionDisplay";
+
+import { withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
 import Error from "../Error";
 import { Container } from "../../styles/global";
 
-const StyledDiv = styled.div`
-  text-align: right;
-`;
+const ManageQuestions = ({ firebase }) => {
+  const [questionList, setQuestionList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-class ManagerQuestions extends Component {
-  _initFirebase = false;
-  state = {
-    questionList: null,
-    settings: null,
-    loading: true,
-    error: null,
-    addQuestion: false,
+  useEffect(() => {
+    if (firebase) {
+      const unsub = firebase.questions().onSnapshot(
+        (querySnapshot) => {
+          const questionList = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          setQuestionList(questionList);
+          setLoading(false);
+        },
+        (error) => {
+          console.error(error);
+          setError(error);
+        }
+      );
+
+      return () => unsub();
+    }
+  }, [firebase]);
+
+  const addQuestion = async (question) => {
+    const newQuestionRef = firebase.questions().doc();
+    const uid = newQuestionRef.id;
+    delete question.imagePreview;
+
+    let imageURL = "";
+    let filename = "";
+
+    if (question.image !== "") {
+      const ext = question.image.name.split(".")[1];
+      filename = `${uid}.${ext}`;
+
+      imageURL = await firebase
+        .questionImage(filename)
+        .put(question.image)
+        .then((snapshot) => snapshot.ref.getDownloadURL());
+    }
+
+    await newQuestionRef
+      .set({ ...question, image: imageURL, imageName: filename })
+      .catch((err) => {
+        console.error(err);
+        setError(err);
+      });
+
+    setShowModal(false);
   };
-  static contextType = AuthUserContext;
-  unsub = null;
 
-  componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadQuestions();
-  }
+  const updateQuestion = async (question) => {
+    const uid = question.id;
+    delete question.id;
+    delete question.imagePreview;
 
-  componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadQuestions();
-  }
+    const originalQuestion = questionList.find((q) => q.id === uid);
+    let imageURL = originalQuestion.image;
+    let filename = originalQuestion.imageName;
 
-  componentWillUnmount() {
-    if (typeof this.unsub === "function") this.unsub();
-  }
+    if (question.image !== "") {
+      if (filename !== "" && filename !== undefined)
+        await firebase.questionImage(filename).delete();
 
-  updatePage = () => {
-    this.setState({ addQuestion: false });
-    this.loadQuestions();
-  };
+      const ext = question.image.name.split(".")[1];
+      filename = `${uid}.${ext}`;
 
-  loadQuestions = async () => {
-    this._initFirebase = true;
+      imageURL = await firebase
+        .questionImage(filename)
+        .put(question.image)
+        .then((snapshot) => snapshot.ref.getDownloadURL());
+    }
 
-    this.props.firebase
-      .questions()
-      .get()
-      .then((querySnapshot) => {
-        const questionList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        this.setState({ questionList, loading: false }, () =>
-          console.log("Questions Loaded")
-        );
+    await firebase
+      .question(uid)
+      .update({ ...question, image: imageURL, imageName: filename })
+      .catch((err) => {
+        console.error(err);
+        setError(err);
       });
   };
 
-  toggleAdd = () => {
-    this.setState({ addQuestion: !this.state.addQuestion });
+  const removeQuestionImage = async (uid, filename) => {
+    await firebase.questionImage(filename).delete();
+
+    await firebase
+      .question(uid)
+      .update({ image: "", imageName: "" })
+      .catch((err) => {
+        console.error(err);
+        setError(err);
+      });
   };
 
-  render() {
-    const { loading, error, questionList, addQuestion } = this.state;
+  const deleteQuestion = (uid, filename) =>
+    swal({
+      title: "Are you sure?",
+      text:
+        "Once you delete a question, you can't undo! Make sure you really want this!",
+      icon: "warning",
+      buttons: {
+        cancel: {
+          text: "No",
+          value: false,
+          visible: true,
+        },
+        confirm: {
+          text: "Yes",
+          value: true,
+          visible: true,
+        },
+      },
+    }).then(async (confirm) => {
+      if (confirm) {
+        await firebase.questionImage(filename).delete();
 
-    if (error) return <Error error={error} />;
-    if (loading) return <Loader />;
+        await firebase
+          .question(uid)
+          .delete()
+          .catch((err) => {
+            console.error(err);
+            setError(err);
+          });
+      }
+    });
 
-    const Questions = () => {
-      return (
+  if (error) return <Error error={error} />;
+  if (loading) return <Loader />;
+
+  return (
+    <AdminLayout>
+      <Container>
         <Row>
-          {Object.entries(questionList).map((question) => (
-            <QuestionDisplay
-              updateFunc={this.updatePage}
-              key={question[0]}
-              uid={question[0]}
-              question={question[1]}
-            />
-          ))}
+          <Col>
+            <h1> Interview Questions </h1>
+            <br />
+            <div style={{ textAlign: "right" }}>
+              <Button onClick={() => setShowModal(true)}>Add Question</Button>
+            </div>
+            <br />
+            <Row>
+              {questionList
+                .sort((a, b) => (a.name > b.name ? 1 : -1))
+                .map((question) => (
+                  <QuestionDisplay
+                    key={question.id}
+                    updateQuestion={updateQuestion}
+                    removeQuestionImage={removeQuestionImage}
+                    deleteQuestion={deleteQuestion}
+                    {...question}
+                  />
+                ))}
+            </Row>
+          </Col>
         </Row>
-      );
-    };
+      </Container>
 
-    return (
-      <AdminLayout>
-        <Container>
-          <Row>
-            <Col>
-              <h1> Interview Questions </h1>
-              <br />
-              <StyledDiv>
-                <Button onClick={this.toggleAdd}>Add Question</Button>
-              </StyledDiv>
-              <br />
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Question</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <QuestionForm
+            initialFormData={{
+              name: "",
+              answer: "",
+              description: "",
+              image: "",
+              imagePreview: "",
+              scores: {},
+            }}
+            submitFunction={addQuestion}
+            SubmitButton={() => <Button type="submit">Submit</Button>}
+          />
+        </Modal.Body>
+      </Modal>
+    </AdminLayout>
+  );
+};
 
-              {addQuestion && <AddQuestion updateFunc={this.updatePage} />}
-
-              <br />
-              <Questions />
-            </Col>
-          </Row>
-        </Container>
-      </AdminLayout>
-    );
-  }
-}
-
-export default withFirebase(ManagerQuestions);
+export default withFirebase(ManageQuestions);

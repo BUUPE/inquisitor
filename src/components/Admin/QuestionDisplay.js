@@ -1,192 +1,214 @@
-import React, { Component, Fragment } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import update from "immutability-helper";
+import cloneDeep from "lodash.clonedeep";
 
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
+import Form from "react-bootstrap/Form";
+import Card from "react-bootstrap/Card";
 
-import { withFirebase } from "upe-react-components";
-
-import Loader from "../Loader";
-import Error from "../Error";
-import EditQuestion from "./EditQuestion";
-import { Container } from "../../styles/global";
-
-const StyledCol = styled(Col)`
-  padding: 10px 10px 10px 10px;
+const CenteredForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;
+  margin: 0 auto;
 `;
 
-const StyledHr = styled.hr`
-  border: 2px solid #333;
-  border-radius: 5px;
+const FullWidthFormRow = styled(Form.Row)`
+  width: 100%;
 `;
 
-const StyledDiv = styled.div`
-  width: 90%;
-  padding: 15px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  border-radius: 15px;
-  text-align: center;
-  &:hover {
-    -webkit-transform: translateY(-5px);
-    transform: translateY(-5px);
-    transition: all 0.3s linear;
-  }
-
-  a {
-    color: white;
-    font-weight: bold;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid grey;
-  }
-
-  a[aria-current="page"] {
-    color: ${(props) => props.theme.palette.mainBrand};
-  }
+const FullWidthFormGroup = styled(Form.Group)`
+  width: 100%;
 `;
 
-class QuestionDisplay extends Component {
-  _initFirebase = false;
-  state = {
-    loading: true,
-    error: null,
-    question: null,
-    editQuestion: false,
-    delQuestion: false,
-  };
-  unsub = null;
-
-  componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
-  }
-
-  componentWillUnmount() {
-    if (typeof this.unsub === "function") this.unsub();
-  }
-
-  updatePage = () => {
-    this.loadSettings();
-  };
-
-  loadSettings = async () => {
-    this._initFirebase = true;
-
-    this.setState({ question: this.props.question, loading: false });
-  };
-
-  toggleEdit = () => {
-    this.setState({ editQuestion: !this.state.editQuestion });
-  };
-
-  toggleDelete = () => {
-    this.setState({ delQuestion: !this.state.delQuestion });
-  };
-
-  deleteQuestion = () => {
-    this.props.firebase
-      .question(this.props.question.id)
-      .delete()
-      .then(() => {
-        console.log("Question Deleted: ", this.props.question.id);
-        this.updateData();
-      })
-      .catch((err) => {
-        console.log(err);
+const QuestionDisplay = ({
+  id,
+  name,
+  answer,
+  description,
+  image,
+  imageName,
+  updateQuestion,
+  removeQuestionImage,
+  deleteQuestion,
+}) => {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      import("bs-custom-file-input").then((bsCustomFileInput) => {
+        bsCustomFileInput.init();
       });
-  };
-
-  updateData = () => {
-    this.setState({ delQuestion: false, editQuestion: false });
-    this.props.updateFunc();
-  };
-
-  render() {
-    const { loading, error, editQuestion, question, delQuestion } = this.state;
-
-    if (error) return <Error error={error} />;
-    if (loading) return <Loader />;
-
-    const hasIMG = question.image !== "";
-
-    if (editQuestion) {
-      return (
-        <StyledCol md={4}>
-          <StyledDiv>
-            <h2>Edit Question</h2>
-
-            <StyledHr />
-            <EditQuestion
-              question={question}
-              uid={this.props.question.id}
-              updateFunc={this.updateData}
-            />
-            <StyledHr />
-
-            <Button onClick={this.toggleEdit}>Edit Data</Button>
-            <StyledHr />
-          </StyledDiv>
-        </StyledCol>
-      );
     }
+  }, []);
 
-    const Delete = () => {
-      return (
-        <Fragment>
-          <Button onClick={this.deleteQuestion}>Are you sure?</Button>
-          <StyledHr />
-        </Fragment>
-      );
-    };
+  const FormSubmit = () => (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        width: "100%",
+      }}
+    >
+      <Button type="submit">Save</Button>
+      <Button variant="danger" onClick={() => deleteQuestion(id, imageName)}>
+        Delete
+      </Button>
+    </div>
+  );
 
-    return (
-      <StyledCol md={4}>
-        <StyledDiv>
-          <h2> {question.name} </h2>
+  return (
+    <Card style={{ maxWidth: "18rem", margin: 10 }}>
+      <Card.Body>
+        <QuestionForm
+          initialFormData={{
+            name,
+            answer,
+            description,
+            image: "",
+            imagePreview: image,
+            id,
+          }}
+          submitFunction={updateQuestion}
+          imageClearFunc={() => removeQuestionImage(id, imageName)}
+          SubmitButton={FormSubmit}
+        />
+      </Card.Body>
+    </Card>
+  );
+};
 
-          <StyledHr />
-          <h3> Answer </h3>
-          <p> {question.answer} </p>
+export const QuestionForm = ({
+  initialFormData,
+  submitFunction,
+  imageClearFunc,
+  SubmitButton,
+}) => {
+  const [formData, setFormData] = useState(initialFormData);
 
-          <h3> Description </h3>
-          {hasIMG ? <img src={question.image} alt="Question" /> : <> </>}
-          <p> {question.description} </p>
+  const [validated, setValidated] = useState(false);
 
-          <Row>
-            <Col>
-              <h3> Level Scores </h3>
+  const saveQuestion = (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+      setValidated(true);
+    } else {
+      submitFunction(cloneDeep(formData));
+      setValidated(false);
+    }
+  };
 
-              {Object.entries(question.scores).map((level) => (
-                <p key={level[0]}>
-                  {" "}
-                  {level[0]} | Average: {level[1].avrg} | Amount:{" "}
-                  {level[1].amount}{" "}
-                </p>
-              ))}
-            </Col>
-          </Row>
-
-          <StyledHr />
-          <Button onClick={this.toggleEdit}>Edit Question</Button>
-          <br />
-          <br />
-          <Button onClick={this.toggleDelete}>Delete Question</Button>
-          <StyledHr />
-
-          {delQuestion && (
-            <Fragment>
-              <Button onClick={this.deleteQuestion}>Are you sure?</Button>
-              <StyledHr />
-            </Fragment>
-          )}
-        </StyledDiv>
-      </StyledCol>
+  const updateField = (e) =>
+    setFormData(
+      update(formData, {
+        [e.target.name]: { $set: e.target.value },
+      })
     );
-  }
-}
 
-export default withFirebase(QuestionDisplay);
+  const updateImage = (e) => {
+    const hasIMG = e.target.files.length === 1;
+    setFormData(
+      update(formData, {
+        image: { $set: hasIMG ? e.target.files[0] : "" },
+        imagePreview: {
+          $set: hasIMG ? URL.createObjectURL(e.target.files[0]) : "",
+        },
+      })
+    );
+  };
+
+  return (
+    <CenteredForm noValidate validated={validated} onSubmit={saveQuestion}>
+      <FullWidthFormRow>
+        <FullWidthFormGroup controlId="name">
+          <Form.Label>
+            <h5>Name</h5>
+          </Form.Label>
+          <Form.Control
+            name="name"
+            type="text"
+            placeholder="Enter question name..."
+            value={formData.name}
+            onChange={updateField}
+            required
+          />
+        </FullWidthFormGroup>
+      </FullWidthFormRow>
+
+      <FullWidthFormRow>
+        <FullWidthFormGroup controlId="answer">
+          <Form.Label>
+            <h5>Answer</h5>
+          </Form.Label>
+          <Form.Control
+            rows={3}
+            name="answer"
+            as="textarea"
+            placeholder="Enter question answer..."
+            value={formData.answer}
+            onChange={updateField}
+            required
+          />
+        </FullWidthFormGroup>
+      </FullWidthFormRow>
+
+      <FullWidthFormRow>
+        <FullWidthFormGroup controlId="description">
+          <Form.Label>
+            <h5>Description</h5>
+          </Form.Label>
+          <Form.Control
+            rows={3}
+            name="description"
+            as="textarea"
+            placeholder="Enter question description..."
+            value={formData.description}
+            onChange={updateField}
+            required
+          />
+        </FullWidthFormGroup>
+      </FullWidthFormRow>
+
+      <FullWidthFormRow>
+        <FullWidthFormGroup controlId="file">
+          <Form.Label>
+            <h5> Image </h5>
+            {formData.imagePreview !== "" && (
+              <img
+                src={formData.imagePreview}
+                alt="Hint for question"
+                style={{ maxWidth: "100%" }}
+              />
+            )}
+          </Form.Label>
+          <Form.File
+            id="custom-file-file"
+            name="file"
+            accept=".png,.jpg"
+            onChange={updateImage}
+          />
+          <Button
+            onClick={() => {
+              setFormData(
+                update(formData, {
+                  image: { $set: "" },
+                  imagePreview: { $set: "" },
+                })
+              );
+
+              if (typeof imageClearFunc === "function") imageClearFunc();
+            }}
+          >
+            Clear
+          </Button>
+        </FullWidthFormGroup>
+      </FullWidthFormRow>
+
+      <SubmitButton />
+    </CenteredForm>
+  );
+};
+
+export default QuestionDisplay;

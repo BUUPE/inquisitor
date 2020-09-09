@@ -56,6 +56,7 @@ class Firebase extends FirebaseSuper {
 
   // *** Storage API ***
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
+  questionImage = (name) => this.storage.child(`Questions/${name}`);
   backup = (name) => this.storage.child(`backups/${name}`);
 }
 
