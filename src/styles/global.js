@@ -1,11 +1,28 @@
 import styled, { createGlobalStyle } from "styled-components";
 import BootstrapContainer from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
 
 export const Container = styled(BootstrapContainer)`
   margin-top: 25px;
   display: flex;
   flex: 1 0 auto;
   flex-direction: ${(props) => props.flexdirection};
+`;
+
+export const CenteredForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;
+  margin: 0 auto;
+`;
+
+export const FullWidthFormRow = styled(Form.Row)`
+  width: 100%;
+`;
+
+export const FullWidthFormGroup = styled(Form.Group)`
+  width: 100%;
 `;
 
 export const Centered = styled.div`
