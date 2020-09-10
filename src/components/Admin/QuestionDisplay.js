@@ -7,20 +7,14 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 
+import { FullWidthFormRow, FullWidthFormGroup } from "../../styles/global";
+
 const CenteredForm = styled(Form)`
   display: flex;
   flex-direction: column;
   align-items: center;
   max-width: 500px;
   margin: 0 auto;
-`;
-
-const FullWidthFormRow = styled(Form.Row)`
-  width: 100%;
-`;
-
-const FullWidthFormGroup = styled(Form.Group)`
-  width: 100%;
 `;
 
 const QuestionDisplay = ({

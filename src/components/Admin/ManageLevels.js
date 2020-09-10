@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import swal from "@sweetalert/with-react";
+import cloneDeep from "lodash.clonedeep";
 import styled from "styled-components";
 
 import Button from "react-bootstrap/Button";
@@ -50,110 +52,168 @@ const StyledDivCard = styled.div`
   }
 `;
 
-const ManageLevels = ({firebase}) => {
+const ManageLevels = ({ firebase }) => {
   const [levelConfig, setLevelConfig] = useState(null);
-  const [questionList, setQuestionList] = useState([]);
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [levelConfigLoaded, setLevelConfigLoaded] = useState(false);
+  const [questionsLoaded, setQuestionsLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (firebase) {
-      const levelConfigUnsub = firebase.levelConfig().onSnapshot(docSnapshot => {
-        if (docSnapshot.exists) setLevelConfig(docSnapshot.data())
-        else setError("No levelConfig");
-        setLoading(false)
-      });
+      const levelConfigUnsub = firebase
+        .levelConfig()
+        .onSnapshot((docSnapshot) => {
+          if (docSnapshot.exists) setLevelConfig(docSnapshot.data());
+          else setError("No levelConfig");
+          setLevelConfigLoaded(true);
+        });
 
       const questionsUnsub = firebase
         .questions()
         .onSnapshot((querySnapshot) => {
-          const questionList = querySnapshot.docs.map((doc) => {
+          const allQuestions = querySnapshot.docs.map((doc) => {
             return { id: doc.id, ...doc.data() };
           });
 
-          setQuestionList(questionList);
+          setAllQuestions(allQuestions);
+          setQuestionsLoaded(true);
         });
 
       return () => {
         levelConfigUnsub();
         questionsUnsub();
-      }
+      };
     }
   }, [firebase]);
+
+  useEffect(() => {
+    if (levelConfigLoaded && questionsLoaded) setLoading(false);
+  }, [levelConfigLoaded, questionsLoaded]);
 
   const toggleAdd = () => {
     this.setState({ addLevel: !this.state.addLevel });
   };
 
-  const saveLevel = (level) => {
+  const saveLevel = async (levelName, newQuestions) => {
+    const newLevelConfig = cloneDeep(levelConfig);
+    newLevelConfig[levelName] = newQuestions;
+    await firebase
+      .levelConfig()
+      .update(newLevelConfig)
+      .catch((err) => {
+        console.error(err);
+        setError(err);
+      });
+  };
 
-  }
+  const deleteLevel = (levelName) =>
+    swal({
+      title: "Are you sure?",
+      text:
+        "Once you delete a level, you can't undo! Make sure you really want this!",
+      icon: "warning",
+      buttons: {
+        cancel: {
+          text: "No",
+          value: false,
+          visible: true,
+        },
+        confirm: {
+          text: "Yes",
+          value: true,
+          visible: true,
+        },
+      },
+    }).then(async (confirm) => {
+      if (confirm) {
+        const newLevelConfig = cloneDeep(levelConfig);
+        delete newLevelConfig[levelName];
 
-    if (error) return <Error error={error} />;
-    if (loading) return <Loader />;
+        await firebase
+          .levelConfig()
+          .set(newLevelConfig)
+          .catch((err) => {
+            console.error(err);
+            setError(err);
+          });
+      }
+    });
 
-    const AddLevel = () => {
-      return (
-        <Row>
-          <StyledCol>
-            <StyledDivCard>
-              <h2>Add Level</h2>
+  if (error) return <Error error={error} />;
+  if (loading) return <Loader />;
 
-              <Container flexdirection="column">
-                <DndProvider
-                  backend={HTML5Backend}
-                  styled={{ textAlign: "center", itemAlign: "center" }}
-                >
-                  <LevelAdder
-                    levelConfig={levelConfig}
-                    allQuestions={questionList}
-                  />
-                </DndProvider>
-              </Container>
-            </StyledDivCard>
-          </StyledCol>
-        </Row>
-      );
-    };
-
+  const AddLevel = () => {
     return (
-      <AdminLayout>
-        <Container flexdirection="column">
-          <h1> Interview Levels </h1>
-          <br />
-          <StyledDiv>
-            <Button onClick={toggleAdd}>Add Interview Level</Button>
-          </StyledDiv>
-          <br />
+      <Row>
+        <StyledCol>
+          <StyledDivCard>
+            <h2>Add Level</h2>
 
-          {/*addLevel && <AddLevel />*/}
-
-          <br />
-
-          <Row>
-            {Object.entries(levelConfig).map(([name, questions]) => {
-              const populatedQuestions = questions.map(question => {
-                const fullQuestion = questionList.find(q => q.id === question.id);
-                return {
-                  ...fullQuestion,
-                  order: question.order
-                }
-              });
-
-
-              return (
-                <LevelDisplay
-                  key={name}
-                  name={name}
-                  questions={populatedQuestions}
-                  saveLevel={saveLevel}
+            <Container flexdirection="column">
+              <DndProvider
+                backend={HTML5Backend}
+                styled={{ textAlign: "center", itemAlign: "center" }}
+              >
+                <LevelAdder
+                  levelConfig={levelConfig}
+                  allQuestions={allQuestions}
                 />
-              )
-            })}
-          </Row>
-        </Container>
-      </AdminLayout>
+              </DndProvider>
+            </Container>
+          </StyledDivCard>
+        </StyledCol>
+      </Row>
     );
-}
+  };
+
+  return (
+    <AdminLayout>
+      <Container flexdirection="column">
+        <h1> Interview Levels </h1>
+        <br />
+        <StyledDiv>
+          <Button onClick={toggleAdd}>Add Interview Level</Button>
+        </StyledDiv>
+        <br />
+
+        {/*addLevel && <AddLevel />*/}
+
+        <br />
+
+        <Row>
+          {Object.entries(levelConfig).map(([name, questions]) => {
+            const populatedQuestions = questions.map((question) => {
+              const fullQuestion = allQuestions.find(
+                (q) => q.id === question.id
+              );
+              return {
+                ...fullQuestion,
+                order: question.order,
+              };
+            });
+
+            const questionIds = questions.map((question) => question.id);
+            const otherQuestions = allQuestions.filter(
+              (question) => !questionIds.includes(question.id)
+            );
+
+            return (
+              <LevelDisplay
+                key={name}
+                name={name}
+                questions={populatedQuestions}
+                otherQuestions={otherQuestions}
+                saveLevel={saveLevel}
+                deleteLevel={deleteLevel}
+              />
+            );
+          })}
+        </Row>
+      </Container>
+    </AdminLayout>
+  );
+};
 
 export default withFirebase(ManageLevels);
