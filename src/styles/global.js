@@ -9,6 +9,14 @@ export const Container = styled(BootstrapContainer)`
   flex-direction: ${(props) => props.flexdirection};
 `;
 
+export const CenteredForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;
+  margin: 0 auto;
+`;
+
 export const FullWidthFormRow = styled(Form.Row)`
   width: 100%;
 `;

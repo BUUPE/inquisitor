@@ -1,56 +1,20 @@
 import React, { useState, useEffect } from "react";
 import swal from "@sweetalert/with-react";
 import cloneDeep from "lodash.clonedeep";
-import styled from "styled-components";
 
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import AdminLayout from "./AdminLayout";
-import LevelDisplay from "./LevelDisplay";
+import Modal from "react-bootstrap/Modal";
+import Card from "react-bootstrap/Card";
+import Toast from "react-bootstrap/Toast";
 
 import { withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
 import Error from "../Error";
-import { LevelAdder } from "./EditLevel";
+import AdminLayout from "./AdminLayout";
+import LevelDisplay from "./LevelDisplay";
 import { Container } from "../../styles/global";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-
-const StyledDiv = styled.div`
-  text-align: right;
-`;
-
-const StyledCol = styled(Col)`
-  padding: 10px 10px 10px 10px;
-  width: 200px;
-`;
-
-const StyledDivCard = styled.div`
-  width: 90%;
-  padding: 15px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  border-radius: 15px;
-  text-align: center;
-  &:hover {
-    -webkit-transform: translateY(-5px);
-    transform: translateY(-5px);
-    transition: all 0.3s linear;
-  }
-
-  a {
-    color: white;
-    font-weight: bold;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid grey;
-  }
-
-  a[aria-current="page"] {
-    color: ${(props) => props.theme.palette.mainBrand};
-  }
-`;
 
 const ManageLevels = ({ firebase }) => {
   const [levelConfig, setLevelConfig] = useState(null);
@@ -59,6 +23,8 @@ const ManageLevels = ({ firebase }) => {
   const [questionsLoaded, setQuestionsLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     if (firebase) {
@@ -92,20 +58,25 @@ const ManageLevels = ({ firebase }) => {
     if (levelConfigLoaded && questionsLoaded) setLoading(false);
   }, [levelConfigLoaded, questionsLoaded]);
 
-  const toggleAdd = () => {
-    this.setState({ addLevel: !this.state.addLevel });
-  };
-
-  const saveLevel = async (levelName, newQuestions) => {
+  const saveLevel = async (oldName, newName, newQuestions) => {
     const newLevelConfig = cloneDeep(levelConfig);
-    newLevelConfig[levelName] = newQuestions;
+
+    if (oldName !== newName) delete newLevelConfig[oldName];
+    newLevelConfig[newName] = newQuestions.map(({ id, order }) => ({
+      id,
+      order,
+    }));
+
     await firebase
       .levelConfig()
-      .update(newLevelConfig)
+      .set(newLevelConfig)
       .catch((err) => {
         console.error(err);
         setError(err);
       });
+
+    setShowModal(false);
+    setShowToast(true);
   };
 
   const deleteLevel = (levelName) =>
@@ -138,80 +109,110 @@ const ManageLevels = ({ firebase }) => {
             console.error(err);
             setError(err);
           });
+
+        setShowToast(true);
       }
     });
 
   if (error) return <Error error={error} />;
   if (loading) return <Loader />;
 
-  const AddLevel = () => {
-    return (
-      <Row>
-        <StyledCol>
-          <StyledDivCard>
-            <h2>Add Level</h2>
+  const LevelDisplaySubmit = ({ oldName, newName, questions }) => (
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <Button
+        onClick={() => saveLevel(oldName, newName, questions)}
+        disabled={newName === "" || questions.length === 0}
+      >
+        Save
+      </Button>
 
-            <Container flexdirection="column">
-              <DndProvider
-                backend={HTML5Backend}
-                styled={{ textAlign: "center", itemAlign: "center" }}
-              >
-                <LevelAdder
-                  levelConfig={levelConfig}
-                  allQuestions={allQuestions}
-                />
-              </DndProvider>
-            </Container>
-          </StyledDivCard>
-        </StyledCol>
-      </Row>
-    );
-  };
+      <Button onClick={() => deleteLevel(oldName)} variant="danger">
+        Delete
+      </Button>
+    </div>
+  );
+
+  const LevelAddSubmit = ({ oldName, newName, questions }) => (
+    <Button
+      onClick={() => saveLevel(oldName, newName, questions)}
+      disabled={newName === "" || questions.length === 0}
+    >
+      Submit
+    </Button>
+  );
 
   return (
     <AdminLayout>
       <Container flexdirection="column">
-        <h1> Interview Levels </h1>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <h1>Interview Levels</h1>
+          <Button
+            onClick={() => setShowModal(true)}
+            style={{ height: "fit-content" }}
+          >
+            Add Interview Level
+          </Button>
+        </div>
         <br />
-        <StyledDiv>
-          <Button onClick={toggleAdd}>Add Interview Level</Button>
-        </StyledDiv>
-        <br />
-
-        {/*addLevel && <AddLevel />*/}
-
-        <br />
-
         <Row>
-          {Object.entries(levelConfig).map(([name, questions]) => {
-            const populatedQuestions = questions.map((question) => {
-              const fullQuestion = allQuestions.find(
-                (q) => q.id === question.id
+          {Object.entries(levelConfig)
+            .sort((a, b) => (a[0] > b[0] ? 1 : -1))
+            .map(([name, questions]) => {
+              const populatedQuestions = questions.map((question) => {
+                const fullQuestion = allQuestions.find(
+                  (q) => q.id === question.id
+                );
+                return {
+                  ...fullQuestion,
+                  order: question.order,
+                };
+              });
+
+              return (
+                <Card style={{ width: "23rem", margin: 10 }} key={name}>
+                  <Card.Body
+                    style={{ display: "flex", flexDirection: "column" }}
+                  >
+                    <LevelDisplay
+                      name={name}
+                      questions={populatedQuestions}
+                      otherQuestions={allQuestions}
+                      SubmitButton={LevelDisplaySubmit}
+                    />
+                  </Card.Body>
+                </Card>
               );
-              return {
-                ...fullQuestion,
-                order: question.order,
-              };
-            });
-
-            const questionIds = questions.map((question) => question.id);
-            const otherQuestions = allQuestions.filter(
-              (question) => !questionIds.includes(question.id)
-            );
-
-            return (
-              <LevelDisplay
-                key={name}
-                name={name}
-                questions={populatedQuestions}
-                otherQuestions={otherQuestions}
-                saveLevel={saveLevel}
-                deleteLevel={deleteLevel}
-              />
-            );
-          })}
+            })}
         </Row>
       </Container>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Level</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <LevelDisplay
+            name=""
+            questions={[]}
+            otherQuestions={allQuestions}
+            SubmitButton={LevelAddSubmit}
+          />
+        </Modal.Body>
+      </Modal>
+
+      <Toast
+        onClose={() => setShowToast(false)}
+        show={showToast}
+        delay={3000}
+        autohide
+        style={{ position: "fixed", right: 25, bottom: 25 }}
+      >
+        <Toast.Header
+          style={{ color: "#333", backgroundColor: "rgb(135 251 135 / 85%)" }}
+        >
+          <strong className="mr-auto">Changes saved!</strong>
+        </Toast.Header>
+      </Toast>
     </AdminLayout>
   );
 };

@@ -5,6 +5,7 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Modal from "react-bootstrap/Modal";
+import Toast from "react-bootstrap/Toast";
 
 import AdminLayout from "./AdminLayout";
 import QuestionDisplay, { QuestionForm } from "./QuestionDisplay";
@@ -20,6 +21,7 @@ const ManageQuestions = ({ firebase }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     if (firebase) {
@@ -69,6 +71,7 @@ const ManageQuestions = ({ firebase }) => {
       });
 
     setShowModal(false);
+    setShowToast(true);
   };
 
   const updateQuestion = async (question) => {
@@ -79,6 +82,8 @@ const ManageQuestions = ({ firebase }) => {
     const originalQuestion = questionList.find((q) => q.id === uid);
     let imageURL = originalQuestion.image;
     let filename = originalQuestion.imageName;
+
+    console.log(originalQuestion);
 
     if (question.image !== "") {
       if (filename !== "" && filename !== undefined)
@@ -100,6 +105,8 @@ const ManageQuestions = ({ firebase }) => {
         console.error(err);
         setError(err);
       });
+
+    setShowToast(true);
   };
 
   const removeQuestionImage = async (uid, filename) => {
@@ -112,6 +119,8 @@ const ManageQuestions = ({ firebase }) => {
         console.error(err);
         setError(err);
       });
+
+    setShowToast(true);
   };
 
   const deleteQuestion = (uid, filename) =>
@@ -143,6 +152,8 @@ const ManageQuestions = ({ firebase }) => {
             console.error(err);
             setError(err);
           });
+
+        setShowToast(true);
       }
     });
 
@@ -154,10 +165,14 @@ const ManageQuestions = ({ firebase }) => {
       <Container>
         <Row>
           <Col>
-            <h1> Interview Questions </h1>
-            <br />
-            <div style={{ textAlign: "right" }}>
-              <Button onClick={() => setShowModal(true)}>Add Question</Button>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <h1>Interview Questions</h1>
+              <Button
+                onClick={() => setShowModal(true)}
+                style={{ height: "fit-content" }}
+              >
+                Add Question
+              </Button>
             </div>
             <br />
             <Row>
@@ -196,6 +211,20 @@ const ManageQuestions = ({ firebase }) => {
           />
         </Modal.Body>
       </Modal>
+
+      <Toast
+        onClose={() => setShowToast(false)}
+        show={showToast}
+        delay={3000}
+        autohide
+        style={{ position: "fixed", right: 25, bottom: 25 }}
+      >
+        <Toast.Header
+          style={{ color: "#333", backgroundColor: "rgb(135 251 135 / 85%)" }}
+        >
+          <strong className="mr-auto">Changes saved!</strong>
+        </Toast.Header>
+      </Toast>
     </AdminLayout>
   );
 };

@@ -1,28 +1,18 @@
-import React, { useState, useEffect, useRef, Fragment } from "react";
-import styled from "styled-components";
+import React, { useState, useEffect, useRef } from "react";
 import update from "immutability-helper";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 
 import { withFirebase } from "upe-react-components";
-
-const CenteredForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 500px;
-  margin: 0 auto;
-`;
-
-const StyledHr = styled.hr`
-  border: 2px solid #333;
-  border-radius: 5px;
-`;
+import {
+  FullWidthFormRow,
+  FullWidthFormGroup,
+  CenteredForm,
+} from "../../styles/global";
 
 const DraggableQuestion = ({
   id,
@@ -100,16 +90,13 @@ const DraggableQuestion = ({
   );
 };
 
-const LevelDisplay = ({
-  name,
-  questions,
-  otherQuestions,
-  saveLevel,
-  deleteLevel,
-}) => {
+const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
   const [questionToAdd, setQuestionToAdd] = useState("");
   const [localQuestions, setLocalQuestions] = useState([]);
+  const [localName, setLocalName] = useState("");
+
   useEffect(() => setLocalQuestions(questions), [questions]);
+  useEffect(() => setLocalName(name), [name]);
 
   const reorderQuestion = (originalIndex, newIndex) => {
     const question = localQuestions[originalIndex];
@@ -154,78 +141,91 @@ const LevelDisplay = ({
     );
   };
 
-  const questionIds = questions.map((question) => question.id);
+  const questionIds = localQuestions.map((question) => question.id);
   const filteredQuestions = otherQuestions.filter(
     (question) => !questionIds.includes(question.id)
   );
 
   return (
-    <Card style={{ width: "23rem", margin: 10 }}>
-      <Card.Body>
-        <h2>{name}</h2>
+    <>
+      <div style={{ flexGrow: 1 }}>
+        <CenteredForm>
+          <FullWidthFormRow>
+            <FullWidthFormGroup controlId="levelName">
+              <Form.Label>
+                <h5>Level Name</h5>
+              </Form.Label>
+              <Form.Control
+                required
+                name="levelName"
+                type="text"
+                value={localName}
+                onChange={(e) => setLocalName(e.target.value)}
+              />
+            </FullWidthFormGroup>
+          </FullWidthFormRow>
+        </CenteredForm>
 
-        <div styled={{ textAlign: "center", itemAlign: "center" }}>
-          <CenteredForm>
-            <Form.Row style={{ width: "100%" }} key={0}>
-              <Form.Group controlId={4} style={{ width: "100%" }}>
-                <Form.Label>
-                  <h5> Other Questions </h5>
-                </Form.Label>
-                <Form.Control
-                  required
-                  name={"addQ"}
-                  as="select"
-                  onChange={(e) => setQuestionToAdd(e.target.value)}
-                >
-                  <option value=""> - </option>
-                  {filteredQuestions.map((question) => (
-                    <option key={question.id} value={question.id}>
-                      {question.name}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Form.Row>
-
-            <Button
-              onClick={() => addQuestion(questionToAdd)}
-              disabled={questionToAdd === ""}
-            >
-              Add Question
-            </Button>
-          </CenteredForm>
-
-          <br />
-
-          <div style={{ textAlign: "center" }}>
-            <h5>Level Questions</h5>
-
-            <DndProvider backend={HTML5Backend}>
-              {localQuestions
-                .sort((a, b) => (a.order > b.order ? 1 : -1))
-                .map((question) => (
-                  <DraggableQuestion
-                    key={question.id}
-                    id={question.id}
-                    index={question.order}
-                    text={question.name}
-                    reorderQuestion={reorderQuestion}
-                    removeQuestion={removeQuestion}
-                  />
+        <CenteredForm>
+          <FullWidthFormRow>
+            <FullWidthFormGroup controlId="newQuestionSelector">
+              <Form.Label>
+                <h5>Other Questions</h5>
+              </Form.Label>
+              <Form.Control
+                required
+                name="newQuestionSelector"
+                as="select"
+                onChange={(e) => setQuestionToAdd(e.target.value)}
+              >
+                <option value=""> - </option>
+                {filteredQuestions.map((question) => (
+                  <option key={question.id} value={question.id}>
+                    {question.name}
+                  </option>
                 ))}
-            </DndProvider>
-          </div>
-        </div>
+              </Form.Control>
+            </FullWidthFormGroup>
+          </FullWidthFormRow>
 
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Button onClick={() => saveLevel(name, localQuestions)}>Save</Button>
-
-          <Button onClick={() => deleteLevel(name)} variant="danger">
-            Delete
+          <Button
+            onClick={() => addQuestion(questionToAdd)}
+            disabled={questionToAdd === ""}
+          >
+            Add Question
           </Button>
+        </CenteredForm>
+
+        <br />
+
+        <div style={{ textAlign: "center" }}>
+          <h5>
+            {localQuestions.length > 0 ? "Level Questions" : "No Questions!"}
+          </h5>
+
+          <DndProvider backend={HTML5Backend}>
+            {localQuestions
+              .sort((a, b) => (a.order > b.order ? 1 : -1))
+              .map((question) => (
+                <DraggableQuestion
+                  key={question.id}
+                  id={question.id}
+                  index={question.order}
+                  text={question.name}
+                  reorderQuestion={reorderQuestion}
+                  removeQuestion={removeQuestion}
+                />
+              ))}
+          </DndProvider>
         </div>
-      </Card.Body>
-    </Card>
+      </div>
+
+      <SubmitButton
+        oldName={name}
+        newName={localName}
+        questions={localQuestions}
+      />
+    </>
   );
 };
 

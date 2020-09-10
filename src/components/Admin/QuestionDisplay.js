@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import update from "immutability-helper";
 import cloneDeep from "lodash.clonedeep";
 
@@ -7,15 +6,11 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 
-import { FullWidthFormRow, FullWidthFormGroup } from "../../styles/global";
-
-const CenteredForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 500px;
-  margin: 0 auto;
-`;
+import {
+  FullWidthFormRow,
+  FullWidthFormGroup,
+  CenteredForm,
+} from "../../styles/global";
 
 const QuestionDisplay = ({
   id,
