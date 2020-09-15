@@ -109,8 +109,6 @@ const ApplicantView = ({ firebase }) => {
   };
 
   const submitData = (formData) => {
-    console.log(formData);
-
     const data = {
       gradYear: application.responses[4],
       profileIMG: formData.profileIMG,
