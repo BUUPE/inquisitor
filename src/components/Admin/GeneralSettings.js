@@ -23,8 +23,8 @@ const StyledFormRow = styled(Form.Row)`
 
 // TODO: refactor settings to have sub sections
 const DEFAULT_GENERAL_SETTINGS = {
-  deliberationOpen: false,
-  deliberationsComplete: false,
+  deliberationsOpen: false,
+  useTwoRoundDeliberations: false,
   applicationsOpen: false,
   timeslotsOpen: false,
   timeslotsOpenForApplicants: false,
@@ -558,80 +558,37 @@ class GeneralSettings extends Component {
           <Form.Row>
             <Form.Check
               custom
-              checked={settings.deliberationOpen}
+              checked={settings.deliberationsOpen}
               type="switch"
               label={`Deliberations are ${
-                settings.deliberationOpen ? "open" : "closed"
+                settings.deliberationsOpen ? "open" : "closed"
               }`}
-              id="deliberationOpen"
-              onChange={(e) =>
-                this.setState({
-                  settings: { ...settings, deliberationOpen: e.target.checked },
-                })
-              }
-            />
-          </Form.Row>
-
-          <br />
-
-          <Form.Row>
-            <Form.Check
-              custom
-              checked={settings.deliberationsComplete}
-              type="switch"
-              label={`Deliberations are ${
-                settings.deliberationsComplete ? "complete" : "underway"
-              }`}
-              id="deliberationsComplete"
+              id="deliberationsOpen"
               onChange={(e) =>
                 this.setState({
                   settings: {
                     ...settings,
-                    deliberationsComplete: e.target.checked,
+                    deliberationsOpen: e.target.checked,
                   },
                 })
               }
             />
           </Form.Row>
-
           <br />
-
           <Form.Row>
             <Form.Check
               custom
-              checked={settings.secondDeliberationRound}
+              checked={settings.useTwoRoundDeliberations}
               type="switch"
-              label={`Is there a second round of deliberation? ${
-                settings.secondDeliberationRound ? "Yes" : "No"
+              label={`Two Round Deliberations is ${
+                settings.useTwoRoundDeliberations ? "enabled" : "disabled"
               }`}
-              id="secondDeliberationRound"
+              id="useTwoRoundDeliberations"
               onChange={(e) =>
                 this.setState({
                   settings: {
                     ...settings,
-                    secondDeliberationRound: e.target.checked,
-                  },
-                })
-              }
-            />
-          </Form.Row>
-
-          <br />
-
-          <Form.Row>
-            <Form.Check
-              custom
-              checked={settings.secondDeliberationComplete}
-              type="switch"
-              label={`Second round of deliberations is ${
-                settings.secondDeliberationComplete ? "complete" : "underway"
-              }`}
-              id="secondDeliberationComplete"
-              onChange={(e) =>
-                this.setState({
-                  settings: {
-                    ...settings,
-                    secondDeliberationComplete: e.target.checked,
+                    useTwoRoundDeliberations: e.target.checked,
                   },
                 })
               }
