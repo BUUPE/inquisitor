@@ -555,6 +555,7 @@ class GeneralSettings extends Component {
             </FullWidthFormGroup>
           </StyledFormRow>
           <hr />
+          {/* TODO: warning here with swal when flipping deliberations, it will nuke votes  */}
           <Form.Row>
             <Form.Check
               custom
