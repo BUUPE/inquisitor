@@ -5,12 +5,12 @@ import { AuthUserContext } from "upe-react-components";
 import Layout from "../components/Layout";
 import { InterviewerView, ApplicantView } from "../components/Deliberation";
 
-const DeliberationPage = ({ location }) => {
+const DeliberationPage = () => {
   const authUser = useContext(AuthUserContext);
   return memberOrRecruitmentTeam(authUser) ? (
-    <InterviewerView location={location} />
+    <InterviewerView />
   ) : (
-    <ApplicantView location={location} />
+    <ApplicantView />
   );
 };
 
