@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
+import swal from "@sweetalert/with-react";
 import { compose } from "recompose";
 import cloneDeep from "lodash.clonedeep";
-import { Link } from "gatsby";
+import { Link, navigate } from "gatsby";
 import update from "immutability-helper";
 
 import Form from "react-bootstrap/Form";
@@ -14,6 +15,8 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
+import { RequiredAsterisk } from "../ApplicationForm";
+
 import { Container } from "../../styles/global";
 import Loader from "../Loader";
 import Error from "../Error";
@@ -21,16 +24,15 @@ import Error from "../Error";
 const ApplicantView = ({ firebase }) => {
   const [settings, setSettings] = useState({});
   const [application, setApplication] = useState({});
-  const [submittedForm, setSubmittedForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadedApp, setLoadedApp] = useState(false);
+  const [loadedApplication, setLoadedApplication] = useState(false);
   const [loadedSettings, setLoadedSettings] = useState(false);
   const [error, setError] = useState(null);
 
   const authUser = useContext(AuthUserContext);
 
   useEffect(() => {
-    if (firebase && !!authUser.inquisitor.application) {
+    if (firebase && !!authUser) {
       const settingsUnsub = firebase
         .generalSettings()
         .onSnapshot((docSnapshot) => {
@@ -40,13 +42,12 @@ const ApplicantView = ({ firebase }) => {
         });
 
       const applicationUnsub = firebase
-        .application(authUser.inquisitor.application)
+        .application(authUser.uid)
         .onSnapshot((docSnapshot) => {
           if (docSnapshot.exists) {
             setApplication(docSnapshot.data());
-            setSubmittedForm(docSnapshot.data().deliberation.submittedForm);
           } else setError("No Application!");
-          setLoadedApp(true);
+          setLoadedApplication(true);
         });
 
       return () => {
@@ -56,61 +57,45 @@ const ApplicantView = ({ firebase }) => {
     }
   }, [firebase, authUser]);
 
-  console.log(submittedForm);
-
   useEffect(() => {
-    if (loadedSettings && loadedApp) setLoading(false);
-  }, [loadedApp, loadedSettings]);
+    if (loadedSettings && loadedApplication) setLoading(false);
+  }, [loadedApplication, loadedSettings]);
 
-  const accept = (round) => {
-    if (!firebase) return;
+  if (error) return <Error error={error} />;
+  if (loading) return <Loader />;
 
-    if (round === "1") {
-      firebase
-        .application(authUser.inquisitor.application)
-        .set({ deliberation: { applicantAccepted: true } }, { merge: true })
-        .then(() => {
-          console.log("Successfully updated Data");
-        })
-        .catch((err) => {
-          console.log(err);
-          setError(err);
-        });
-    } else if (round === "2") {
-      firebase
-        .application(authUser.inquisitor.application)
-        .set(
-          { deliberation: { secondRound: { applicantAccepted: true } } },
-          { merge: true }
-        )
-        .then(() => {
-          firebase
-            .editUser(authUser.uid, {
-              roles: {
-                provisionalMember: false,
-                applicant: false,
-                upemember: true,
-              },
-            })
-            .then(() => {
-              console.log("Successfully updated Data");
-            })
-            .catch((err) => {
-              console.log(err);
-              setError(err);
-            });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+  const confirm = async () => {
+    const roles = cloneDeep(authUser.roles);
+    delete roles.nonmember;
+    if (
+      settings.useTwoRoundDeliberations &&
+      !authUser.roles.provisionalMember
+    ) {
+      roles.provisionalMember = true;
+
+      await firebase.user(authUser.uid).update({ roles });
+      await firebase
+        .application(authUser.uid)
+        .update({ deliberation: { confirmed: true } });
     } else {
-      setError("Invalid round!");
+      delete roles.provisionalMember;
+      delete roles.applicant;
+      roles.upemember = true;
+
+      await firebase.user(authUser.uid).update({ roles });
+      await firebase.application(authUser.uid).delete();
+
+      // TODO: make this welcome actually pretty
+      await swal("You're in!", "Welcome to the club!", "success");
+      navigate("/");
     }
   };
 
-  const submitData = (formData) => {
+  const submitData = async (formData) => {
+    if (formData.file === null) return;
+
     const data = {
-      gradYear: application.responses[4],
+      gradYear: application.responses.find((r) => r.id === 5).value,
       profileIMG: formData.profileIMG,
       socials: {
         facebook: formData.facebook,
@@ -118,59 +103,28 @@ const ApplicantView = ({ firebase }) => {
         linkedin: formData.linkedin,
         twitter: formData.twitter,
       },
-      roles: {
-        nonMember: false,
-        provisionalMember: true && settings.secondDeliberationRound,
-        upemember: !settings.secondDeliberationRound,
-        applicant: settings.secondDeliberationRound,
-      },
     };
 
-    if (formData.file !== null) {
-      var uploadTask = firebase
-        .uploadImage("Provisional", formData.profileIMG)
-        .put(formData.file);
-
-      uploadTask.on(
-        "state_changed",
-        function (snapshot) {
-          var progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload is " + progress + "% done");
-        },
-        function (error) {
-          console.log(error);
-          setError(error);
-        },
-        function () {
-          console.log("Upload Successful!");
-        }
-      );
-    }
-
-    firebase
-      .editUser(authUser.uid, data)
-      .then(() => {
-        console.log("Edited Data");
-        firebase
-          .application(authUser.inquisitor.application)
-          .set({ deliberation: { submittedForm: true } }, { merge: true })
-          .then(() => {
-            setSubmittedForm(true);
-          })
-          .catch((err) => {
-            setError(err);
-          });
-      })
+    // TODO: refactor along with image url change (keep all user data in storage/userData/UID/)
+    await firebase
+      .uploadProfile("Provisional", formData.profileIMG)
+      .put(formData.file)
       .catch((error) => {
         setError(error);
       });
+
+    await firebase
+      .user(authUser.uid)
+      .update(data)
+      .catch((error) => {
+        setError(error);
+      });
+
+    await swal("All set!", "We got your info!", "success");
+    navigate("/");
   };
 
-  if (loading) return <Loader />;
-  if (error) return <Error error={error} />;
-
-  if (!authUser.inquisitor.applied)
+  if (!authUser.roles.applicant)
     return (
       <Container flexdirection="column">
         <h1>You have not yet applied this semester.</h1>
@@ -180,148 +134,115 @@ const ApplicantView = ({ firebase }) => {
       </Container>
     );
 
-  if (!settings.deliberationOpen)
+  if (!application.interview.interviewed)
     return (
       <Container flexdirection="column">
-        <h1>Deliberations are closed!</h1>
+        <h1>You must first complete your interview!</h1>
       </Container>
     );
 
-  const secondRoundStatus =
-    settings.deliberationsComplete &&
-    settings.secondDeliberationRound &&
-    application.deliberation.acceptedUPE &&
-    authUser.roles.provisionalMember;
-
   if (
-    !application.deliberation.complete ||
-    (secondRoundStatus && !application.deliberation.secondRound.complete)
+    settings.deliberationsOpen ||
+    (!application.deliberation.accepted &&
+      application.deliberation.feedback === "")
   )
+    // TODO: make this centered, prettier
     return (
       <Container flexdirection="column">
-        <h1>Deliberations are not yet complete!</h1>
+        <h1>Deliberations are still underway!</h1>
       </Container>
     );
 
-  if (
-    !application.deliberation.acceptedUPE ||
-    (secondRoundStatus && !application.deliberation.secondRound.acceptedUPE)
-  ) {
-    return (
-      <Container flexdirection="column">
-        <h1>You have been emailed your results.</h1>
-      </Container>
-    );
-  }
-
-  if (secondRoundStatus) {
-    if (application.deliberation.secondRound.applicantAccepted) {
-      return (
-        <Container flexdirection="column">
-          <div>
-            <h1>Next Steps</h1>
-            <p>
-              Now that the onboarding period is complete, you will soon be
-              contacted by our E-Board with specifics about this semester's
-              induction.
-            </p>
-            <br />
-            <h2>WARNING</h2>
-            <p>
-              Upon reloading this page you will lose access to it, do not worry
-              about it, it's by design as you are no longer an applicant!
-            </p>
-          </div>
-        </Container>
-      );
-    } else {
-      return (
-        <Container flexdirection="column">
-          <div>
-            <h1>Your Deliberation</h1>
-          </div>
-          <br />
-          <div>
-            <h2>You have been officially accepted into UPE!</h2>
-            <br />
-            <p>
-              We are pleased to announce that you have made it passed the
-              provisional period, and have been officially accepted into UPE. In
-              order for us to complete this process, we require that you confirm
-              your acceptance by clicking bellow.
-            </p>
-            <Button onClick={() => accept("2")}>Accept</Button>
-          </div>
-        </Container>
-      );
+  // theyre accepted
+  if (!application.deliberation.confirmed) {
+    {
+      /*TODO: get eboard to fix the wording*/
     }
-  }
+    const ResultText = () =>
+      settings.useTwoRoundDeliberations && !authUser.roles.provisionalMember ? (
+        <>
+          <h2>You have been provisionally accepted into UPE!</h2>
+          <br />
+          <p>
+            We are pleased to extend provisional membership to UPE. This means
+            (explain here). If you'd like to accept this and start your
+            onboarding period, please click the button below to confirm.
+          </p>
+        </>
+      ) : (
+        <>
+          <h2>You have been officially accepted into UPE!</h2>
+          <br />
+          <p>
+            We are pleased to announce that you have been officially accepted
+            into UPE. In order for us to complete this process, we require that
+            you confirm your acceptance by clicking below.
+          </p>
+        </>
+      );
 
-  if (application.deliberation.applicantAccepted)
     return (
       <Container flexdirection="column">
         <div>
-          <h1>Next Steps</h1>
-          <p>
-            Now that you've accepted to join UPE, you will continue on with the
-            onboarding period, during this time, and has mentioned during the
-            Info Sessions, you will be required to attend chapter, meet current
-            members, and contribute in some way to UPE. Further details about
-            this will be given to you shortly by our Recruitment Team.
-          </p>
-          <p>
-            For the time being however, we ask that you fill out the form
-            bellow, so that once onboarding is over, we can induct you and add
-            you to our database & website.
-          </p>
+          <h1>Your Results</h1>
         </div>
         <br />
-        <h2> Data Form </h2>
-        <DataForm
-          firebase={firebase}
-          submitFunction={submitData}
-          submittedForm={submittedForm}
-          application={application}
-          initialFormData={{
-            file: null,
-            profileIMG: "",
-            twitter: "",
-            facebook: "",
-            github: "",
-            linkedin: "",
-          }}
-        />
+        <div>
+          <ResultText />
+          <Button onClick={confirm}>Confirm</Button>
+        </div>
+      </Container>
+    );
+  }
+
+  {
+    /* make this pretty */
+  }
+  if (authUser.profileIMG !== "")
+    return (
+      <Container flexdirection="column">
+        <h1>You're all set!</h1>
       </Container>
     );
 
   return (
     <Container flexdirection="column">
       <div>
-        <h1>Your Deliberation</h1>
+        <h1>Next Steps</h1>
+        <p>
+          Now that you've accepted to join UPE, you will continue on with the
+          onboarding period, during this time, and has mentioned during the Info
+          Sessions, you will be required to attend chapter, meet current
+          members, and contribute in some way to UPE. Further details about this
+          will be given to you shortly by our Recruitment Team.
+        </p>
+        <p>
+          For the time being however, we ask that you fill out the form bellow,
+          so that once onboarding is over, we can induct you and add you to our
+          database & website.
+        </p>
       </div>
       <br />
-      <div>
-        <h2>You have been accepted into UPE!</h2>
-        <br />
-        <p>
-          We are pleased to announce that you have been accepted to the latest
-          class of UPE's chapter at BU. If you'd like to accept this, and
-          proceed to start your onboarding period, please click the button
-          bellow to continue
-        </p>
-        <Button onClick={() => accept("1")}>Accept</Button>
-      </div>
+      <h2> Data Form </h2>
+      <DataForm
+        submitFunction={submitData}
+        firstName={
+          application.responses.find((r) => r.id === 1).value.split(" ")[0]
+        }
+      />
     </Container>
   );
 };
 
-const DataForm = ({
-  submitFunction,
-  application,
-  initialFormData,
-  submittedForm,
-}) => {
-  const [formData, setFormData] = useState(initialFormData);
+const DataForm = ({ submitFunction, firstName }) => {
+  const [formData, setFormData] = useState({
+    file: null,
+    profileIMG: "",
+    twitter: "",
+    facebook: "",
+    github: "",
+    linkedin: "",
+  });
   const [validated, setValidated] = useState(false);
 
   const saveData = (e) => {
@@ -336,14 +257,6 @@ const DataForm = ({
     }
   };
 
-  if (submittedForm) {
-    return (
-      <Container flexdirection="column">
-        <h5> Form Submitted </h5>
-      </Container>
-    );
-  }
-
   const updateField = (e) =>
     setFormData(
       update(formData, {
@@ -353,33 +266,37 @@ const DataForm = ({
 
   const updateImage = (e) => {
     const hasIMG = e.target.files.length === 1;
-    let im = "";
+    let fileName = "";
+    // TODO: Needs refactor after website
     if (hasIMG) {
-      if (formData.file.type.split("/")[1] === "jpeg")
-        im = application.applicant.name.split(" ")[0] + ".jpg";
-      else im = application.applicant.name.split(" ")[0] + ".png";
-    }
+      if (e.target.files[0].type.split("/")[1] === "jpeg")
+        fileName = firstName + ".jpg";
+      else fileName = firstName + ".png";
+    } else return;
 
     setFormData(
       update(formData, {
         file: { $set: hasIMG ? e.target.files[0] : "" },
         profileIMG: {
-          $set: im,
+          $set: fileName,
         },
       })
     );
   };
 
+  // TODO: Look into custom form issue
   return (
     <Container flexdirection="column">
       <Form noValidate validated={validated} onSubmit={saveData}>
-        <Form.Row style={{ width: "100%" }} key={0}>
-          <Form.Group controlId={0} style={{ width: "100%" }}>
+        <Form.Row>
+          <Form.Group>
             <Form.Label>
-              <h5> Profile Image </h5>
+              <h5>
+                Profile Image <RequiredAsterisk />
+              </h5>
             </Form.Label>
             <Form.File
-              name="file"
+              name="profileIMG"
               accept=".png,.jpg"
               onChange={updateImage}
               required
@@ -387,10 +304,10 @@ const DataForm = ({
           </Form.Group>
         </Form.Row>
 
-        <Form.Row style={{ width: "100%" }} key={1}>
-          <Form.Group controlId={1} style={{ width: "100%" }}>
+        <Form.Row>
+          <Form.Group>
             <Form.Label>
-              <h5> Twitter </h5>
+              <h5>Twitter</h5>
             </Form.Label>
             <Form.Control
               name="twitter"
@@ -402,10 +319,12 @@ const DataForm = ({
           </Form.Group>
         </Form.Row>
 
-        <Form.Row style={{ width: "100%" }} key={2}>
-          <Form.Group controlId={2} style={{ width: "100%" }}>
+        <Form.Row>
+          <Form.Group>
             <Form.Label>
-              <h5> Github </h5>
+              <h5>
+                Github <RequiredAsterisk />
+              </h5>
             </Form.Label>
             <Form.Control
               name="github"
@@ -418,10 +337,10 @@ const DataForm = ({
           </Form.Group>
         </Form.Row>
 
-        <Form.Row style={{ width: "100%" }} key={3}>
-          <Form.Group controlId={3} style={{ width: "100%" }}>
+        <Form.Row>
+          <Form.Group>
             <Form.Label>
-              <h5> Facebook </h5>
+              <h5>Facebook</h5>
             </Form.Label>
             <Form.Control
               name="facebook"
@@ -433,10 +352,12 @@ const DataForm = ({
           </Form.Group>
         </Form.Row>
 
-        <Form.Row style={{ width: "100%" }} key={4}>
-          <Form.Group controlId={4} style={{ width: "100%" }}>
+        <Form.Row>
+          <Form.Group>
             <Form.Label>
-              <h5> Linkedin </h5>
+              <h5>
+                Linkedin <RequiredAsterisk />
+              </h5>
             </Form.Label>
             <Form.Control
               name="linkedin"

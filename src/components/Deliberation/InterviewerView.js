@@ -17,7 +17,6 @@ import {
 import { isRecruitmentTeam } from "../../util/conditions";
 import Loader from "../Loader";
 import AdminSettings from "./AdminSettings";
-import SecondDeliberationInterviewer from "./SecondDeliberationInterviewer";
 import ApplicationDisplay from "./ApplicationDisplay";
 import { Container } from "../../styles/global";
 
@@ -200,10 +199,6 @@ class InterviewerView extends Component {
     } = this.state.settings;
 
     const authUser = this.context;
-
-    if (secondDeliberationRound && deliberationsComplete) {
-      return <SecondDeliberationInterviewer />;
-    }
 
     if (!deliberationOpen)
       return (

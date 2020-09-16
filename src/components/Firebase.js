@@ -17,6 +17,7 @@ class Firebase extends FirebaseSuper {
 
     this.inquisitorData = app.firestore().doc("inquisitor/data");
     this.storage = app.storage().ref("inquisitor");
+    this.profiles = app.storage().ref("profiles");
     this.functions = app.functions();
 
     // *** Functions API ***
@@ -100,11 +101,8 @@ class Firebase extends FirebaseSuper {
 
   allRoles = () => this.firestore.doc("config/roles");
 
-  editUser = (uid, data) =>
-    this.firestore.collection("users").doc(uid).set(data, { merge: true });
-
-  uploadImage = (className, fileName) =>
-    this.storage.ref("profiles").child(className).child(fileName);
+  uploadProfile = (className, fileName) =>
+    this.profiles.child(`${className}/${fileName}`);
 
   // *** Storage API ***
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
