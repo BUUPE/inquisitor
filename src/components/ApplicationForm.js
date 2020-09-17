@@ -141,7 +141,7 @@ class ApplicationForm extends Component {
 
     if (loading) return <Loader />;
 
-    if (generalSettings.applicationsOpen)
+    if (!generalSettings.applicationsOpen)
       return (
         <Container
           flexdirection="column"
@@ -166,6 +166,11 @@ class ApplicationForm extends Component {
 
     const onSubmit = async (event) => {
       event.preventDefault();
+      if (!generalSettings.applicationsOpen) {
+        swal("Uh oh!", "Applications are closed! Not sure how you got here, but unfortunately we can't submit this for you as applications have closed.", "error");
+        return;
+      }
+    
       const form = event.currentTarget;
       const fileUploads = Array.from(
         form.querySelectorAll(".custom-file-input")
@@ -334,7 +339,6 @@ class ApplicationForm extends Component {
           );
           break;
         case "yesno":
-          console.log("yesno", typeof defaultValue);
           questionComponent = (
             <div>
               <Form.Check
