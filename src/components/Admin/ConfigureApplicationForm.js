@@ -375,32 +375,62 @@ const ConfigureApplicationForm = ({ firebase }) => {
     };
 
     let questionComponent;
-    if (question.type === "textarea") {
-      questionComponent = (
-        <Form.Control
-          required={question.required}
-          as="textarea"
-          rows="3"
-          disabled
-        />
-      );
-    } else if (question.type === "file") {
-      questionComponent = (
-        <Form.File
-          id={`custom-file-${question.id}`}
-          label="Upload file"
-          custom
-          disabled
-        />
-      );
-    } else {
-      questionComponent = (
-        <Form.Control
-          required={question.required}
-          type={question.type}
-          disabled
-        />
-      );
+    switch (question.type) {
+      case "textarea":
+        questionComponent = (
+          <Form.Control
+            required={question.required}
+            as="textarea"
+            rows="3"
+            disabled
+          />
+        );
+        break;
+      case "file":
+        questionComponent = (
+          <Form.File
+            id={`custom-file-${question.id}`}
+            label="Upload file"
+            custom
+            disabled
+          />
+        );
+        break;
+      case "yesno":
+        questionComponent = (
+          <div>
+            <Form.Check
+              custom
+              disabled
+              inline
+              value="true"
+              label="Yes"
+              type="radio"
+              name={question.id}
+              id={`${question.id}-1`}
+            />
+            <Form.Check
+              custom
+              disabled
+              inline
+              value="false"
+              label="No"
+              type="radio"
+              name={question.id}
+              id={`${question.id}-2`}
+            />
+          </div>
+        );
+        break;
+      default:
+        questionComponent = (
+          <Form.Control
+            required={question.required}
+            type={question.type}
+            disabled
+          />
+        );
+        break;
     }
 
     return (
@@ -555,6 +585,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
                   <option value="email">email</option>
                   <option value="number">number</option>
                   <option value="checkbox">checkbox</option>
+                  <option value="yesno">yes/no</option>
                   <option value="file">file</option>
                 </Form.Control>
               </Form.Group>

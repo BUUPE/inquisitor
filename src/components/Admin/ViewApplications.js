@@ -76,7 +76,7 @@ const ViewApplications = ({ firebase }) => {
           />
         );
       } else {
-        responseComponent = <p>{response.value}</p>;
+        responseComponent = <p>{response.value.toString()}</p>;
       }
 
       return (
