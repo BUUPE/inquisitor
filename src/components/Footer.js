@@ -14,9 +14,23 @@ const FooterContainer = styled.footer`
   padding: 10px;
 `;
 
+const Link = styled.a`
+  color: white;
+
+  &:hover {
+    color: white;
+    text-decoration: none;
+  }
+`;
+
 const Footer = () => (
   <FooterContainer>
-    Copyright © BU UPE {new Date().getFullYear()}
+    Copyright ©&nbsp;
+    <Link href="https://upe.bu.edu/" className="hvr-underline-from-center">
+      BU UPE
+    </Link>
+    &nbsp;
+    {new Date().getFullYear()}
   </FooterContainer>
 );
 

@@ -21,7 +21,7 @@ const FullSizeRouter = styled(Router)`
   flex-grow: 1;
 `;
 
-export default ({ location }) => (
+export default () => (
   <Layout>
     <FullSizeRouter basepath={withPrefix("/admin")}>
       <ConfigureApplicationForm path="/configure-application" />

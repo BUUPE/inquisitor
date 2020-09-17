@@ -14,7 +14,6 @@ import {
 
 import { isLoggedIn } from "../util/conditions";
 import Loader from "./Loader";
-import Error from "./Error";
 import Logo from "./Logo";
 import { Container } from "../styles/global";
 
@@ -31,11 +30,10 @@ const CenteredForm = styled(Form)`
   flex-direction: column;
   align-items: center;
   max-width: 500px;
-  margin: 0 auto;
+  flex: auto;
   margin-bottom: 25px;
 `;
 
-// use sweetalert here since its non blocking
 const setFileValidity = (fileUpload) => {
   if (fileUpload.files.length === 0) {
     fileUpload.setCustomValidity("You must upload a file!");
@@ -56,6 +54,7 @@ class ApplicationForm extends Component {
   _initFirebase = false;
   state = {
     applicationFormConfig: null,
+    initialApplicationData: null,
     generalSettings: null,
     loading: true,
     validated: false,
@@ -91,7 +90,7 @@ class ApplicationForm extends Component {
           loading: false,
         })
       );
-    const loadAlreadyApplied = this.props.firebase
+    const loadUserData = this.props.firebase
       .user(this.context.uid)
       .get()
       .then((snapshot) => snapshot.data())
@@ -106,17 +105,24 @@ class ApplicationForm extends Component {
           loading: false,
         })
       );
+    const loadUserApplication = this.props.firebase
+      .application(this.context.uid)
+      .get()
+      .then((snapshot) => (snapshot.exists ? snapshot.data() : null))
+      .catch(console.error);
 
     Promise.all([
       loadApplicationFormConfig,
-      loadAlreadyApplied,
+      loadUserData,
       loadGeneralSettings,
+      loadUserApplication,
     ]).then((values) =>
       this.setState({
         loading: false,
         applicationFormConfig: values[0],
-        alreadyApplied: values[1].applied,
+        alreadyApplied: values[1].roles.hasOwnProperty("applicant"),
         generalSettings: values[2],
+        initialApplicationData: values[3],
       })
     );
   };
@@ -135,7 +141,7 @@ class ApplicationForm extends Component {
 
     if (loading) return <Loader />;
 
-    if (!generalSettings.applicationsOpen)
+    if (generalSettings.applicationsOpen)
       return (
         <Container
           flexdirection="column"
@@ -159,7 +165,6 @@ class ApplicationForm extends Component {
       );
 
     const onSubmit = async (event) => {
-      this.setState({ sending: true });
       event.preventDefault();
       const form = event.currentTarget;
       const fileUploads = Array.from(
@@ -170,7 +175,11 @@ class ApplicationForm extends Component {
       if (form.checkValidity() === false) {
         event.stopPropagation();
       } else {
+        this.setState({ sending: true });
         const inputs = Array.from(form.querySelectorAll(".form-control"));
+        const radios = Array.from(
+          form.querySelectorAll(".custom-radio>.custom-control-input")
+        ).filter((r) => r.checked);
         const { semester, questions } = this.state.applicationFormConfig;
         const { uid, roles } = this.context;
         roles.applicant = true;
@@ -191,6 +200,22 @@ class ApplicationForm extends Component {
             type,
           };
         });
+
+        const radioResponses = radios.map(
+          ({ name: inputId, value: inputValue }) => {
+            const id = parseInt(inputId);
+            // eslint-disable-next-line eqeqeq
+            const value = inputValue == "true";
+            const { name, order, type } = questions.find((q) => q.id === id);
+            return {
+              id,
+              value,
+              name,
+              order,
+              type,
+            };
+          }
+        );
 
         const uploadFiles = fileUploads.map(
           (fileUpload) =>
@@ -216,20 +241,30 @@ class ApplicationForm extends Component {
         );
 
         const fileURLs = await Promise.all(uploadFiles);
-        responses = responses.concat(fileURLs);
+        responses = responses.concat(fileURLs).concat(radioResponses);
 
-        const uploadApplicationData = this.props.firebase
-          .application(uid)
-          .set({ responses, semester });
-        const setApplied = this.props.firebase
-          .user(uid)
-          .update({ applied: true, roles });
+        const uploadApplicationData = this.props.firebase.application(uid).set({
+          responses,
+          semester,
+          deliberation: {
+            accepted: false,
+            confirmed: false,
+            feedback: "",
+            votes: {},
+          },
+          interview: {
+            interviewed: false,
+          },
+        });
+        const updateRoles = this.props.firebase.user(uid).update({
+          roles,
+        });
         const sendReceipt = this.props.firebase.sendApplicationReceipt({
           email,
           firstName,
         });
 
-        await Promise.all([uploadApplicationData, setApplied, sendReceipt]);
+        await Promise.all([uploadApplicationData, updateRoles, sendReceipt]);
         this.setState({ submitted: true, sending: false });
       }
 
@@ -255,44 +290,87 @@ class ApplicationForm extends Component {
       </Container>
     );
 
-    if (errorMsg) return <Error error={errorMsg} />;
+    if (errorMsg)
+      return (
+        <Container flexdirection="column">
+          <h1>Uh oh!</h1>
+          <p>{errorMsg}</p>
+        </Container>
+      );
 
     if (submitted) return successMessage;
 
     const renderQuestion = (question) => {
+      const { initialApplicationData } = this.state;
+      let defaultValue = "";
+      if (initialApplicationData !== null) {
+        defaultValue = initialApplicationData.responses.find(
+          (r) => r.id === question.id
+        ).value;
+      } else if (question.id === 1) defaultValue = this.context.name;
+      else if (question.id === 2) defaultValue = this.context.email;
+
       let questionComponent;
-      if (question.type === "textarea") {
-        questionComponent = (
-          <Form.Control required={question.required} as="textarea" rows="3" />
-        );
-      } else if (question.type === "file") {
-        questionComponent = (
-          <Form.File
-            id={`custom-file-${question.id}`}
-            label="Upload file"
-            custom
-            accept=".pdf"
-            onChange={(e) => setFileValidity(e.target)}
-          />
-        );
-      } else {
-        let defaultValue = "";
-        // eslint-disable-next-line default-case
-        switch (question.id) {
-          case 1:
-            defaultValue = this.context.name;
-            break;
-          case 2:
-            defaultValue = this.context.email;
-            break;
-        }
-        questionComponent = (
-          <Form.Control
-            required={question.required}
-            type={question.type}
-            defaultValue={defaultValue}
-          />
-        );
+      switch (question.type) {
+        case "textarea":
+          questionComponent = (
+            <Form.Control
+              required={question.required}
+              as="textarea"
+              rows="3"
+              defaultValue={defaultValue}
+            />
+          );
+          break;
+        case "file":
+          questionComponent = (
+            <Form.File
+              id={`custom-file-${question.id}`}
+              label="Upload file"
+              custom
+              accept=".pdf"
+              onChange={(e) => setFileValidity(e.target)}
+            />
+          );
+          break;
+        case "yesno":
+          console.log("yesno", typeof defaultValue);
+          questionComponent = (
+            <div>
+              <Form.Check
+                custom
+                required={question.required}
+                inline
+                defaultChecked={defaultValue}
+                value="true"
+                label="Yes"
+                type="radio"
+                name={question.id}
+                id={`${question.id}-1`}
+              />
+              <Form.Check
+                custom
+                required={question.required}
+                inline
+                defaultChecked={!defaultValue}
+                value="false"
+                label="No"
+                type="radio"
+                name={question.id}
+                id={`${question.id}-2`}
+              />
+            </div>
+          );
+          break;
+        default:
+          questionComponent = (
+            <Form.Control
+              required={question.required}
+              type={question.type}
+              defaultValue={defaultValue}
+            />
+          );
+          break;
       }
 
       return (
@@ -307,13 +385,12 @@ class ApplicationForm extends Component {
       );
     };
 
-    // use auth user context here, if user has already applied dont let them apply again (alternatively, just let them know they've applied already and further applications will overwrite previous ones)
     return (
-      <Container flexdirection="column">
+      <Container flexdirection="row" style={{ justifyContent: "center" }}>
         <CenteredForm noValidate validated={validated} onSubmit={onSubmit}>
           <Logo size="medium" />
           <h1>Apply to BU UPE</h1>
-          {/* maybe this message here should be configurable as well? */}
+          {/* Pre application welcome message, perhaps make this configurable in admin settings
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
             fringilla, dui vitae maximus luctus, magna urna convallis purus,
@@ -326,6 +403,7 @@ class ApplicationForm extends Component {
             Morbi suscipit massa id dui feugiat ultrices. Nulla ac faucibus
             tortor, quis pharetra leo.
           </p>
+          */}
 
           {alreadyApplied && (
             <p style={{ color: "red" }}>

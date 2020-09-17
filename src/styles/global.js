@@ -96,10 +96,6 @@ export default createGlobalStyle`
     margin: 0 auto;
   }
 
-  .swal-button.swal-button--confirm:hover {
-    animation: wiggle 0.5s infinite;
-  }
-
   .hvr-underline-from-center {
     display: inline-block;
     vertical-align: middle;
@@ -117,7 +113,7 @@ export default createGlobalStyle`
     left: 51%;
     right: 51%;
     bottom: 0;
-    background: white;
+    background: #f21131;
     height: 4px;
     -webkit-transition-property: left, right;
     transition-property: left, right;
