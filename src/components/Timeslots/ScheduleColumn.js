@@ -15,6 +15,7 @@ const StyledSlot = styled.div`
   background: ${(props) => {
     if (props.userSelected) return "green";
     else if (props.hasOpening) return "blue";
+    else if (props.orphanedApplicant) return "red";
     else return "white";
   }};
   border-left: ${borderStyle};
@@ -41,7 +42,7 @@ const StyledSlot = styled.div`
           i + 1 === props.slotsPerTimeslot ? borderStyle : "none"
         };
       }`;
-      siblingSelector += siblingSelector;
+      siblingSelector += " + div";
     }
     return css;
   }}
@@ -52,6 +53,7 @@ const ScheduleColumn = ({
   timeslotLength,
   userSelectedSlots,
   slotsWithOpening,
+  orphanedApplicants,
   selectTimeslot,
   unselectTimeslot,
   startHour,
@@ -145,6 +147,7 @@ const ScheduleColumn = ({
         slotsPerTimeslot={slotsPerTimeslot}
         hasOpening={slotsWithOpening.hasOwnProperty(slot)}
         userSelected={userSelectedSlots.hasOwnProperty(slot)}
+        orphanedApplicant={orphanedApplicants.hasOwnProperty(slot)}
         isTop={isTop}
         isMiddle={isMiddle}
         isBottom={isBottom}

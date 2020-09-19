@@ -27,7 +27,7 @@ class InterviewerView extends Component {
     loading: true,
     error: null,
     settings: null,
-    timeslots: {},
+    timeslots: {}, // TODO: this needs a better name
     timeslotOptions: [],
     showModal: false,
   };
@@ -73,25 +73,27 @@ class InterviewerView extends Component {
             });
 
             // add new data from listener
-            listenerData.forEach((ts) => {
-              const day = ts.time.toDateString();
+            listenerData
+              .filter((ts) => Object.keys(ts.interviewers).length < 2)
+              .forEach((ts) => {
+                const day = ts.time.toDateString();
 
-              // if data for day exists, add to it, otherwise create new field
-              if (timeslots.hasOwnProperty(day)) {
-                const index = timeslots[day].findIndex(
-                  (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
-                );
+                // if data for day exists, add to it, otherwise create new field
+                if (timeslots.hasOwnProperty(day)) {
+                  const index = timeslots[day].findIndex(
+                    (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                  );
 
-                // if timeslot exists, update the value, otherwise push it
-                if (index > -1) {
-                  timeslots[day][index] = ts;
+                  // if timeslot exists, update the value, otherwise push it
+                  if (index > -1) {
+                    timeslots[day][index] = ts;
+                  } else {
+                    timeslots[day].push(ts);
+                  }
                 } else {
-                  timeslots[day].push(ts);
+                  timeslots[day] = [ts];
                 }
-              } else {
-                timeslots[day] = [ts];
-              }
-            });
+              });
 
             // remove timeslots that no longer exist
             const validIds = listenerData.map((ts) => ts.id);
@@ -259,40 +261,52 @@ class InterviewerView extends Component {
       <Container flexdirection="column">
         <h1>Interviewer Timeslot Selection</h1>
         <ScrollableRow>
-          {timeslotDays.map((date, i) => {
-            // TODO: explain this data structure in depth, good place for docz
-            // selectedSlots is an object/hashmap for performance reasons
-            const timeslotsForDay = timeslots[date.toDateString()];
-            const userSelectedSlots = timeslotsForDay
-              ? this.timeslotsToSlots(
-                  timeslotsForDay.filter((ts) =>
-                    ts.interviewers.hasOwnProperty(authUser.uid)
+          {timeslotDays
+            .sort((a, b) => a - b)
+            .map((date, i) => {
+              // TODO: explain this data structure in depth, good place for docz
+              // selectedSlots is an object/hashmap for performance reasons
+              const timeslotsForDay = timeslots[date.toDateString()];
+              const userSelectedSlots = timeslotsForDay
+                ? this.timeslotsToSlots(
+                    timeslotsForDay.filter((ts) =>
+                      ts.interviewers.hasOwnProperty(authUser.uid)
+                    )
                   )
-                )
-              : {};
-            const slotsWithOpening = timeslotsForDay
-              ? this.timeslotsToSlots(
-                  timeslotsForDay.filter(
-                    (ts) =>
-                      !ts.interviewers.hasOwnProperty(authUser.uid) &&
-                      Object.keys(ts.interviewers).length < 2
+                : {};
+              const slotsWithOpening = timeslotsForDay
+                ? this.timeslotsToSlots(
+                    timeslotsForDay.filter(
+                      (ts) =>
+                        !ts.interviewers.hasOwnProperty(authUser.uid) &&
+                        Object.keys(ts.interviewers).length === 1
+                    )
                   )
-                )
-              : {};
-            return (
-              <ScheduleColumn
-                key={i}
-                date={date}
-                timeslotLength={timeslotLength}
-                userSelectedSlots={userSelectedSlots}
-                slotsWithOpening={slotsWithOpening}
-                selectTimeslot={this.selectTimeslotByDate}
-                unselectTimeslot={this.unselectTimeslot}
-                startHour={timeslotStart}
-                endHour={timeslotEnd}
-              />
-            );
-          })}
+                : {};
+              const orphanedApplicants = timeslotsForDay
+                ? this.timeslotsToSlots(
+                    timeslotsForDay.filter(
+                      (ts) =>
+                        ts.hasOwnProperty("applicant") &&
+                        Object.keys(ts.interviewers).length === 0
+                    )
+                  )
+                : {};
+              return (
+                <ScheduleColumn
+                  key={i}
+                  date={date}
+                  timeslotLength={timeslotLength}
+                  userSelectedSlots={userSelectedSlots}
+                  slotsWithOpening={slotsWithOpening}
+                  orphanedApplicants={orphanedApplicants}
+                  selectTimeslot={this.selectTimeslotByDate}
+                  unselectTimeslot={this.unselectTimeslot}
+                  startHour={timeslotStart}
+                  endHour={timeslotEnd}
+                />
+              );
+            })}
         </ScrollableRow>
 
         <Modal
@@ -300,7 +314,7 @@ class InterviewerView extends Component {
           onHide={() => this.setState({ showModal: false })}
         >
           <Modal.Header closeButton>
-            <Modal.Title>Multiple openings available</Modal.Title>
+            <Modal.Title>Choose a timeslot</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <ScrollableRow>
@@ -320,7 +334,7 @@ class InterviewerView extends Component {
                     </Card.Title>
                     {ts.applicant && (
                       <Card.Subtitle className="mb-2 text-muted">
-                        Applicant: {ts.applicant}
+                        Applicant: {ts.applicant.name}
                       </Card.Subtitle>
                     )}
                     <Card.Subtitle className="mb-2 text-muted">

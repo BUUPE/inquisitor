@@ -52,7 +52,8 @@ const ApplicantView = ({ firebase }) => {
             .filter(
               (ts) =>
                 ts?.applicant?.uid === authUser.uid ||
-                !ts.hasOwnProperty("applicant")
+                (!ts.hasOwnProperty("applicant") &&
+                  Object.keys(ts.interviewers).length > 0)
             ); // filter out ones that already have an applicant that isn't current user
 
           setSelectedTimeslot(
@@ -112,7 +113,7 @@ const ApplicantView = ({ firebase }) => {
       const timeslotId = timeslot.id;
       let action = "schedule";
 
-      // check to make sure only the owner can remove themself, add firebase rules for this as well
+      // TODO: add firebase rules to ensure that applicants dont change other peoples data
       try {
         await firebase.firestore.runTransaction(async (transaction) => {
           if (
@@ -122,6 +123,8 @@ const ApplicantView = ({ firebase }) => {
             const ref = firebase.timeslot(timeslotId);
             const doc = await transaction.get(ref);
             const timeslot = { ...doc.data() };
+            if (timeslot.hasOwnProperty("applicant"))
+              throw new Error("Applicant already exists!");
             timeslot.applicant = {
               name: authUser.name,
               uid: authUser.uid,
@@ -133,25 +136,31 @@ const ApplicantView = ({ firebase }) => {
               const ref = firebase.timeslot(timeslotId);
               const doc = await transaction.get(ref);
               const timeslot = { ...doc.data() };
+              if (timeslot.applicant?.uid !== authUser.uid)
+                throw new Error("Timeslot owned by other applicant!");
               delete timeslot.applicant;
-              transaction.update(ref, timeslot);
+              transaction.set(ref, timeslot);
               setSelectedTimeslot({});
               action = "unschedule";
             } else {
               const oldRef = firebase.timeslot(selectedTimeslot.id);
               const oldDoc = await transaction.get(oldRef);
               const oldTimeslot = { ...oldDoc.data() };
+              if (oldTimeslot.applicant?.uid !== authUser.uid)
+                throw new Error("Timeslot owned by other applicant!");
               delete oldTimeslot.applicant;
 
               const newRef = firebase.timeslot(timeslotId);
               const newDoc = await transaction.get(newRef);
               const newTimeslot = { ...newDoc.data() };
+              if (newTimeslot.hasOwnProperty("applicant"))
+                throw new Error("Applicant already exists!");
               newTimeslot.applicant = {
                 name: authUser.name,
                 uid: authUser.uid,
               };
 
-              transaction.update(oldRef, oldTimeslot);
+              transaction.set(oldRef, oldTimeslot);
               transaction.update(newRef, newTimeslot);
               setSelectedTimeslot({ ...newTimeslot, id: newDoc.id });
             }
@@ -229,9 +238,11 @@ const ApplicantView = ({ firebase }) => {
         timeslot with interviewers that you know.
       </p>
       <ScrollableRow>
-        {Object.entries(timeslots).map(([date, slots]) => (
-          <TimeslotColumn key={date} date={date} slots={slots} />
-        ))}
+        {Object.entries(timeslots)
+          .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
+          .map(([date, slots]) => (
+            <TimeslotColumn key={date} date={date} slots={slots} />
+          ))}
       </ScrollableRow>
     </Container>
   );
