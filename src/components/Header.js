@@ -21,6 +21,7 @@ const Navbar = styled(BootstrapNavbar)`
 const Link = styled(GatsbyLink)`
   color: white;
   margin: 0 10px;
+  width: fit-content;
 
   &:hover {
     color: white;
