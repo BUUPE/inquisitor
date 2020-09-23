@@ -19,7 +19,7 @@ import { Container } from "../../styles/global";
 import { isApplicant } from "../../util/conditions";
 import { formatTime } from "../../util/helper";
 
-export const TimeslotCard = styled(Card)`
+const TimeslotCard = styled(Card)`
   width: 18rem;
   margin: 10px;
   cursor: pointer;
