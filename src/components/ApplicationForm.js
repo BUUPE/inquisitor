@@ -167,10 +167,14 @@ class ApplicationForm extends Component {
     const onSubmit = async (event) => {
       event.preventDefault();
       if (!generalSettings.applicationsOpen) {
-        swal("Uh oh!", "Applications are closed! Not sure how you got here, but unfortunately we can't submit this for you as applications have closed.", "error");
+        swal(
+          "Uh oh!",
+          "Applications are closed! Not sure how you got here, but unfortunately we can't submit this for you as applications have closed.",
+          "error"
+        );
         return;
       }
-    
+
       const form = event.currentTarget;
       const fileUploads = Array.from(
         form.querySelectorAll(".custom-file-input")
