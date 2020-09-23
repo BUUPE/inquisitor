@@ -37,6 +37,9 @@ class Firebase extends FirebaseSuper {
     );
   }
 
+  question = (uid) => this.inquisitorData.collection("questions").doc(uid);
+  questions = () => this.inquisitorData.collection("questions");
+
   application = (uid) =>
     this.inquisitorData.collection("applications").doc(uid);
   applications = () => this.inquisitorData.collection("applications");
@@ -47,11 +50,13 @@ class Firebase extends FirebaseSuper {
   applicationFormConfig = () =>
     this.firestore.doc("inquisitor/applicationFormConfig");
   generalSettings = () => this.firestore.doc("inquisitor/generalSettings");
+  levelConfig = () => this.firestore.doc("inquisitor/levelConfig");
 
   allRoles = () => this.firestore.doc("config/roles");
 
   // *** Storage API ***
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
+  questionImage = (name) => this.storage.child(`Questions/${name}`);
   backup = (name) => this.storage.child(`backups/${name}`);
 }
 

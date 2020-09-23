@@ -15,6 +15,7 @@ const Landing = styled.div`
 
   p {
     max-width: 500px;
+    text-align: center;
   }
 `;
 
@@ -23,16 +24,11 @@ const IndexPage = () => (
     <SEO title="Home" route="/" />
     <Landing>
       <Logo size="medium" />
-
       <h1>Welcome!</h1>
-
       <p>
-        This is BU UPE's interview application. Please login to get started; you
-        will be redirected to the appropriate page based on your affiliation.
+        This is BU UPE's recruitment tool. Please login to get started; you will
+        see links based on your status.
       </p>
-      {/*
-        Show links here to different pages (apply, timeslots, etc) based on user role, user data, and settings
-      */}
     </Landing>
   </Layout>
 );

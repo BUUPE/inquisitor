@@ -10,6 +10,7 @@ import { withFirebase, withAuthorization } from "upe-react-components";
 import { isRecruitmentTeam, isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
+import Error from "../Error";
 
 const ApplicationList = styled.ul`
   border: 1px solid black;
@@ -50,8 +51,8 @@ const ViewApplications = ({ firebase }) => {
     }
   }, [firebase]);
 
+  if (error) return <Error error={error} />;
   if (loading) return <Loader />;
-  if (error) return <h1>{error}</h1>;
 
   const ApplicationListItem = ({ data }) => (
     <li onClick={() => setCurrentApplication(data)}>
@@ -75,7 +76,7 @@ const ViewApplications = ({ firebase }) => {
           />
         );
       } else {
-        responseComponent = <p>{response.value}</p>;
+        responseComponent = <p>{response.value.toString()}</p>;
       }
 
       return (

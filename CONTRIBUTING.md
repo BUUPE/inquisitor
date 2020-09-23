@@ -2,7 +2,7 @@
 
 ## Git Practices
 
-We use the [GitHub Flow](https://guides.github.com/introduction/flow/) branching model. It's pretty straightforward, so give it a read, but basically the idea is that `master` is a protected branch that is never written to directly. Whenever you want to add a feature/fix a bug/etc. you create a new branch off of master, make your changes, and then submit a Pull Request so that code owners can review the changes before merging.
+We use the [GitHub Flow](https://guides.github.com/introduction/flow/) branching model. It's pretty straightforward, so give it a read, but basically the idea is that `master` is a protected branch that is never written to directly. Whenever you want to add a feature/fix a bug/etc. you create a new branch off of master, make your changes, and then submit a Pull Request so that code owners can review the changes before merging. Just make sure to name your branches appropriately, i.e. features should be named `feature/FEATURE_NAME`, fixes with `fix/FIX_NAME`, etc.
 
 ## Code Style
 

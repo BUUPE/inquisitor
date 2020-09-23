@@ -1,27 +1,31 @@
 import React, { useContext } from "react";
 import styled from "styled-components";
-import { Link, navigate } from "gatsby";
-import Button from "react-bootstrap/Button";
+import { Link as GatsbyLink } from "gatsby";
+import BootstrapNavbar from "react-bootstrap/Navbar";
+import Nav from "react-bootstrap/Nav";
 
 import { AuthUserContext, withFirebase } from "upe-react-components";
+import {
+  isNonMember,
+  isApplicantOrRecruitmentTeam,
+  isAdmin,
+} from "../util/conditions";
 
-const Navbar = styled.nav`
-  width: 100%;
-  height: 60px;
+const Navbar = styled(BootstrapNavbar)`
   background: #333333;
   border-top: 3px solid ${(props) => props.theme.palette.mainBrand};
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 10px;
+  color: white;
+  padding: 1rem 1rem;
+`;
 
-  a.home {
-    margin-right: auto;
-  }
+const Link = styled(GatsbyLink)`
+  color: white;
+  margin: 0 10px;
+  width: fit-content;
 
-  & > * {
-    margin-left: 5px;
-    margin-right: 5px;
+  &:hover {
+    color: white;
+    text-decoration: none;
   }
 `;
 
@@ -29,27 +33,50 @@ const Header = ({ firebase }) => {
   const authUser = useContext(AuthUserContext);
 
   return (
-    <Navbar>
-      <Link to="/" className="home">
-        <Button>Home</Button>
+    <Navbar expand="lg">
+      <Link to="/" className="hvr-underline-from-center">
+        <Navbar.Brand style={{ padding: 0, marginRight: 0, color: "white" }}>
+          Inquisitor
+        </Navbar.Brand>
       </Link>
+      <Navbar.Toggle aria-controls="basic-navbar-nav" />
+      <Navbar.Collapse id="basic-navbar-nav">
+        <Nav className="ml-auto" style={{ height: "100%" }}>
+          {isNonMember(authUser) && (
+            <>
+              <Link to="/interest-form" className="hvr-underline-from-center">
+                Interest Form
+              </Link>
+              <Link to="/apply" className="hvr-underline-from-center">
+                Apply
+              </Link>
+            </>
+          )}
 
-      <Link to="/apply">
-        <Button>Apply</Button>
-      </Link>
-      <Link to="/timeslots">
-        <Button>Timeslots</Button>
-      </Link>
-      <Link to="/admin">
-        <Button>Admin</Button>
-      </Link>
+          {isApplicantOrRecruitmentTeam(authUser) && (
+            <Link to="/timeslots" className="hvr-underline-from-center">
+              Timeslots
+            </Link>
+          )}
 
-      {!authUser && (
-        <Link to="/login">
-          <Button>Login</Button>
-        </Link>
-      )}
-      {authUser && <Button onClick={() => navigate("/logout")}>Logout</Button>}
+          {isAdmin(authUser) && (
+            <Link to="/admin" className="hvr-underline-from-center">
+              Admin
+            </Link>
+          )}
+
+          {!authUser && (
+            <Link to="/login" className="hvr-underline-from-center">
+              Login
+            </Link>
+          )}
+          {authUser && (
+            <Link to="/logout" className="hvr-underline-from-center">
+              Logout
+            </Link>
+          )}
+        </Nav>
+      </Navbar.Collapse>
     </Navbar>
   );
 };

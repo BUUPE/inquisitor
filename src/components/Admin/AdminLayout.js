@@ -28,11 +28,13 @@ const StyledNav = styled(Nav)`
 const Sidebar = () => (
   <StyledNav className="flex-column">
     <Link to="/admin">General Settings</Link>
-    <Link to="/admin/manage-roles">Manage Roles</Link>
-    <Link to="/admin/manage-users">Manage Users</Link>
     <Link to="/admin/configure-application">Configure Application</Link>
     <Link to="/admin/view-applications">View Applications</Link>
+    <Link to="/admin/manage-roles">Manage Roles</Link>
+    <Link to="/admin/manage-users">Manage Users</Link>
     <Link to="/admin/manage-timeslots">Manage Timeslots</Link>
+    <Link to="/admin/manage-questions">Manage Questions</Link>
+    <Link to="/admin/manage-levels">Manage Levels</Link>
     <Link to="/admin/import-export">Import/Export</Link>
   </StyledNav>
 );
