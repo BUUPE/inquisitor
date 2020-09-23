@@ -1,13 +1,59 @@
 import React, { useState } from "react";
+import styled from "styled-components";
 
 import Col from "react-bootstrap/Col";
 import Toast from "react-bootstrap/Toast";
+
+import { formatTime } from "../../util/helper";
+
+const borderStyle = "1px solid black";
+const StyledSlot = styled.div`
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  background: ${(props) => {
+    if (props.userSelected) return "green";
+    else if (props.hasOpening) return "blue";
+    else if (props.orphanedApplicant) return "red";
+    else return "white";
+  }};
+  border-left: ${borderStyle};
+  border-right: ${borderStyle};
+  border-top: ${(props) =>
+    props.isBottom || props.isMiddle ? "none" : borderStyle};
+  border-bottom: ${(props) =>
+    props.isTop || props.isMiddle ? "none" : borderStyle};
+
+  ${(props) => {
+    if (props.userSelected) return;
+    let css = `
+      &:hover {
+        background: rgba(0, 128, 0, 0.5);
+        border-bottom: none;
+      }
+    `;
+    let siblingSelector = " + div";
+    for (let i = 1; i < props.slotsPerTimeslot; i++) {
+      css += `&:hover ${siblingSelector} {
+        background: rgba(0, 128, 0, 0.5);
+        border-top: none;
+        border-bottom: ${
+          i + 1 === props.slotsPerTimeslot ? borderStyle : "none"
+        };
+      }`;
+      siblingSelector += " + div";
+    }
+    return css;
+  }}
+`;
 
 const ScheduleColumn = ({
   date,
   timeslotLength,
   userSelectedSlots,
   slotsWithOpening,
+  orphanedApplicants,
   selectTimeslot,
   unselectTimeslot,
   startHour,
@@ -30,15 +76,6 @@ const ScheduleColumn = ({
       hours,
       minutes
     );
-  };
-
-  // formats a date into a AM/PM time string
-  const formatTime = (date) => {
-    let hours = date.getHours() % 12;
-    if (hours === 0) hours = 12;
-    hours = hours.toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes} ${date.getHours() >= 12 ? "PM" : "AM"}`;
   };
 
   const handleSelect = (slot, i) => {
@@ -86,7 +123,6 @@ const ScheduleColumn = ({
     setShowToast(true);
   };
 
-  // TODO: render slots selected by others/with openings, show 1/2 2/2
   const renderSlot = (slot, i) => {
     const getPositions = (slot, collection) => {
       const isSelected = collection.hasOwnProperty(slot);
@@ -101,44 +137,24 @@ const ScheduleColumn = ({
       };
     };
 
-    const generateSlotStyle = (slot) => {
-      const baseStyle = {
-        padding: 10,
-        cursor: "pointer",
-        display: "flex",
-        justifyContent: "space-between",
-      };
-
-      const { isTop, isMiddle, isBottom } = getPositions(
-        slot,
-        userSelectedSlots
-      );
-      const borderStyle = "1px solid black";
-
-      return {
-        ...baseStyle,
-        borderLeft: borderStyle,
-        borderRight: borderStyle,
-        borderTop: isBottom || isMiddle ? "none" : borderStyle,
-        borderBottom: isTop || isMiddle ? "none" : borderStyle,
-        background: userSelectedSlots.hasOwnProperty(slot) ? "green" : "white",
-      };
-    };
-
     const { isSelected, isTop, isMiddle, isBottom } = getPositions(
       slot,
       userSelectedSlots
     );
 
     const SlotBase = ({ children }) => (
-      <div
-        style={{
-          ...generateSlotStyle(slot),
-        }}
+      <StyledSlot
+        slotsPerTimeslot={slotsPerTimeslot}
+        hasOpening={slotsWithOpening.hasOwnProperty(slot)}
+        userSelected={userSelectedSlots.hasOwnProperty(slot)}
+        orphanedApplicant={orphanedApplicants.hasOwnProperty(slot)}
+        isTop={isTop}
+        isMiddle={isMiddle}
+        isBottom={isBottom}
         onClick={() => handleSelect(slot, i)}
       >
         {children}
-      </div>
+      </StyledSlot>
     );
 
     if (isSelected) {
@@ -160,17 +176,11 @@ const ScheduleColumn = ({
     }
 
     return (
-      <div
-        style={{
-          ...generateSlotStyle(slot),
-        }}
-        key={slot}
-        onClick={() => handleSelect(slot, i)}
-      >
+      <SlotBase key={slot}>
         <span>{formatTime(dateFromSlot(slot))}</span>
         <span>-</span>
         <span>{formatTime(dateFromSlot(slot + 15))}</span>
-      </div>
+      </SlotBase>
     );
   };
 

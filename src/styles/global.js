@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 
 export const Container = styled(BootstrapContainer)`
   margin-top: 25px;
+  margin-bottom: 25px;
   display: flex;
   flex: 1 0 auto;
   flex-direction: ${(props) => props.flexdirection};

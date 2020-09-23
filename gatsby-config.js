@@ -2,7 +2,7 @@ module.exports = {
   siteMetadata: {
     title: `Inquisitor`,
     description: `BU UPE's Interview Tool.`,
-    author: `Rudhra Raveendran`,
+    author: `BU UPE`,
     siteUrl: `https://upe.bu.edu/interview`,
   },
   pathPrefix: `/interview`,

@@ -3,6 +3,7 @@ import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
+import cloneDeep from "lodash.clonedeep";
 
 import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
@@ -151,7 +152,7 @@ const ManageUsers = ({ firebase }) => {
         style={{ cursor: "pointer" }}
         onClick={() => {
           if (!user.roles) user.roles = {};
-          setCurrentUser(JSON.parse(JSON.stringify(user)));
+          setCurrentUser(cloneDeep(user));
           handleShow();
         }}
       >

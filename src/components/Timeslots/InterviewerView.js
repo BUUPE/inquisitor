@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
+import cloneDeep from "lodash.clonedeep";
 
 import Button from "react-bootstrap/Button";
-import Toast from "react-bootstrap/Toast";
+import Modal from "react-bootstrap/Modal";
+import Card from "react-bootstrap/Card";
 
 import {
   AuthUserContext,
@@ -12,6 +14,7 @@ import {
 } from "upe-react-components";
 
 import { isRecruitmentTeam } from "../../util/conditions";
+import { formatTime } from "../../util/helper";
 import Loader from "../Loader";
 import { Container } from "../../styles/global";
 
@@ -21,13 +24,12 @@ import ScheduleColumn from "./ScheduleColumn";
 class InterviewerView extends Component {
   _initFirebase = false;
   state = {
-    settings: null,
     loading: true,
     error: null,
-    showToast: false,
-    selectedTimeslots: {},
-    firstDataLoad: true,
-    runningTransaction: false,
+    settings: null,
+    timeslots: {}, // TODO: this needs a better name
+    timeslotOptions: [],
+    showModal: false,
   };
   static contextType = AuthUserContext;
   unsub = null;
@@ -51,17 +53,17 @@ class InterviewerView extends Component {
     if (!doc.exists) this.setState({ error: "Failed to load timeslots!" });
     else {
       const settings = doc.data();
-      const selectedTimeslots = {};
+      const timeslots = {};
       settings.timeslotDays = settings.timeslotDays.map((day) => {
         const date = day.toDate();
-        selectedTimeslots[date.toDateString()] = [];
+        timeslots[date.toDateString()] = [];
         return date;
       });
-      this.setState({ settings, selectedTimeslots }, () => {
+      this.setState({ settings, timeslots }, () => {
         this.unsub = this.props.firebase
           .timeslots()
           .onSnapshot((querySnapshot) => {
-            const { selectedTimeslots } = this.state;
+            const { timeslots } = this.state;
             const listenerData = querySnapshot.docs.map((doc) => {
               return {
                 ...doc.data(),
@@ -70,138 +72,66 @@ class InterviewerView extends Component {
               };
             });
 
-            listenerData.forEach((ts) => {
-              const key = ts.time.toDateString();
-              if (selectedTimeslots.hasOwnProperty(key)) {
-                const index = selectedTimeslots[key].findIndex(
-                  (sts) => sts.id === ts.id
-                );
-                if (index > -1) {
-                  selectedTimeslots[key][index] = ts;
+            // add new data from listener
+            listenerData
+              .filter((ts) => Object.keys(ts.interviewers).length < 2)
+              .forEach((ts) => {
+                const day = ts.time.toDateString();
+
+                // if data for day exists, add to it, otherwise create new field
+                if (timeslots.hasOwnProperty(day)) {
+                  const index = timeslots[day].findIndex(
+                    (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                  );
+
+                  // if timeslot exists, update the value, otherwise push it
+                  if (index > -1) {
+                    timeslots[day][index] = ts;
+                  } else {
+                    timeslots[day].push(ts);
+                  }
                 } else {
-                  selectedTimeslots[key].push(ts);
+                  timeslots[day] = [ts];
                 }
-              } else {
-                selectedTimeslots[key] = [ts];
-              }
-            });
+              });
+
+            // remove timeslots that no longer exist
+            const validIds = listenerData.map((ts) => ts.id);
+            for (const day in timeslots)
+              timeslots[day] = timeslots[day].filter((ts) =>
+                validIds.includes(ts.id)
+              );
 
             this.setState({
-              selectedTimeslots,
+              timeslots,
               loading: false,
-              firstDataLoad: false,
             });
           }, console.error);
       });
     }
   };
 
-  // when saving, only deal with timeslots associated with this user
-  saveTimeslots = async () => {
-    const { firebase } = this.props;
+  // selects a timeslot by its id. if someone else fills the slot first, shows an error
+  selectTimeslot = async (ts) => {
     const authUser = this.context;
-    const { selectedTimeslots, settings } = this.state;
-
-    // wipe state before transaction
-    this.setState({
-      selectedTimeslots: settings.timeslotDays.reduce((acc, cur) => {
-        acc[cur.toDateString()] = [];
-        return acc;
-      }, {}),
-      runningTransaction: true,
-    });
-
-    const existingTimeslots = await firebase
-      .timeslots()
-      .get()
-      .then((snapshot) =>
-        snapshot.docs.map((doc) => {
-          return {
-            ...doc.data(),
-            time: doc.data().time.toDate(),
-            id: doc.id,
-          };
-        })
-      );
-
-    const newTimeslots = Object.values(selectedTimeslots)
-      .flat()
-      .filter((ts) => ts.interviewers.hasOwnProperty(authUser.uid));
-    const newTimeslotMap = {};
-    newTimeslots.forEach((ts, i) => (newTimeslotMap[ts.time] = i));
-
-    // helper function that does for each and waits
-    const asyncForEach = async (array, callback) => {
-      for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array);
-      }
-    };
+    const { firebase } = this.props;
 
     try {
-      // run all of this inside a transaction so it will restart if someone makes changes at the same time
-      await firebase.firestoreRoot.runTransaction(async (transaction) => {
-        // first remove timeslots the user no longer is in
-        asyncForEach(
-          existingTimeslots.filter((ts) =>
-            // filter for timeslots this user is a part of
-            ts.interviewers.hasOwnProperty(authUser.uid)
-          ),
-          async (ts, i) => {
-            // if old timeslot is no longer selected, remove interviewer from it
-            if (!newTimeslotMap.hasOwnProperty(ts.time)) {
-              const doc = existingTimeslots[i];
-              const { id } = doc;
-              delete doc.id;
-              delete doc.interviewers[authUser.uid];
-              if (
-                Object.keys(doc.interviewers).length === 0 &&
-                !doc.hasOwnProperty("applicant")
-              )
-                transaction.delete(firebase.timeslot(id));
-              // TODO: notify admins if an timeslot with an applicant loses interviewers
-              else transaction.update(firebase.timeslot(id), doc);
-            }
-          }
-        );
-
-        // iterate over newly selected timeslots
-        // that is timeslots the user is in and don't already exist
-        await asyncForEach(newTimeslots, async (ts) => {
-          // get existing timeslots that match current timeslot time
-          const matchingTimeslots = existingTimeslots.filter(
-            (ets) => ets.time.getTime() === ts.time.getTime()
+      await firebase.firestore.runTransaction(async (transaction) => {
+        const doc = await transaction.get(firebase.timeslot(ts.id));
+        const timeslot = { ...doc.data() };
+        if (Object.keys(timeslot.interviewers).length < 2) {
+          timeslot.interviewers[authUser.uid] = authUser.name;
+          transaction.update(firebase.timeslot(ts.id), timeslot);
+        } else {
+          swal(
+            "Uh oh!",
+            "Someone else has just registered this timeslot! Please select another.",
+            "error"
           );
-
-          // only proceed if none of those timeslots have the current user already
-          if (
-            matchingTimeslots.every(
-              (ts) => !ts.interviewers.hasOwnProperty(authUser.uid)
-            )
-          ) {
-            let wroteToDb = false;
-            await asyncForEach(matchingTimeslots, async (mts) => {
-              if (wroteToDb) return;
-              const doc = await transaction.get(firebase.timeslot(mts.id));
-              const timeslot = { ...doc.data() };
-              if (Object.keys(timeslot.interviewers).length < 2) {
-                timeslot.interviewers[authUser.uid] = authUser.name;
-                transaction.update(firebase.timeslot(mts.id), timeslot);
-                wroteToDb = true;
-              }
-            });
-
-            if (!wroteToDb) {
-              // if none, create a new timeslot object and add it to existing timeslots
-              const interviewers = {};
-              interviewers[authUser.uid] = authUser.name;
-              const newTimeslotRef = firebase.timeslots().doc();
-              transaction.set(newTimeslotRef, ts);
-            }
-          }
-        });
+        }
       });
     } catch (e) {
-      this.setState({ selectedTimeslots });
       console.error("Transaction failure!", e);
       swal(
         "Uh oh!",
@@ -210,68 +140,65 @@ class InterviewerView extends Component {
       );
     }
 
-    this.setState({ showToast: true, runningTransaction: false });
-    window.scrollTo(0, document.body.scrollHeight);
+    this.setState({ showModal: false, timeslotOptions: [] });
   };
 
-  selectTimeslot = (date) => {
-    const day = date.toDateString();
+  addNewTimeslot = async (date) => {
     const {
-      selectedTimeslots,
       settings: { timeslotLength },
     } = this.state;
     const authUser = this.context;
 
-    // iterate over timeslots interviewer is not in and add interviewer if possible
-    let saved = false;
-    selectedTimeslots[day]
-      .filter((ts) => !ts.interviewers.hasOwnProperty(authUser.uid))
-      .forEach((ts) => {
-        if (
-          ts.time.getTime() === date.getTime() &&
-          Object.keys(ts.interviewers).length < 2 &&
-          !saved
-        ) {
-          ts.interviewers[authUser.uid] = authUser.name;
-          saved = true;
-        }
-      });
-
-    // if interviewer hasn't been added yet, push a new timeslot
-    if (!saved) {
-      const interviewers = {};
-      interviewers[authUser.uid] = authUser.name;
-      selectedTimeslots[day].push({
-        time: date,
-        interviewers,
-        timeslotLength,
-      });
-    }
-    this.setState({ selectedTimeslots });
+    const interviewers = {};
+    interviewers[authUser.uid] = authUser.name;
+    await this.props.firebase.timeslots().add({
+      time: date,
+      interviewers,
+      timeslotLength,
+    });
+    this.setState({ showModal: false });
   };
 
-  unselectTimeslot = (date) => {
+  selectTimeslotByDate = async (date) => {
     const day = date.toDateString();
-    const { selectedTimeslots } = this.state;
+    const { timeslots } = this.state;
     const authUser = this.context;
 
-    // first remove this user from list of interviewers in relevant timeslot
-    selectedTimeslots[day] = selectedTimeslots[day].map((ts) => {
-      if (
-        ts.interviewers.hasOwnProperty(authUser.uid) &&
-        ts.time.getTime() === date.getTime()
-      )
-        delete ts.interviewers[authUser.uid];
-      return ts;
-    });
-
-    // filter out timeslots with no interviewers or applicants
-    selectedTimeslots[day] = selectedTimeslots[day].filter(
+    // show timeslots that match time and have an opening
+    const matchingTimeslots = timeslots[day].filter(
       (ts) =>
-        Object.keys(ts.interviewers).length > 0 ||
-        ts.hasOwnProperty("applicant")
+        !ts.interviewers.hasOwnProperty(authUser.uid) &&
+        ts.time.getTime() === date.getTime()
     );
-    this.setState({ selectedTimeslots });
+
+    // if no matching timeslots, push a new one. otherwise show options to user
+    if (matchingTimeslots.length === 0) await this.addNewTimeslot(date);
+    else this.setState({ showModal: true, timeslotOptions: matchingTimeslots });
+  };
+
+  unselectTimeslot = async (date) => {
+    const day = date.toDateString();
+    const { timeslots } = this.state;
+    const authUser = this.context;
+
+    // copy timeslot that this user is a part of, remove their uid, and update firebase
+    const timeslot = cloneDeep(
+      timeslots[day].find(
+        (ts) =>
+          ts.interviewers.hasOwnProperty(authUser.uid) &&
+          ts.time.getTime() === date.getTime()
+      )
+    );
+    const { id } = timeslot;
+    delete timeslot.id;
+    delete timeslot.interviewers[authUser.uid];
+    if (
+      Object.keys(timeslot.interviewers).length === 0 &&
+      !timeslot.hasOwnProperty("applicant")
+    )
+      await this.props.firebase.timeslot(id).delete();
+    // TODO: notify admins if an timeslot with an applicant loses interviewers
+    else await this.props.firebase.timeslot(id).update(timeslot);
   };
 
   timeslotsToSlots = (timeslots) => {
@@ -292,8 +219,9 @@ class InterviewerView extends Component {
       loading,
       runningTransaction,
       error,
-      selectedTimeslots,
-      showToast,
+      timeslots,
+      showModal,
+      timeslotOptions,
     } = this.state;
 
     if (loading || runningTransaction) return <Loader />;
@@ -333,64 +261,117 @@ class InterviewerView extends Component {
       <Container flexdirection="column">
         <h1>Interviewer Timeslot Selection</h1>
         <ScrollableRow>
-          {timeslotDays.map((date, i) => {
-            // TODO: explain this data structure in depth, good place for docz
-            // selectedSlots is an object/hashmap for performance reasons
-            const timeslotsForDay = selectedTimeslots[date.toDateString()];
-            const userSelectedSlots = timeslotsForDay
-              ? this.timeslotsToSlots(
-                  timeslotsForDay.filter((ts) =>
-                    ts.interviewers.hasOwnProperty(authUser.uid)
+          {timeslotDays
+            .sort((a, b) => a - b)
+            .map((date, i) => {
+              // TODO: explain this data structure in depth, good place for docz
+              // selectedSlots is an object/hashmap for performance reasons
+              const timeslotsForDay = timeslots[date.toDateString()];
+              const userSelectedSlots = timeslotsForDay
+                ? this.timeslotsToSlots(
+                    timeslotsForDay.filter((ts) =>
+                      ts.interviewers.hasOwnProperty(authUser.uid)
+                    )
                   )
-                )
-              : {};
-            const slotsWithOpening = timeslotsForDay
-              ? this.timeslotsToSlots(
-                  timeslotsForDay.filter(
-                    (ts) =>
-                      !ts.interviewers.hasOwnProperty(authUser.uid) &&
-                      Object.keys(ts.interviewers).length < 2
+                : {};
+              const slotsWithOpening = timeslotsForDay
+                ? this.timeslotsToSlots(
+                    timeslotsForDay.filter(
+                      (ts) =>
+                        !ts.interviewers.hasOwnProperty(authUser.uid) &&
+                        Object.keys(ts.interviewers).length === 1
+                    )
                   )
-                )
-              : {};
-            return (
-              <ScheduleColumn
-                key={i}
-                date={date}
-                timeslotLength={timeslotLength}
-                userSelectedSlots={userSelectedSlots}
-                slotsWithOpening={slotsWithOpening}
-                selectTimeslot={this.selectTimeslot}
-                unselectTimeslot={this.unselectTimeslot}
-                startHour={timeslotStart}
-                endHour={timeslotEnd}
-              />
-            );
-          })}
+                : {};
+              const orphanedApplicants = timeslotsForDay
+                ? this.timeslotsToSlots(
+                    timeslotsForDay.filter(
+                      (ts) =>
+                        ts.hasOwnProperty("applicant") &&
+                        Object.keys(ts.interviewers).length === 0
+                    )
+                  )
+                : {};
+              return (
+                <ScheduleColumn
+                  key={i}
+                  date={date}
+                  timeslotLength={timeslotLength}
+                  userSelectedSlots={userSelectedSlots}
+                  slotsWithOpening={slotsWithOpening}
+                  orphanedApplicants={orphanedApplicants}
+                  selectTimeslot={this.selectTimeslotByDate}
+                  unselectTimeslot={this.unselectTimeslot}
+                  startHour={timeslotStart}
+                  endHour={timeslotEnd}
+                />
+              );
+            })}
         </ScrollableRow>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Button
-            style={{ width: "fit-content", marginTop: 20, marginBottom: 20 }}
-            onClick={this.saveTimeslots}
-          >
-            Save Selections
-          </Button>
-          <Toast
-            onClose={() => this.setState({ showToast: false })}
-            show={showToast}
-            delay={3000}
-            autohide
-            style={{
-              width: "fit-content",
-              height: "fit-content",
-              marginLeft: 25,
-            }}
-          >
-            <Toast.Header>
-              <strong className="mr-auto">Selections Saved!</strong>
-            </Toast.Header>
-          </Toast>
-        </div>
+
+        <Modal
+          show={showModal}
+          onHide={() => this.setState({ showModal: false })}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Choose a timeslot</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <ScrollableRow>
+              {timeslotOptions.map((ts) => (
+                <Card
+                  key={ts.id}
+                  style={{
+                    minWidth: "15rem",
+                    margin: "0 10px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => this.selectTimeslot(ts)}
+                >
+                  <Card.Body>
+                    <Card.Title>
+                      Interviewer: {Object.values(ts.interviewers).join(", ")}
+                    </Card.Title>
+                    {ts.applicant && (
+                      <Card.Subtitle className="mb-2 text-muted">
+                        Applicant: {ts.applicant.name}
+                      </Card.Subtitle>
+                    )}
+                    <Card.Subtitle className="mb-2 text-muted">
+                      {formatTime(ts.time)}
+                    </Card.Subtitle>
+                  </Card.Body>
+                </Card>
+              ))}
+
+              {timeslotOptions.length > 0 && (
+                <Card
+                  style={{
+                    minWidth: "15rem",
+                    margin: "0 10px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => this.addNewTimeslot(timeslotOptions[0].time)}
+                >
+                  <Card.Body>
+                    <Card.Title>Create new slot</Card.Title>
+                    <Card.Subtitle className="mb-2 text-muted">
+                      {formatTime(timeslotOptions[0].time)}
+                    </Card.Subtitle>
+                  </Card.Body>
+                </Card>
+              )}
+            </ScrollableRow>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => this.setState({ showModal: false })}
+            >
+              Cancel
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     );
   }
