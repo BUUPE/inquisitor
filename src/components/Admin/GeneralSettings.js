@@ -24,6 +24,7 @@ const DEFAULT_GENERAL_SETTINGS = {
   timeslotDays: [],
   timeslotStart: 8,
   timeslotEnd: 22,
+  zoomlink: "https://bostonu.zoom.us/s/96821681891",
 };
 
 const interceptAnchors = (interceptor) =>
@@ -397,6 +398,27 @@ class GeneralSettings extends Component {
                 </div>
               )}
             </div>
+          </Form.Row>
+          <hr />
+          <Form.Row>
+            <Form.Group controlId="zoomlink">
+              <Form.Label>Interview Zoom Link</Form.Label>
+              <Form.Control
+                required
+                type="text"
+                placeholder="https://bostonu.zoom.us/..."
+                value={settings.zoomlink}
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      zoomlink: e.target.value,
+                    },
+                  })
+                }
+              />
+              <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+            </Form.Group>
           </Form.Row>
           <hr />
           <FlexDiv>
