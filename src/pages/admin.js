@@ -3,7 +3,8 @@ import { withPrefix } from "gatsby";
 import styled from "styled-components";
 import { Router } from "@reach/router";
 
-import Layout from "../components/Layout";
+import SEO from "../components/SEO";
+
 import {
   GeneralSettings,
   ConfigureApplicationForm,
@@ -22,7 +23,8 @@ const FullSizeRouter = styled(Router)`
 `;
 
 export default () => (
-  <Layout>
+  <>
+    <SEO title="Admin" route="/admin" />
     <FullSizeRouter basepath={withPrefix("/admin")}>
       <ConfigureApplicationForm path="/configure-application" />
       <ViewApplications path="/view-applications" />
@@ -34,5 +36,5 @@ export default () => (
       <ManageLevels path="/manage-levels" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
-  </Layout>
+  </>
 );

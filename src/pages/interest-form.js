@@ -4,9 +4,9 @@ import { compose } from "recompose";
 
 import { withFirebase, withAuthorization } from "upe-react-components";
 
-import Layout from "../components/Layout";
 import { isLoggedIn } from "../util/conditions";
 import Logo from "../components/Logo";
+import SEO from "../components/SEO";
 import { Container } from "../styles/global";
 
 const StyledContainer = styled(Container)`
@@ -24,7 +24,7 @@ const StyledContainer = styled(Container)`
   }
 `;
 
-const InterestFormBase = () => {
+const InterestForm = () => {
   useEffect(() => {
     const mailchimpCSS = document.createElement("link");
     mailchimpCSS.href = "//cdn-images.mailchimp.com/embedcode/classic-10_7.css";
@@ -59,96 +59,93 @@ const InterestFormBase = () => {
   }, []);
 
   return (
-    <StyledContainer flexdirection="column">
-      <Logo size="medium" />
-      <h1>BU UPE Interest Form</h1>
+    <>
+      <SEO title="Interest Form" route="/interest-form" />
+      <StyledContainer flexdirection="column">
+        <Logo size="medium" />
+        <h1>BU UPE Interest Form</h1>
 
-      <div id="mc_embed_signup">
-        <form
-          action="https://upe.us19.list-manage.com/subscribe/post?u=e926ed9c6e5e27338c6e5452c&amp;id=ffa7b765f8"
-          method="post"
-          id="mc-embedded-subscribe-form"
-          name="mc-embedded-subscribe-form"
-          className="validate"
-          target="_blank"
-          noValidate
-        >
-          <div id="mc_embed_signup_scroll">
-            <div className="indicates-required">
-              <span className="asterisk">*</span> indicates required
-            </div>
-            <div className="mc-field-group">
-              <label htmlFor="mce-FNAME">First Name </label>
-              <input type="text" name="FNAME" id="mce-FNAME" />
-            </div>
-            <div className="mc-field-group">
-              <label htmlFor="mce-LNAME">Last Name </label>
-              <input type="text" name="LNAME" id="mce-LNAME" />
-            </div>
-            <div className="mc-field-group">
-              <label htmlFor="mce-EMAIL">
-                Email Address <span className="asterisk">*</span>
-              </label>
-              <input
-                type="email"
-                name="EMAIL"
-                className="required email"
-                id="mce-EMAIL"
-              />
-            </div>
-            <div className="mc-field-group">
-              <label htmlFor="mce-MMERGE3">Year of Graduation </label>
-              <input type="text" name="MMERGE3" id="mce-MMERGE3" />
-            </div>
-            <div className="mc-field-group">
-              <label htmlFor="mce-MMERGE4">Major </label>
-              <input type="text" name="MMERGE4" id="mce-MMERGE4" />
-            </div>
-            <div id="mce-responses" className="clear">
+        <div id="mc_embed_signup">
+          <form
+            action="https://upe.us19.list-manage.com/subscribe/post?u=e926ed9c6e5e27338c6e5452c&amp;id=ffa7b765f8"
+            method="post"
+            id="mc-embedded-subscribe-form"
+            name="mc-embedded-subscribe-form"
+            className="validate"
+            target="_blank"
+            noValidate
+          >
+            <div id="mc_embed_signup_scroll">
+              <div className="indicates-required">
+                <span className="asterisk">*</span> indicates required
+              </div>
+              <div className="mc-field-group">
+                <label htmlFor="mce-FNAME">First Name </label>
+                <input type="text" name="FNAME" id="mce-FNAME" />
+              </div>
+              <div className="mc-field-group">
+                <label htmlFor="mce-LNAME">Last Name </label>
+                <input type="text" name="LNAME" id="mce-LNAME" />
+              </div>
+              <div className="mc-field-group">
+                <label htmlFor="mce-EMAIL">
+                  Email Address <span className="asterisk">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="EMAIL"
+                  className="required email"
+                  id="mce-EMAIL"
+                />
+              </div>
+              <div className="mc-field-group">
+                <label htmlFor="mce-MMERGE3">Year of Graduation </label>
+                <input type="text" name="MMERGE3" id="mce-MMERGE3" />
+              </div>
+              <div className="mc-field-group">
+                <label htmlFor="mce-MMERGE4">Major </label>
+                <input type="text" name="MMERGE4" id="mce-MMERGE4" />
+              </div>
+              <div id="mce-responses" className="clear">
+                <div
+                  className="response"
+                  id="mce-error-response"
+                  style={{ display: "none" }}
+                ></div>
+                <div
+                  className="response"
+                  id="mce-success-response"
+                  style={{ display: "none" }}
+                ></div>
+              </div>
               <div
-                className="response"
-                id="mce-error-response"
-                style={{ display: "none" }}
-              ></div>
-              <div
-                className="response"
-                id="mce-success-response"
-                style={{ display: "none" }}
-              ></div>
+                style={{ position: "absolute", left: "-5000px" }}
+                aria-hidden="true"
+              >
+                <input
+                  type="text"
+                  name="b_e926ed9c6e5e27338c6e5452c_ffa7b765f8"
+                  tabIndex="-1"
+                />
+              </div>
+              <div className="clear">
+                <input
+                  type="submit"
+                  value="Subscribe"
+                  name="subscribe"
+                  id="mc-embedded-subscribe"
+                  className="button"
+                />
+              </div>
             </div>
-            <div
-              style={{ position: "absolute", left: "-5000px" }}
-              aria-hidden="true"
-            >
-              <input
-                type="text"
-                name="b_e926ed9c6e5e27338c6e5452c_ffa7b765f8"
-                tabIndex="-1"
-              />
-            </div>
-            <div className="clear">
-              <input
-                type="submit"
-                value="Subscribe"
-                name="subscribe"
-                id="mc-embedded-subscribe"
-                className="button"
-              />
-            </div>
-          </div>
-        </form>
-      </div>
-    </StyledContainer>
+          </form>
+        </div>
+      </StyledContainer>
+    </>
   );
 };
 
-const InterestForm = compose(
+export default compose(
   withAuthorization(isLoggedIn),
   withFirebase
-)(InterestFormBase);
-
-export default () => (
-  <Layout>
-    <InterestForm />
-  </Layout>
-);
+)(InterestForm);

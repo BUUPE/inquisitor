@@ -2,6 +2,14 @@ import styled, { createGlobalStyle } from "styled-components";
 import BootstrapContainer from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 
+export const RequiredAsterisk = styled.span`
+  color: red;
+
+  &:after {
+    content: "*";
+  }
+`;
+
 export const Container = styled(BootstrapContainer)`
   margin-top: 25px;
   margin-bottom: 25px;

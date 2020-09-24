@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "gatsby";
 
-import Layout from "../components/Layout";
 import Logo from "../components/Logo";
+import SEO from "../components/SEO";
 import { Centered } from "../styles/global";
 
-const NotFoundPage = () => (
-  <Layout>
+export default () => (
+  <>
+    <SEO title="404" route="/404" />
     <Centered>
       <Logo size="medium" />
       <h1>404: Not found!</h1>
@@ -15,7 +16,5 @@ const NotFoundPage = () => (
         <Link to="/">home</Link>.
       </p>
     </Centered>
-  </Layout>
+  </>
 );
-
-export default NotFoundPage;
