@@ -53,9 +53,16 @@ const Header = ({ firebase }) => {
             </>
           )}
 
+          {/* TODO: make this appear based on whether timeslots are open (make a settings context first) */}
           {isApplicantOrRecruitmentTeam(authUser) && (
             <Link to="/timeslots" className="hvr-underline-from-center">
               Timeslots
+            </Link>
+          )}
+
+          {isApplicantOrRecruitmentTeam(authUser) && (
+            <Link to="/room" className="hvr-underline-from-center">
+              Interview
             </Link>
           )}
 
