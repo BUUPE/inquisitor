@@ -252,13 +252,13 @@ class InterviewerView extends Component {
       offsetHours,
     } = this.state;
 
-    if (loading || runningTransaction) return <Loader />;
     if (error)
       return (
         <Container flexdirection="column">
           <h1>{error}</h1>
         </Container>
       );
+    if (loading || runningTransaction) return <Loader />;
 
     const {
       timeslotsOpen,

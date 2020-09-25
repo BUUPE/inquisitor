@@ -18,6 +18,12 @@ export const Container = styled(BootstrapContainer)`
   flex-direction: ${(props) => props.flexdirection};
 `;
 
+export const FullSizeContainer = styled(Container)`
+  padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+`;
+
 export const CenteredForm = styled(Form)`
   display: flex;
   flex-direction: column;
