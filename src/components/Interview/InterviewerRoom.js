@@ -12,12 +12,12 @@ import InterviewOld from "./InterviewOld";
 const LevelSelector = ({ levels, saveLevel }) => {
   const [level, setLevel] = useState("");
 
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     saveLevel(level);
   };
 
-  const handleChange = e => setLevel(e.target.value);
+  const handleChange = (e) => setLevel(e.target.value);
 
   // TODO: show zoom link here zomewhere, as well as a little hover button for it
   return (
@@ -27,7 +27,7 @@ const LevelSelector = ({ levels, saveLevel }) => {
       <Form.Group as={Col} md="4" controlId="interviewLevel">
         <Form.Control as="select" name="level" onChange={handleChange} required>
           <option value="">--</option>
-          {levels.map(level => (
+          {levels.map((level) => (
             <option key={level} value={level}>
               {level}
             </option>
@@ -53,7 +53,7 @@ const InterviewerRoom = ({
     cloneDeep(currentApplication)
   );
 
-  const saveLevel = async level => {
+  const saveLevel = async (level) => {
     await firebase.application(currentApplication.id).update({
       interview: {
         ...currentApplication.interview,
@@ -68,22 +68,25 @@ const InterviewerRoom = ({
     );
 
   const questionMap = {};
-  levelConfig[localApplication.interview.level].forEach(question => {
+  levelConfig[localApplication.interview.level].forEach((question) => {
     questionMap[question.id] = question.order;
   });
   const lastOrder = Math.max(Object.values(questionMap));
 
   const filteredQuestions = questions
-    .filter(question => questionMap.hasOwnProperty(question.id))
-    .map(question => ({ ...question, order: questionMap[question.id] + 1 }))
+    .filter((question) => questionMap.hasOwnProperty(question.id))
+    .map((question) => ({ ...question, order: questionMap[question.id] + 1 }))
     .concat([
-      { id: "overview", order: -1, overview: settings.interviewOverviewText, interviewerNotes: settings.interviewInterviewerNotesText},
+      {
+        id: "overview",
+        order: -1,
+        overview: settings.interviewOverviewText,
+        interviewerNotes: settings.interviewInterviewerNotesText,
+      },
       { id: "resume", order: 0 },
       { id: "finalNotes", order: lastOrder + 2 }, // TODO: explain why + 2 in comment
     ])
     .sort((a, b) => (a.order > b.order ? 1 : -1));
-
-
 
   return (
     <InterviewOld

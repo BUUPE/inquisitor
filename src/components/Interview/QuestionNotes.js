@@ -41,78 +41,78 @@ const QuestionNotes = ({
 
   return (
     <>
-    <p>{question.answer}</p>
-    <Form noValidate validated={validated} onSubmit={handleSubmit}>
-      {!commentsOnly && (
-        <div className="note-wrapper">
-          <Col sm={9}>
-            <Form.Group controlId="formBasicEmail">
-              <Form.Label>
-                <strong>Notes</strong>
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows="10"
-                placeholder="Enter notes here..."
-                name={`problem-${problemNum}-notes`}
-                value={notes}
-                onChange={onNotesChange}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col sm={3}>
-            <strong>Score</strong>
+      <p>{question.answer}</p>
+      <Form noValidate validated={validated} onSubmit={handleSubmit}>
+        {!commentsOnly && (
+          <div className="note-wrapper">
+            <Col sm={9}>
+              <Form.Group controlId="formBasicEmail">
+                <Form.Label>
+                  <strong>Notes</strong>
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows="10"
+                  placeholder="Enter notes here..."
+                  name={`problem-${problemNum}-notes`}
+                  value={notes}
+                  onChange={onNotesChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col sm={3}>
+              <strong>Score</strong>
 
-            {["1", "2", "3", "4", "5"].map((s) => (
-              <Form.Check
-                type="radio"
-                key={`problem-${problemNum}-score-${s}`}
-                name={`problem-${problemNum}-score`}
-                label={s}
-                value={s}
-                onChange={onScoreChange}
-                checked={s === score}
-                required
-              />
-            ))}
-          </Col>
-        </div>
-      )}
+              {["1", "2", "3", "4", "5"].map((s) => (
+                <Form.Check
+                  type="radio"
+                  key={`problem-${problemNum}-score-${s}`}
+                  name={`problem-${problemNum}-score`}
+                  label={s}
+                  value={s}
+                  onChange={onScoreChange}
+                  checked={s === score}
+                  required
+                />
+              ))}
+            </Col>
+          </div>
+        )}
 
-      {commentsOnly && (
-        <Form.Group controlId="formBasicEmail">
-          <Form.Label>
-            <strong>Comments</strong>
-          </Form.Label>
-          <Form.Control
-            as="textarea"
-            rows="10"
-            placeholder="Enter comments here..."
-            name={dataKey}
-            value={notes}
-            onChange={onNotesChange}
-            required
-          />
-        </Form.Group>
-      )}
+        {commentsOnly && (
+          <Form.Group controlId="formBasicEmail">
+            <Form.Label>
+              <strong>Comments</strong>
+            </Form.Label>
+            <Form.Control
+              as="textarea"
+              rows="10"
+              placeholder="Enter comments here..."
+              name={dataKey}
+              value={notes}
+              onChange={onNotesChange}
+              required
+            />
+          </Form.Group>
+        )}
 
-      <Button type="submit">Save</Button>
+        <Button type="submit">Save</Button>
 
-      <Toast
-        onClose={() => setShowToast(false)}
-        show={showToast}
-        delay={3000}
-        autohide
-      >
-        <Toast.Body>
-          {commentsOnly && <strong>Comments saved!</strong>}
+        <Toast
+          onClose={() => setShowToast(false)}
+          show={showToast}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body>
+            {commentsOnly && <strong>Comments saved!</strong>}
 
-          {!commentsOnly && <strong>Question notes saved!</strong>}
-        </Toast.Body>
-      </Toast>
-    </Form>
-    <hr />
+            {!commentsOnly && <strong>Question notes saved!</strong>}
+          </Toast.Body>
+        </Toast>
+      </Form>
+      <hr />
     </>
   );
 };

@@ -28,7 +28,7 @@ const Interview = ({ currentApplication, questions, settings }) => {
   const authUser = useContext(AuthUserContext);
 
   useEffect(() => {
-    window.onbeforeunload = function(e) {
+    window.onbeforeunload = function (e) {
       e = e || window.event;
 
       // For IE and Firefox prior to version 4
@@ -43,12 +43,12 @@ const Interview = ({ currentApplication, questions, settings }) => {
 
   if (error) return <Error message={error} />;
 
-  const notifyChange = key => {
+  const notifyChange = (key) => {
     // if interviewee save to firebase
     setTabKey(key);
   };
 
-  const submitInterview = event => {
+  const submitInterview = (event) => {
     event.persist();
     event.preventDefault();
     const form = event.currentTarget;
@@ -57,7 +57,7 @@ const Interview = ({ currentApplication, questions, settings }) => {
   };
 
   const intervieweeName = currentApplication.responses.find(
-    response => response.id === 1
+    (response) => response.id === 1
   ).value;
 
   const {
@@ -157,7 +157,7 @@ const Interview = ({ currentApplication, questions, settings }) => {
         </Col>
         <Col sm={9}>
           <Tab.Content>
-            {questions.map(question => (
+            {questions.map((question) => (
               <QuestionDisplay
                 question={question}
                 note={notes[question.id]}
