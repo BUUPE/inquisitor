@@ -47,6 +47,7 @@ class InterviewerView extends Component {
     error: null,
     loading: true,
     timeslots: [],
+    questions: [],
     currentApplication: null,
     levelConfig: {},
   }
@@ -67,11 +68,20 @@ class InterviewerView extends Component {
   componentWillUnmount() {
     if (typeof this.unsubSettings === "function") this.unsubSettings();
     if (typeof this.unsubTimeslots === "function") this.unsubTimeslots();
+    if (typeof this.unsubCurrentApplication === "function") this.unsubCurrentApplication();
   }
 
   loadData = async () => {
     this._initFirebase = true;
     const authUser = this.context;
+
+    const currentApplication = JSON.parse(localStorage.getItem('currentApplication'));
+    if (currentApplication !== null) this.fetchApplication(currentApplication.id);
+
+    await this.props.firebase.questions().get().then(querySnapshot => {
+      const questions = querySnapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
+      this.setState({questions});
+    })
 
     await this.props.firebase.levelConfig().get().then(doc => {
       if (!doc.exists) return this.setState({error: "LevelConfig does not exist!"});
@@ -110,18 +120,20 @@ class InterviewerView extends Component {
     if (typeof this.unsubCurrentApplication === "function") this.unsubCurrentApplication();
     this.unsubCurrentApplication = this.props.firebase.application(id).onSnapshot(doc => {
       if (!doc.exists) return this.setState({error: "Application not found!"});
-      this.setState({currentApplication: {...doc.data(), id: doc.id}});
+      const currentApplication = {...doc.data(), id: doc.id};
+      this.setState({currentApplication});
+      localStorage.setItem('currentApplication', JSON.stringify(currentApplication)); // this may lead to issues if the data is very old
     });
   }
 
   render() {
-    const {settings, timeslots, error, loading, currentApplication, levelConfig} = this.state;
+    const {settings, timeslots, error, loading, currentApplication, levelConfig, questions} = this.state;
     if (loading) return <Loader />;
 
-    const Content = () => {
+    const Content = ({questions}) => {
       if (error) return <h1>{error}</h1>;
 
-      if (currentApplication) return <InterviewerRoom currentApplication={currentApplication} levelConfig={levelConfig} />
+      if (currentApplication) return <InterviewerRoom currentApplication={currentApplication} levelConfig={levelConfig} questions={questions} settings={settings} />
 
       return <h1>Please select an interview timeslot.</h1>;
     }
@@ -138,7 +150,7 @@ class InterviewerView extends Component {
         )})}
       </Sidebar>
       <Col style={{padding: 25}}>
-        <Content />
+        <Content questions={questions} settings={settings} />
       </Col>
     </FullSizeContainer>
   );

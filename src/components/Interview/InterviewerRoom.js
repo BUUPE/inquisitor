@@ -1,66 +1,97 @@
-import React, {useState, useEffect, useContext} from "react";
+import React, { useState } from "react";
 import cloneDeep from "lodash.clonedeep";
 
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 
-import {
-  AuthUserContext,
-  withFirebase,
-} from "upe-react-components";
+import { withFirebase } from "upe-react-components";
 
-const LevelSelector = ({levels, saveLevel}) => {
+import InterviewOld from "./InterviewOld";
+
+const LevelSelector = ({ levels, saveLevel }) => {
   const [level, setLevel] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    saveLevel(level)
-  }
+    saveLevel(level);
+  };
 
-  const handleChange = (e) => setLevel(e.target.value);
+  const handleChange = e => setLevel(e.target.value);
 
+  // TODO: show zoom link here zomewhere, as well as a little hover button for it
   return (
     <Form onSubmit={handleSubmit}>
-        <h1>Begin an Interview</h1>
+      <h1>Select Level</h1>
 
-        <Form.Group as={Col} md="4" controlId="interviewLevel">
-          <Form.Label>Select Level</Form.Label>
-          <Form.Control
-            as="select"
-            name="level"
-            onChange={handleChange}
-            required
-          >
-            <option value="">--Select a Level--</option>
-            {levels.map(level => (
-              <option key={level} value={level}>{level}</option>
-            ))}
-          </Form.Control>
-        </Form.Group>
+      <Form.Group as={Col} md="4" controlId="interviewLevel">
+        <Form.Control as="select" name="level" onChange={handleChange} required>
+          <option value="">--</option>
+          {levels.map(level => (
+            <option key={level} value={level}>
+              {level}
+            </option>
+          ))}
+        </Form.Control>
+      </Form.Group>
 
-        <Button variant="primary" type="submit" disabled={level === ""}>
-          Begin
-        </Button>
-      </Form>
-  )
-}
+      <Button variant="primary" type="submit" disabled={level === ""}>
+        Begin
+      </Button>
+    </Form>
+  );
+};
 
-const InterviewerRoom = ({currentApplication, levelConfig, firebase}) => {
-  const [localApplication, setLocalApplication] = useState(cloneDeep(currentApplication));
-  const [error, setError] = useState(null);
+const InterviewerRoom = ({
+  firebase,
+  currentApplication,
+  levelConfig,
+  questions,
+  settings,
+}) => {
+  const [localApplication, setLocalApplication] = useState(
+    cloneDeep(currentApplication)
+  );
 
-  const authUser = useContext(AuthUserContext);
+  const saveLevel = async level => {
+    await firebase.application(currentApplication.id).update({
+      interview: {
+        ...currentApplication.interview,
+        level,
+      },
+    });
+  };
 
-  const saveLevel = (level) => {
-    console.log("you picked", level)
-  }
+  if (!localApplication.interview.hasOwnProperty("level"))
+    return (
+      <LevelSelector levels={Object.keys(levelConfig)} saveLevel={saveLevel} />
+    );
 
-  if (!localApplication.interview.hasOwnProperty("level")) return <LevelSelector levels={Object.keys(levelConfig)} saveLevel={saveLevel} />
+  const questionMap = {};
+  levelConfig[localApplication.interview.level].forEach(question => {
+    questionMap[question.id] = question.order;
+  });
+  const lastOrder = Math.max(Object.values(questionMap));
+
+  const filteredQuestions = questions
+    .filter(question => questionMap.hasOwnProperty(question.id))
+    .map(question => ({ ...question, order: questionMap[question.id] + 1 }))
+    .concat([
+      { id: "overview", order: -1, overview: settings.interviewOverviewText, interviewerNotes: settings.interviewInterviewerNotesText},
+      { id: "resume", order: 0 },
+      { id: "finalNotes", order: lastOrder + 2 }, // TODO: explain why + 2 in comment
+    ])
+    .sort((a, b) => (a.order > b.order ? 1 : -1));
+
+
 
   return (
-    <h1>time to rock and roll</h1>
+    <InterviewOld
+      currentApplication={currentApplication}
+      questions={filteredQuestions}
+      settings={settings}
+    />
   );
-}
+};
 
 export default withFirebase(InterviewerRoom);

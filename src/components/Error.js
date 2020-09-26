@@ -1,9 +1,10 @@
 import React from "react";
 import { Container } from "../styles/global";
 
-const Error = ({ error }) => (
+// TODO: use this
+const Error = ({ message }) => (
   <Container flexdirection="column">
-    <h1>{error}</h1>
+    <h1>{message}</h1>
   </Container>
 );
 

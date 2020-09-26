@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import styled from "styled-components";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 import isEqual from "lodash.isequal";
@@ -14,8 +15,13 @@ import { withFirebase, withAuthorization } from "upe-react-components";
 import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
-import { FlexDiv } from "../../styles/global";
+import { FlexDiv, FullWidthFormGroup } from "../../styles/global";
 
+const StyledFormRow = styled(Form.Row)`
+  margin: 0;
+`;
+
+// TODO: refactor settings to have sub sections
 const DEFAULT_GENERAL_SETTINGS = {
   applicationsOpen: false,
   timeslotsOpen: false,
@@ -25,6 +31,8 @@ const DEFAULT_GENERAL_SETTINGS = {
   timeslotStart: 8,
   timeslotEnd: 22,
   zoomlink: "https://bostonu.zoom.us/s/96821681891",
+  interviewOverviewText: "",
+  interviewInterviewerNotesText: "",
 };
 
 const interceptAnchors = (interceptor) =>
@@ -239,10 +247,9 @@ class GeneralSettings extends Component {
 
     return (
       <AdminLayout>
-        <h1>General Settings</h1>
-
         <Form onSubmit={this.saveSettings}>
-          <Form.Row>
+          <h2>General Settings</h2>
+          <StyledFormRow>
             <Form.Check
               custom
               checked={settings.applicationsOpen}
@@ -257,9 +264,10 @@ class GeneralSettings extends Component {
                 })
               }
             />
-          </Form.Row>
+          </StyledFormRow>
           <hr />
-          <Form.Row>
+          <h2>Timeslot Settings</h2>
+          <StyledFormRow>
             <div stlye={{ display: "flex", flexDirection: "column" }}>
               <Form.Check
                 custom
@@ -398,11 +406,12 @@ class GeneralSettings extends Component {
                 </div>
               )}
             </div>
-          </Form.Row>
+          </StyledFormRow>
           <hr />
-          <Form.Row>
+          <h2>Interview Settings</h2>
+          <StyledFormRow>
             <Form.Group controlId="zoomlink">
-              <Form.Label>Interview Zoom Link</Form.Label>
+              <Form.Label>Zoom Link</Form.Label>
               <Form.Control
                 required
                 type="text"
@@ -417,9 +426,48 @@ class GeneralSettings extends Component {
                   })
                 }
               />
-              <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
             </Form.Group>
-          </Form.Row>
+          </StyledFormRow>
+          <StyledFormRow>
+            <FullWidthFormGroup controlId="interviewOverviewText">
+              <Form.Label>Overview Text</Form.Label>
+              <Form.Control
+                required
+                as="textarea"
+                rows={3}
+                placeholder="FILL THIS OUT!"
+                value={settings.interviewOverviewText}
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      interviewOverviewText: e.target.value,
+                    },
+                  })
+                }
+              />
+            </FullWidthFormGroup>
+          </StyledFormRow>
+          <StyledFormRow>
+            <FullWidthFormGroup controlId="interviewInterviewerNotesText">
+              <Form.Label>Interviewer Notes</Form.Label>
+              <Form.Control
+                required
+                as="textarea"
+                rows={3}
+                placeholder="FILL THIS OUT!"
+                value={settings.interviewInterviewerNotesText}
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      interviewInterviewerNotesText: e.target.value,
+                    },
+                  })
+                }
+              />
+            </FullWidthFormGroup>
+          </StyledFormRow>
           <hr />
           <FlexDiv>
             <FlexDiv

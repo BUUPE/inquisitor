@@ -4,15 +4,12 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Toast from "react-bootstrap/Toast";
 
-import { withFirebase } from "./Firebase";
-import { saveQuestionNotes, saveComments } from "../util/api";
-
 const QuestionNotes = ({
+  question,
   interviewId,
   problemNum,
   commentsOnly,
   dataKey,
-  firebase,
   savedNotes,
 }) => {
   const [validated, setValidated] = useState(false);
@@ -36,18 +33,6 @@ const QuestionNotes = ({
       setValidated(true);
     } else {
       setValidated(false);
-      if (!commentsOnly) {
-        saveQuestionNotes(firebase, {
-          interviewId,
-          problemNum,
-          notes,
-          score,
-        }).then(() => setShowToast(true));
-      } else {
-        saveComments(firebase, { interviewId, dataKey, notes }).then(() =>
-          setShowToast(true)
-        );
-      }
     }
   };
 
@@ -55,6 +40,8 @@ const QuestionNotes = ({
   const onScoreChange = (event) => setScore(event.target.value);
 
   return (
+    <>
+    <p>{question.answer}</p>
     <Form noValidate validated={validated} onSubmit={handleSubmit}>
       {!commentsOnly && (
         <div className="note-wrapper">
@@ -125,7 +112,9 @@ const QuestionNotes = ({
         </Toast.Body>
       </Toast>
     </Form>
+    <hr />
+    </>
   );
 };
 
-export default withFirebase(QuestionNotes);
+export default QuestionNotes;
