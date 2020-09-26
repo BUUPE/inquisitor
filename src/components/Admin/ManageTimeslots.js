@@ -303,6 +303,26 @@ const ManageTimeslots = ({ firebase }) => {
       >
         Add New Timeslot
       </Button>
+      <Button
+        style={{ marginBottom: 25, marginLeft: 10 }}
+        onClick={() => {
+          firebase.interviewerTimeslotsOpen({}).catch((err) => {
+            console.log(err);
+          });
+        }}
+      >
+        Alert Interviewers
+      </Button>
+      <Button
+        style={{ marginBottom: 25, marginLeft: 10 }}
+        onClick={() => {
+          firebase.applicantTimeslotsOpen({}).catch((err) => {
+            console.log(err);
+          });
+        }}
+      >
+        Alert Interviewees
+      </Button>
       <ScrollableRow>
         {Object.entries(timeslots)
           .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
