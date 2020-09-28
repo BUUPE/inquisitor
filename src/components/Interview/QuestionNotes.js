@@ -1,103 +1,74 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Toast from "react-bootstrap/Toast";
+import RangeSlider from "react-bootstrap-range-slider";
 
 const QuestionNotes = ({
   question,
-  interviewId,
-  problemNum,
-  commentsOnly,
-  dataKey,
-  savedNotes,
+  note: propNote,
+  score: propScore,
+  saveApplication,
+  submitApplication,
 }) => {
-  const [validated, setValidated] = useState(false);
-  const [notes, setNotes] = useState("");
-  const [score, setScore] = useState(1);
+  const [note, setNote] = useState(propNote);
+  const [score, setScore] = useState(propScore);
   const [showToast, setShowToast] = useState(false);
 
-  useEffect(() => {
-    if (savedNotes) {
-      setNotes(savedNotes.notes);
-      setScore(savedNotes.score);
-    }
-  }, [savedNotes]);
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.stopPropagation();
-      setValidated(true);
-    } else {
-      setValidated(false);
-    }
+    await saveApplication({
+      note,
+      score,
+      id: question.id,
+    });
+    await submitApplication();
   };
 
-  const onNotesChange = (event) => setNotes(event.target.value);
-  const onScoreChange = (event) => setScore(event.target.value);
+  const handleSave = () =>
+    saveApplication({
+      note,
+      score,
+      id: question.id,
+    });
 
   return (
     <>
       <p>{question.answer}</p>
-      <Form noValidate validated={validated} onSubmit={handleSubmit}>
-        {!commentsOnly && (
-          <div className="note-wrapper">
-            <Col sm={9}>
-              <Form.Group controlId="formBasicEmail">
-                <Form.Label>
-                  <strong>Notes</strong>
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows="10"
-                  placeholder="Enter notes here..."
-                  name={`problem-${problemNum}-notes`}
-                  value={notes}
-                  onChange={onNotesChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col sm={3}>
-              <strong>Score</strong>
+      <Form onSubmit={handleSubmit}>
+        <div className="note-wrapper">
+          <Col sm={9}>
+            <Form.Group controlId="formBasicEmail">
+              <Form.Label>
+                <strong>Notes</strong>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows="10"
+                placeholder="Enter notes here..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                onBlur={handleSave}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col sm={3}>
+            <strong>Score</strong>
 
-              {["1", "2", "3", "4", "5"].map((s) => (
-                <Form.Check
-                  type="radio"
-                  key={`problem-${problemNum}-score-${s}`}
-                  name={`problem-${problemNum}-score`}
-                  label={s}
-                  value={s}
-                  onChange={onScoreChange}
-                  checked={s === score}
-                  required
-                />
-              ))}
-            </Col>
-          </div>
-        )}
-
-        {commentsOnly && (
-          <Form.Group controlId="formBasicEmail">
-            <Form.Label>
-              <strong>Comments</strong>
-            </Form.Label>
-            <Form.Control
-              as="textarea"
-              rows="10"
-              placeholder="Enter comments here..."
-              name={dataKey}
-              value={notes}
-              onChange={onNotesChange}
-              required
+            <RangeSlider
+              value={score}
+              onChange={(e) => setScore(parseFloat(e.target.value))}
+              onAfterChange={handleSave}
+              step={0.5}
+              max={5}
+              min={0}
             />
-          </Form.Group>
-        )}
+          </Col>
+        </div>
 
-        <Button type="submit">Save</Button>
+        {submitApplication && <Button type="submit">Submit</Button>}
 
         <Toast
           onClose={() => setShowToast(false)}
@@ -106,9 +77,7 @@ const QuestionNotes = ({
           autohide
         >
           <Toast.Body>
-            {commentsOnly && <strong>Comments saved!</strong>}
-
-            {!commentsOnly && <strong>Question notes saved!</strong>}
+            <strong>Saved!</strong>
           </Toast.Body>
         </Toast>
       </Form>

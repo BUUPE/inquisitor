@@ -4,7 +4,6 @@ import styled from "styled-components";
 const Wrapper = styled.div`
   font-size: 2rem;
   display: flex;
-  position: fixed;
   top: 10px;
   right: 10px;
   z-index: 9;
@@ -39,8 +38,8 @@ const getMinutes = (ms) => {
 };
 
 const Stopwatch = () => {
-  const [time, setTime] = useState(window.performance.now());
-  const limit = 1;
+  const [time, setTime] = useState(window.performance.now()); // from firebase
+  const limit = 1; // also from firebase (timeslotLength)
 
   useEffect(() => {
     const timer = setInterval(() => setTime(window.performance.now()), 1000);

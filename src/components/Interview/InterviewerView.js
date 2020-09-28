@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
 import styled from "styled-components";
+import update from "immutability-helper";
 
 import Col from "react-bootstrap/Col";
 
@@ -10,7 +11,9 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
-import InterviewerRoom from "./InterviewerRoom";
+import LevelSelector from "./LevelSelector";
+import InterviewRoom from "./InterviewRoom";
+import Stopwatch from "./Stopwatch";
 
 import Loader from "../Loader";
 import { isRecruitmentTeam } from "../../util/conditions";
@@ -151,6 +154,75 @@ class InterviewerView extends Component {
       });
   };
 
+  saveLevel = async (level) => {
+    await this.props.firebase
+      .application(this.state.currentApplication.id)
+      .update({
+        interview: {
+          ...this.state.currentApplication.interview,
+          level,
+        },
+      });
+  };
+
+  saveApplication = async (interview) => {
+    try {
+      await this.props.firebase.firestore.runTransaction(
+        async (transaction) => {
+          const ref = this.props.firebase.application(
+            this.state.currentApplication.id
+          );
+          const doc = await transaction.get(ref);
+          // eslint-disable-next-line no-unused-vars
+          const application = { ...doc.data() };
+          transaction.update(ref, { interview });
+        }
+      );
+    } catch (e) {
+      console.error("Transaction failure!", e);
+    }
+  };
+
+  submitApplication = async () => {
+    try {
+      await this.props.firebase.firestore.runTransaction(
+        async (transaction) => {
+          const ref = this.props.firebase.application(
+            this.state.currentApplication.id
+          );
+          const doc = await transaction.get(ref);
+          // eslint-disable-next-line no-unused-vars
+          const application = { ...doc.data() };
+          let interviewers = update(application.interview.interviewers || {}, {
+            $merge: {
+              [this.context.uid]: this.context.name,
+            },
+          });
+
+          let interview;
+          if (Object.keys(interviewers).length === 2) {
+            interview = update(application.interview, {
+              $merge: {
+                interviewed: true,
+                interviewers,
+              },
+            });
+          } else {
+            interview = update(application.interview, {
+              $merge: {
+                interviewed: true,
+              },
+            });
+          }
+
+          transaction.update(ref, { interview });
+        }
+      );
+    } catch (e) {
+      console.error("Transaction failure!", e);
+    }
+  };
+
   render() {
     const {
       settings,
@@ -161,20 +233,58 @@ class InterviewerView extends Component {
       levelConfig,
       questions,
     } = this.state;
+
     if (loading) return <Loader />;
 
     const Content = ({ questions }) => {
       if (error) return <h1>{error}</h1>;
 
-      if (currentApplication)
+      if (currentApplication) {
+        if (!currentApplication.interview.hasOwnProperty("level"))
+          return (
+            <LevelSelector
+              levels={Object.keys(levelConfig)}
+              saveLevel={this.saveLevel}
+            />
+          );
+
+        const questionMap = {};
+        levelConfig[currentApplication.interview.level].forEach((question) => {
+          questionMap[question.id] = question.order;
+        });
+        const lastOrder = Math.max(Object.values(questionMap));
+
+        const filteredQuestions = questions
+          .filter((question) => questionMap.hasOwnProperty(question.id))
+          .map((question) => ({
+            ...question,
+            order: questionMap[question.id] + 1,
+          }))
+          .concat([
+            {
+              id: "overview",
+              order: -1,
+              overview: settings.interviewOverviewText,
+              interviewerNotes: settings.interviewInterviewerNotesText,
+            },
+            { id: "resume", order: 0 },
+            { id: "finalNotes", order: lastOrder + 2 }, // TODO: explain why + 2 in comment
+          ])
+          .sort((a, b) => (a.order > b.order ? 1 : -1));
+
         return (
-          <InterviewerRoom
-            currentApplication={currentApplication}
-            levelConfig={levelConfig}
-            questions={questions}
-            settings={settings}
-          />
+          <>
+            {!currentApplication.interview.interviewed && <Stopwatch />}
+            <InterviewRoom
+              currentApplication={currentApplication}
+              questions={filteredQuestions}
+              settings={settings}
+              saveApplication={this.saveApplication}
+              submitApplication={this.submitApplication}
+            />
+          </>
         );
+      }
 
       return <h1>Please select an interview timeslot.</h1>;
     };
