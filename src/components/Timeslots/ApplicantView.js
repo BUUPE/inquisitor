@@ -176,6 +176,12 @@ const ApplicantView = ({ firebase }) => {
       }
 
       if (action === "schedule") {
+        await firebase.timeslotSelected({
+          firstName: authUser.name.split(" ")[0],
+          email: authUser.email,
+          time: formatTime(timeslot.time),
+        })
+        .catch(error => console.error(error));
         swal({
           title: "You're all set!",
           content: (
@@ -190,6 +196,11 @@ const ApplicantView = ({ firebase }) => {
           icon: "success",
         });
       } else if (action === "unschedule") {
+        await firebase.timeslotUnselected({
+          firstName: authUser.name.split(" ")[0],
+          email: authUser.email,
+        })
+        .catch(error => console.error(error));
         swal(
           "Unscheduled!",
           `You have unscheduled your interview, and a confirmation has been sent to your email. If you'd still like to interview with UPE, make sure to select another timeslot!`,

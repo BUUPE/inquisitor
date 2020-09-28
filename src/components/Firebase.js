@@ -29,11 +29,15 @@ class Firebase extends FirebaseSuper {
     this.sendApplicationReceipt = this.functions.httpsCallable(
       "sendApplicationReceipt"
     );
-    this.notifyTimeslotsAreOpen = this.functions.httpsCallable(
-      "notifyTimeslotsAreOpen"
+    this.applicantTimeslotsOpen = this.functions.httpsCallable(
+      "applicantTimeslotsOpen"
     );
-    this.notifyTimeslotsAreClosed = this.functions.httpsCallable(
-      "notifyTimeslotsAreClosed"
+    this.interviewerTimeslotsOpen = this.functions.httpsCallable(
+      "interviewerTimeslotsOpen"
+    );
+    this.timeslotSelected = this.functions.httpsCallable("timeslotSelected");
+    this.timeslotUnselected = this.functions.httpsCallable(
+      "timeslotUnselected"
     );
   }
 
