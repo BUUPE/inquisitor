@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, Fragment } from "react";
 import styled from "styled-components";
 import update from "immutability-helper";
 
@@ -14,24 +14,30 @@ import QuestionDisplay from "./QuestionDisplay";
 import { isRecruitmentTeam } from "../../util/conditions";
 
 const StyledLink = styled(Nav.Link)`
-  color: ${(props) => (props.intervieweeon ? "red" : "blue")};
+  font-size: 1.5rem;
+
+  &[aria-selected= "true" ] {
+    font-weight: bold;
+  }
+
+  &::before {
+    content: "${(props) => (props.intervieweeon === 1 ? "👁️ " : "")}";
+  }
 `;
 
 const InterviewRoom = ({
   currentApplication,
   questions,
-  settings,
+  isApplicant,
   saveApplication,
   submitApplication,
 }) => {
-  const initialTabKey = -1;
-  const cachedTabKey = parseInt(window.localStorage.getItem("current-tab-key"));
+  const initialTabKey = "-1";
+  const cachedTabKey = window.localStorage.getItem("current-tab-key");
 
   const [closed, setClosed] = useState(false);
   const [inRoom, setInRoom] = useState(false);
-  const [tabKey, setTabKey] = useState(
-    Number.isNaN(cachedTabKey) ? initialTabKey : cachedTabKey
-  );
+  const [tabKey, setTabKey] = useState(cachedTabKey || initialTabKey);
 
   const authUser = useContext(AuthUserContext);
 
@@ -52,6 +58,7 @@ const InterviewRoom = ({
   const handleChangTab = (key) => {
     window.localStorage.setItem("current-tab-key", key);
     setTabKey(key);
+    if (isApplicant) saveApplication(key);
   };
 
   const {
@@ -125,11 +132,12 @@ const InterviewRoom = ({
         break;
     }
 
+    const eventKey = `${question.order}`;
     return (
       <Nav.Item>
         <StyledLink
-          eventKey={`${question.order}`}
-          intervieweeon={intervieweeOn}
+          eventKey={eventKey}
+          intervieweeon={!isApplicant && intervieweeOn === eventKey ? 1 : 0}
         >
           {linkText}
         </StyledLink>
@@ -141,47 +149,45 @@ const InterviewRoom = ({
   return (
     <Tab.Container activeKey={tabKey} onSelect={handleChangTab}>
       <Row>
-        <Col sm={3}>
-          <Nav variant="pills" className="flex-column">
-            {questions.map((question) => (
-              <NavItem key={question.id} question={question} />
-            ))}
-          </Nav>
-        </Col>
-        <Col sm={9}>
-          <Tab.Content>
-            {questions.map((question) => (
-              <QuestionDisplay
-                key={question.id}
-                question={question}
-                note={notes[question.id]}
-                score={scores[question.id]}
-                isInterviewer={isRecruitmentTeam(authUser)}
-                saveApplication={mergeNotesAndScores}
-                submitApplication={submitApplication}
-                tabKey={parseInt(tabKey)}
-                setTabKey={handleChangTab}
-                finalQuestionId={questions.length - 2}
-              />
-            ))}
-          </Tab.Content>
-        </Col>
+        <Nav
+          style={{
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "space-around",
+          }}
+          activeKey={tabKey}
+        >
+          {questions.map((question) => (
+            <Fragment key={question.id}>
+              <NavItem question={question} />
+              {question.order < questions.length - 2 && (
+                <span style={{ fontSize: "2rem" }}>></span>
+              )}
+            </Fragment>
+          ))}
+        </Nav>
+        <hr style={{ width: "100%" }} />
+      </Row>
+      <Row style={{ marginTop: 25, padding: 25 }}>
+        <Tab.Content style={{ width: "100%" }}>
+          {questions.map((question) => (
+            <QuestionDisplay
+              key={question.id}
+              question={question}
+              note={notes[question.id]}
+              score={scores[question.id]}
+              isInterviewer={isRecruitmentTeam(authUser)}
+              saveApplication={mergeNotesAndScores}
+              submitApplication={submitApplication}
+              tabKey={parseInt(tabKey)}
+              setTabKey={handleChangTab}
+              finalQuestionId={questions.length - 2}
+            />
+          ))}
+        </Tab.Content>
       </Row>
     </Tab.Container>
   );
 };
-
-/*interviewees only
-      {closed && (
-        <div className="closed-wrapper">
-          <h1>This interview is now closed.</h1>
-          <div>
-            {!authUser && intervieweeName && (
-              <p>Thanks for interviewing, {intervieweeName.split(" ")[0]}!</p>
-            )}
-          </div>
-        </div>
-      )}
-    */
 
 export default InterviewRoom;

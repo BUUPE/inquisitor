@@ -37,14 +37,13 @@ const getMinutes = (ms) => {
   return minutes;
 };
 
-const Stopwatch = () => {
-  const [time, setTime] = useState(window.performance.now()); // from firebase
-  const limit = 1; // also from firebase (timeslotLength)
+const Stopwatch = ({ startTime, limit }) => {
+  const [time, setTime] = useState(Date.now() - startTime);
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(window.performance.now()), 1000);
+    const timer = setInterval(() => setTime(Date.now() - startTime), 1000);
     return () => clearInterval(timer);
-  }, [time]);
+  }, [startTime]);
 
   return (
     <Wrapper>

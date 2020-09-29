@@ -33,6 +33,9 @@ const DEFAULT_GENERAL_SETTINGS = {
   zoomlink: "https://bostonu.zoom.us/s/96821681891",
   interviewOverviewText: "",
   interviewInterviewerNotesText: "",
+  interviewResumeNotesText: "",
+  interviewFinalNotesInterviewerText: "",
+  interviewFinalNotesApplicantText: "",
 };
 
 const interceptAnchors = (interceptor) =>
@@ -462,6 +465,66 @@ class GeneralSettings extends Component {
                     settings: {
                       ...settings,
                       interviewInterviewerNotesText: e.target.value,
+                    },
+                  })
+                }
+              />
+            </FullWidthFormGroup>
+          </StyledFormRow>
+          <StyledFormRow>
+            <FullWidthFormGroup controlId="interviewResumeNotesText">
+              <Form.Label>Resume Notes</Form.Label>
+              <Form.Control
+                required
+                as="textarea"
+                rows={3}
+                placeholder="FILL THIS OUT!"
+                value={settings.interviewResumeNotesText}
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      interviewResumeNotesText: e.target.value,
+                    },
+                  })
+                }
+              />
+            </FullWidthFormGroup>
+          </StyledFormRow>
+          <StyledFormRow>
+            <FullWidthFormGroup controlId="interviewFinalNotesInterviewerText">
+              <Form.Label>Final Notes Interviewer Text</Form.Label>
+              <Form.Control
+                required
+                as="textarea"
+                rows={3}
+                placeholder="FILL THIS OUT!"
+                value={settings.interviewFinalNotesInterviewerText}
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      interviewFinalNotesInterviewerText: e.target.value,
+                    },
+                  })
+                }
+              />
+            </FullWidthFormGroup>
+          </StyledFormRow>
+          <StyledFormRow>
+            <FullWidthFormGroup controlId="interviewFinalNotesApplicantText">
+              <Form.Label>Final Notes Applicant Text</Form.Label>
+              <Form.Control
+                required
+                as="textarea"
+                rows={3}
+                placeholder="FILL THIS OUT!"
+                value={settings.interviewFinalNotesApplicantText}
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      interviewFinalNotesApplicantText: e.target.value,
                     },
                   })
                 }

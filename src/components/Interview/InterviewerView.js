@@ -105,34 +105,47 @@ class InterviewerView extends Component {
         this.setState({ levelConfig: doc.data() });
       });
 
-    this.unsubSettings = this.props.firebase
-      .generalSettings()
-      .onSnapshot((doc) => {
-        if (!doc.exists) this.setState({ error: "Failed to load timeslots!" });
-        else {
-          const settings = doc.data();
-          this.setState({ settings }, () => {
-            this.unsubTimeslots = this.props.firebase
-              .timeslots()
-              .onSnapshot((querySnapshot) => {
-                const timeslots = querySnapshot.docs
-                  .map((doc) => {
-                    return {
-                      ...doc.data(),
-                      time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
-                      id: doc.id,
-                    };
-                  })
-                  .filter((ts) => ts.interviewers.hasOwnProperty(authUser.uid));
+    const settings = await new Promise((resolve, reject) => {
+      let resolveOnce = (doc) => {
+        resolveOnce = () => null;
+        resolve(doc);
+      };
+      this.unsubSettings = this.props.firebase
+        .generalSettings()
+        .onSnapshot((doc) => {
+          if (!doc.exists) this.setState({ error: "Failed to load settings!" });
+          else {
+            const settings = doc.data();
+            this.setState({ settings });
+            resolveOnce(settings);
+          }
+        }, reject);
+    });
+    this.setState({ settings });
 
-                this.setState({
-                  timeslots,
-                  loading: false,
-                });
-              }, console.error);
-          });
-        }
-      });
+    const timeslots = await new Promise((resolve, reject) => {
+      let resolveOnce = (doc) => {
+        resolveOnce = () => null;
+        resolve(doc);
+      };
+      this.unsubTimeslots = this.props.firebase
+        .timeslots()
+        .onSnapshot((querySnapshot) => {
+          const timeslots = querySnapshot.docs
+            .map((doc) => {
+              return {
+                ...doc.data(),
+                time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
+                id: doc.id,
+              };
+            })
+            .filter((ts) => ts.interviewers.hasOwnProperty(authUser.uid));
+
+          this.setState({ timeslots });
+          resolveOnce(timeslots);
+        }, reject);
+    });
+    this.setState({ timeslots, loading: false });
   };
 
   fetchApplication = (id) => {
@@ -161,6 +174,7 @@ class InterviewerView extends Component {
         interview: {
           ...this.state.currentApplication.interview,
           level,
+          startedAt: Date.now(),
         },
       });
   };
@@ -267,18 +281,36 @@ class InterviewerView extends Component {
               overview: settings.interviewOverviewText,
               interviewerNotes: settings.interviewInterviewerNotesText,
             },
-            { id: "resume", order: 0 },
-            { id: "finalNotes", order: lastOrder + 2 }, // TODO: explain why + 2 in comment
+            {
+              id: "resume",
+              order: 0,
+              url: currentApplication.responses.find((r) => r.id === 6).value,
+              notes: settings.interviewResumeNotesText,
+            },
+            {
+              id: "finalNotes",
+              order: lastOrder + 2,
+              title: "Submit Interview",
+              text: settings.interviewFinalNotesInterviewerText,
+            }, // TODO: explain why + 2 in comment
           ])
           .sort((a, b) => (a.order > b.order ? 1 : -1));
 
         return (
           <>
-            {!currentApplication.interview.interviewed && <Stopwatch />}
+            {!currentApplication.interview.interviewed && (
+              <Stopwatch
+                startTime={currentApplication.interview.startedAt}
+                limit={
+                  timeslots.find(
+                    (ts) => ts.applicant?.id === currentApplication?.id
+                  ).timeslotLength
+                }
+              />
+            )}
             <InterviewRoom
               currentApplication={currentApplication}
               questions={filteredQuestions}
-              settings={settings}
               saveApplication={this.saveApplication}
               submitApplication={this.submitApplication}
             />
@@ -313,6 +345,7 @@ class InterviewerView extends Component {
     );
   }
 }
+
 export default compose(
   withAuthorization(isRecruitmentTeam),
   withFirebase

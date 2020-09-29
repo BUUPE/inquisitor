@@ -1,19 +1,24 @@
 import React from "react";
+import styled from "styled-components";
 
 import Tab from "react-bootstrap/Tab";
 import Button from "react-bootstrap/Button";
 
 import QuestionNotes from "./QuestionNotes";
 
+const StyledP = styled.p`
+  white-space: pre-wrap;
+`;
+
 const OverviewDisplay = ({ question, isInterviewer }) => (
   <>
     <h3>Overview</h3>
-    <p style={{ whiteSpace: "pre-wrap" }}>{question.overview}</p>
+    <StyledP>{question.overview}</StyledP>
     <hr />
 
     {isInterviewer && (
       <>
-        <p style={{ whiteSpace: "pre-wrap" }}>{question.interviewerNotes}</p>
+        <StyledP>{question.interviewerNotes}</StyledP>
         <hr />
       </>
     )}
@@ -29,11 +34,17 @@ const ResumeDisplay = ({
 }) => (
   <>
     <h3>Resume Review</h3>
-    <p>LOAD RESUME HERE</p>
-
+    <embed
+      src={question.url}
+      width="100%"
+      height="750"
+      type="application/pdf"
+      style={{ margin: "25px 0" }}
+    />
+    <hr />
     {isInterviewer && (
       <>
-        <p>{"RESUME NOTES HERE STORE THEM SOMEWHERE"}</p>
+        <StyledP>{question.notes}</StyledP>
         <hr />
         <QuestionNotes
           question={question}
@@ -54,12 +65,12 @@ const FinalNotesDisplay = ({
   saveApplication,
   submitApplication,
 }) => {
-  if (isInterviewer) {
-    return (
-      <>
-        <h3>Submit Interview</h3>
-        <p>PUT TEXT HERE</p>
-        <hr />
+  return (
+    <>
+      <h3>{question.title}</h3>
+      <StyledP>{question.text}</StyledP>
+      <hr />
+      {isInterviewer && (
         <QuestionNotes
           question={question}
           note={note}
@@ -67,17 +78,9 @@ const FinalNotesDisplay = ({
           saveApplication={saveApplication}
           submitApplication={submitApplication}
         />
-      </>
-    );
-  } else {
-    return (
-      <>
-        <h3>You did it!</h3>
-        <p style={{ whiteSpace: "pre-wrap" }}>PUT TEXT HERE</p>
-        <hr />
-      </>
-    );
-  }
+      )}
+    </>
+  );
 };
 
 const QuestionDisplay = ({
@@ -127,7 +130,7 @@ const QuestionDisplay = ({
         <>
           <h3>{question.name}</h3>
           {question.image && <img src={question.image} alt={question.name} />}
-          <p>{question.description}</p>
+          <StyledP>{question.description}</StyledP>
           <hr />
 
           {isInterviewer && (
