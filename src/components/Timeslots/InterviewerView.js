@@ -21,6 +21,8 @@ import { Container } from "../../styles/global";
 import ScrollableRow from "./ScrollableRow";
 import ScheduleColumn from "./ScheduleColumn";
 
+import moment from "moment-timezone";
+
 class InterviewerView extends Component {
   _initFirebase = false;
   constructor(props) {
@@ -32,6 +34,7 @@ class InterviewerView extends Component {
       timeslots: {}, // TODO: this needs a better name
       timeslotOptions: [],
       showModal: false,
+      offsetHours: 0,
     };
     this.setStateAsync = setStateAsync.bind(this);
   }
@@ -58,14 +61,23 @@ class InterviewerView extends Component {
     if (!doc.exists)
       return this.setState({ error: "Failed to load settings!" });
     else {
+      const now = moment();
+      const localOffset = now.utcOffset();
+      now.tz("America/New_York"); // your time zone, not necessarily the server's
+      const centralOffset = now.utcOffset();
+      const diffInMinutes = localOffset - centralOffset;
+      const offsetHours = diffInMinutes / 60;
+
       const settings = doc.data();
       const timeslots = {};
+      settings.timeslotStart += offsetHours;
+      settings.timeslotEnd += offsetHours;
       settings.timeslotDays = settings.timeslotDays.map((day) => {
         const date = day.toDate();
         timeslots[date.toDateString()] = [];
         return date;
       });
-      await this.setStateAsync({ settings, timeslots });
+      await this.setStateAsync({ settings, timeslots, offsetHours });
     }
 
     const timeslots = await new Promise((resolve, reject) => {
@@ -80,7 +92,7 @@ class InterviewerView extends Component {
           const listenerData = querySnapshot.docs.map((doc) => {
             return {
               ...doc.data(),
-              time: doc.data().time.toDate(), // make sure to convert timestamp objects to date objects
+              time: new Date(doc.data().time), // make sure to convert timestamp objects to date objects
               id: doc.id,
             };
           });
@@ -168,7 +180,7 @@ class InterviewerView extends Component {
     const interviewers = {};
     interviewers[authUser.uid] = authUser.name;
     await this.props.firebase.timeslots().add({
-      time: date,
+      time: date.getTime(),
       interviewers,
       timeslotLength,
     });
@@ -238,6 +250,7 @@ class InterviewerView extends Component {
       timeslots,
       showModal,
       timeslotOptions,
+      offsetHours,
     } = this.state;
 
     if (loading || runningTransaction) return <Loader />;
@@ -312,6 +325,7 @@ class InterviewerView extends Component {
                   unselectTimeslot={this.unselectTimeslot}
                   startHour={timeslotStart}
                   endHour={timeslotEnd}
+                  offsetHours={offsetHours}
                 />
               );
             })}
