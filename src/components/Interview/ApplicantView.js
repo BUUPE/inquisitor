@@ -153,7 +153,7 @@ class ApplicantView extends Component {
 
       if (!currentApplication.interview.hasOwnProperty("level")) {
         return (
-          <Centered>
+          <Centered style={{maxWidth: 500, margin: "0 auto"}}>
             <Logo size="medium" />
             <h1>Welcome!</h1>
             <StyledP>{settings.interviewWelcomeText}</StyledP>

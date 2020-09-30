@@ -135,7 +135,7 @@ class InterviewerView extends Component {
             .map((doc) => {
               return {
                 ...doc.data(),
-                time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
+                time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
                 id: doc.id,
               };
             })
