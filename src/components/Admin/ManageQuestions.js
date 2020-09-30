@@ -83,8 +83,6 @@ const ManageQuestions = ({ firebase }) => {
     let imageURL = originalQuestion.image;
     let filename = originalQuestion.imageName;
 
-    console.log(originalQuestion);
-
     if (question.image !== "") {
       if (filename !== "" && filename !== undefined)
         await firebase.questionImage(filename).delete();

@@ -217,16 +217,15 @@ class InterviewerView extends Component {
           ts.time.getTime() === date.getTime()
       )
     );
-    const { id } = timeslot;
-    delete timeslot.id;
-    delete timeslot.interviewers[authUser.uid];
+    const { id, interviewers } = timeslot;
+    delete interviewers[authUser.uid];
     if (
-      Object.keys(timeslot.interviewers).length === 0 &&
+      Object.keys(interviewers).length === 0 &&
       !timeslot.hasOwnProperty("applicant")
     )
       await this.props.firebase.timeslot(id).delete();
     // TODO: notify admins if an timeslot with an applicant loses interviewers
-    else await this.props.firebase.timeslot(id).update(timeslot);
+    else await this.props.firebase.timeslot(id).update({ interviewers });
   };
 
   timeslotsToSlots = (timeslots) => {
