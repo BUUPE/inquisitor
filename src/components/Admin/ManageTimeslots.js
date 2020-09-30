@@ -42,6 +42,7 @@ const ManageTimeslots = ({ firebase }) => {
   const [loadingInterviewers, setLoadingInterviewers] = useState(true);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [loading, setLoading] = useState(true);
+  const tzoffset = new Date().getTimezoneOffset() * 60000;
 
   useEffect(
     () => {
@@ -57,7 +58,7 @@ const ManageTimeslots = ({ firebase }) => {
             const listenerData = querySnapshot.docs.map((doc) => {
               return {
                 ...doc.data(),
-                time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
+                time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
                 id: doc.id,
               };
             });
@@ -161,15 +162,17 @@ const ManageTimeslots = ({ firebase }) => {
   };
 
   const saveTimeslotChanges = async () => {
-    if (currentTimeslot.hasOwnProperty("id")) {
+    const newTimeslot = cloneDeep(currentTimeslot);
+    newTimeslot.time = newTimeslot.time.getTime() + tzoffset;
+    if (newTimeslot.hasOwnProperty("id")) {
       try {
         await firebase.firestore.runTransaction(async (transaction) => {
-          const ref = firebase.timeslot(currentTimeslot.id);
+          const ref = firebase.timeslot(newTimeslot.id);
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
           const timeslot = { ...doc.data() };
-          delete currentTimeslot.id;
-          transaction.set(ref, currentTimeslot);
+          delete newTimeslot.id;
+          transaction.set(ref, newTimeslot);
         });
       } catch (e) {
         console.error("Transaction failure!", e);
@@ -180,7 +183,7 @@ const ManageTimeslots = ({ firebase }) => {
         );
       }
     } else {
-      await firebase.timeslots().add(currentTimeslot);
+      await firebase.timeslots().add(newTimeslot);
     }
 
     closeModal();
@@ -211,50 +214,6 @@ const ManageTimeslots = ({ firebase }) => {
     });
   };
 
-  // TODO: rename slots => timeslots for clarity
-  const TimeslotColumn = ({ date, slots }) => (
-    <Col style={{ width: 300, flex: "none" }}>
-      <h1>{date}</h1>
-
-      {slots
-        .sort((a, b) => {
-          if (a.time.getTime() === b.time.getTime())
-            return a.id > b.id ? 1 : -1;
-          else return a.time > b.time ? 1 : -1;
-        })
-        .map((slot) => {
-          const interviewers = Object.values(slot.interviewers);
-          return (
-            <TimeslotCard
-              key={slot.id}
-              onClick={() => {
-                setCurrentTimeslot(slot);
-                setShowModal(true);
-              }}
-            >
-              <Card.Body>
-                <Card.Title>
-                  Applicant: {slot.applicant?.name || "No applicant"}
-                </Card.Title>
-                <Card.Subtitle className="mb-2">
-                  Interviewer{interviewers.length !== 1 && "s"}:{" "}
-                  {interviewers.length > 0 ? interviewers.join(", ") : "None"}
-                </Card.Subtitle>
-                <Card.Subtitle className="mb-2 text-muted">
-                  Start Time: {formatTime(slot.time)}
-                </Card.Subtitle>
-                <Card.Subtitle className="mb-2 text-muted">
-                  Length: {slot.timeslotLength} mins
-                </Card.Subtitle>
-              </Card.Body>
-            </TimeslotCard>
-          );
-        })}
-    </Col>
-  );
-
-  const tzoffset = new Date().getTimezoneOffset() * 60000;
-
   const updateInterviewer = (oldId, newId) => {
     const updatedTimeslot = cloneDeep(currentTimeslot);
     delete updatedTimeslot.interviewers[oldId];
@@ -276,6 +235,48 @@ const ManageTimeslots = ({ firebase }) => {
     }
     setCurrentTimeslot(updatedTimeslot);
   };
+
+  const TimeslotColumn = ({ date, timeslots }) => (
+    <Col style={{ width: 300, flex: "none" }}>
+      <h1>{date}</h1>
+
+      {timeslots
+        .sort((a, b) => {
+          if (a.time.getTime() === b.time.getTime())
+            return a.id > b.id ? 1 : -1;
+          else return a.time > b.time ? 1 : -1;
+        })
+        .map((timeslot) => {
+          const interviewers = Object.values(timeslot.interviewers);
+          return (
+            <TimeslotCard
+              key={timeslot.id}
+              onClick={() => {
+                console.log("setting", timeslot);
+                setCurrentTimeslot(timeslot);
+                setShowModal(true);
+              }}
+            >
+              <Card.Body>
+                <Card.Title>
+                  Applicant: {timeslot.applicant?.name || "No applicant"}
+                </Card.Title>
+                <Card.Subtitle className="mb-2">
+                  Interviewer{interviewers.length !== 1 && "s"}:{" "}
+                  {interviewers.length > 0 ? interviewers.join(", ") : "None"}
+                </Card.Subtitle>
+                <Card.Subtitle className="mb-2 text-muted">
+                  Start Time: {formatTime(timeslot.time)}
+                </Card.Subtitle>
+                <Card.Subtitle className="mb-2 text-muted">
+                  Length: {timeslot.timeslotLength} mins
+                </Card.Subtitle>
+              </Card.Body>
+            </TimeslotCard>
+          );
+        })}
+    </Col>
+  );
 
   return (
     <AdminLayout>
@@ -324,8 +325,8 @@ const ManageTimeslots = ({ firebase }) => {
       <ScrollableRow>
         {Object.entries(timeslots)
           .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
-          .map(([date, slots]) => (
-            <TimeslotColumn key={date} date={date} slots={slots} />
+          .map(([date, timeslots]) => (
+            <TimeslotColumn key={date} date={date} timeslots={timeslots} />
           ))}
       </ScrollableRow>
 
