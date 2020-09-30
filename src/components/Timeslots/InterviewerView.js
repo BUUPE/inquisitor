@@ -14,101 +14,129 @@ import {
 } from "upe-react-components";
 
 import { isRecruitmentTeam } from "../../util/conditions";
-import { formatTime } from "../../util/helper";
+import { formatTime, setStateAsync } from "../../util/helper";
 import Loader from "../Loader";
 import { Container } from "../../styles/global";
 
 import ScrollableRow from "./ScrollableRow";
 import ScheduleColumn from "./ScheduleColumn";
 
+import moment from "moment-timezone";
+
 class InterviewerView extends Component {
   _initFirebase = false;
-  state = {
-    loading: true,
-    error: null,
-    settings: null,
-    timeslots: {}, // TODO: this needs a better name
-    timeslotOptions: [],
-    showModal: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true,
+      error: null,
+      settings: null,
+      timeslots: {}, // TODO: this needs a better name
+      timeslotOptions: [],
+      showModal: false,
+      offsetHours: 0,
+    };
+    this.setStateAsync = setStateAsync.bind(this);
+  }
+
   static contextType = AuthUserContext;
-  unsub = null;
+  unsubTimeslots = null;
 
   componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadData();
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadSettings();
+    if (this.props.firebase && !this._initFirebase) this.loadData();
   }
 
   componentWillUnmount() {
-    if (typeof this.unsub === "function") this.unsub();
+    if (typeof this.unsubTimeslots === "function") this.unsubTimeslots();
   }
 
-  loadSettings = async () => {
+  loadData = async () => {
     this._initFirebase = true;
     const doc = await this.props.firebase.generalSettings().get();
 
-    if (!doc.exists) this.setState({ error: "Failed to load timeslots!" });
+    if (!doc.exists)
+      return this.setState({ error: "Failed to load settings!" });
     else {
+      const now = moment();
+      const localOffset = now.utcOffset();
+      now.tz("America/New_York"); // your time zone, not necessarily the server's
+      const centralOffset = now.utcOffset();
+      const diffInMinutes = localOffset - centralOffset;
+      const offsetHours = diffInMinutes / 60;
+
       const settings = doc.data();
       const timeslots = {};
+      settings.timeslotStart += offsetHours;
+      settings.timeslotEnd += offsetHours;
       settings.timeslotDays = settings.timeslotDays.map((day) => {
         const date = day.toDate();
         timeslots[date.toDateString()] = [];
         return date;
       });
-      this.setState({ settings, timeslots }, () => {
-        this.unsub = this.props.firebase
-          .timeslots()
-          .onSnapshot((querySnapshot) => {
-            const { timeslots } = this.state;
-            const listenerData = querySnapshot.docs.map((doc) => {
-              return {
-                ...doc.data(),
-                time: doc.data().time.toDate(), // make sure to convert timestamp objects to Date objects
-                id: doc.id,
-              };
-            });
-
-            // add new data from listener
-            listenerData
-              .filter((ts) => Object.keys(ts.interviewers).length < 2)
-              .forEach((ts) => {
-                const day = ts.time.toDateString();
-
-                // if data for day exists, add to it, otherwise create new field
-                if (timeslots.hasOwnProperty(day)) {
-                  const index = timeslots[day].findIndex(
-                    (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
-                  );
-
-                  // if timeslot exists, update the value, otherwise push it
-                  if (index > -1) {
-                    timeslots[day][index] = ts;
-                  } else {
-                    timeslots[day].push(ts);
-                  }
-                } else {
-                  timeslots[day] = [ts];
-                }
-              });
-
-            // remove timeslots that no longer exist
-            const validIds = listenerData.map((ts) => ts.id);
-            for (const day in timeslots)
-              timeslots[day] = timeslots[day].filter((ts) =>
-                validIds.includes(ts.id)
-              );
-
-            this.setState({
-              timeslots,
-              loading: false,
-            });
-          }, console.error);
-      });
+      await this.setStateAsync({ settings, timeslots, offsetHours });
     }
+
+    const timeslots = await new Promise((resolve, reject) => {
+      let resolveOnce = (doc) => {
+        resolveOnce = () => null;
+        resolve(doc);
+      };
+      this.unsubTimeslots = this.props.firebase
+        .timeslots()
+        .onSnapshot(async (querySnapshot) => {
+          const { timeslots } = this.state;
+          const listenerData = querySnapshot.docs.map((doc) => {
+            return {
+              ...doc.data(),
+              time: new Date(doc.data().time), // make sure to convert timestamp objects to date objects
+              id: doc.id,
+            };
+          });
+
+          // add new data from listener
+          listenerData
+            .filter(
+              (ts) =>
+                Object.keys(ts.interviewers).length < 2 ||
+                ts.interviewers.hasOwnProperty(this.context.uid)
+            )
+            .forEach((ts) => {
+              const day = ts.time.toDateString();
+
+              // if data for day exists, add to it, otherwise create new field
+              if (timeslots.hasOwnProperty(day)) {
+                const index = timeslots[day].findIndex(
+                  (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                );
+
+                // if timeslot exists, update the value, otherwise push it
+                if (index > -1) {
+                  timeslots[day][index] = ts;
+                } else {
+                  timeslots[day].push(ts);
+                }
+              } else {
+                timeslots[day] = [ts];
+              }
+            });
+
+          // remove timeslots that no longer exist
+          const validIds = listenerData.map((ts) => ts.id);
+          for (const day in timeslots)
+            timeslots[day] = timeslots[day].filter((ts) =>
+              validIds.includes(ts.id)
+            );
+
+          this.setState({ timeslots });
+          resolveOnce(timeslots);
+        }, reject);
+    });
+
+    this.setState({ timeslots, loading: false });
   };
 
   // selects a timeslot by its id. if someone else fills the slot first, shows an error
@@ -152,7 +180,7 @@ class InterviewerView extends Component {
     const interviewers = {};
     interviewers[authUser.uid] = authUser.name;
     await this.props.firebase.timeslots().add({
-      time: date,
+      time: date.getTime(),
       interviewers,
       timeslotLength,
     });
@@ -222,6 +250,7 @@ class InterviewerView extends Component {
       timeslots,
       showModal,
       timeslotOptions,
+      offsetHours,
     } = this.state;
 
     if (loading || runningTransaction) return <Loader />;
@@ -234,7 +263,6 @@ class InterviewerView extends Component {
 
     const {
       timeslotsOpen,
-      timeslotsOpenForApplicants,
       timeslotLength,
       timeslotDays,
       timeslotStart,
@@ -247,13 +275,6 @@ class InterviewerView extends Component {
       return (
         <Container flexdirection="column">
           <h1>Timeslot selection is closed!</h1>
-        </Container>
-      );
-
-    if (authUser.roles.applicant && !timeslotsOpenForApplicants)
-      return (
-        <Container flexdirection="column">
-          <h1>Timeslot selection isn't open yet!</h1>
         </Container>
       );
 
@@ -304,6 +325,7 @@ class InterviewerView extends Component {
                   unselectTimeslot={this.unselectTimeslot}
                   startHour={timeslotStart}
                   endHour={timeslotEnd}
+                  offsetHours={offsetHours}
                 />
               );
             })}

@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import PropTypes from "prop-types";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -12,6 +13,7 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  opacity: ${(props) => props.opacity};
 `;
 
 const Spinner = styled.div`
@@ -41,10 +43,18 @@ const Spinner = styled.div`
   }
 `;
 
-const Loader = () => (
-  <Wrapper>
+const Loader = ({ opacity }) => (
+  <Wrapper opacity={opacity}>
     <Spinner />
   </Wrapper>
 );
+
+Loader.propTypes = {
+  opacity: PropTypes.number,
+};
+
+Loader.defaultProps = {
+  opacity: 1,
+};
 
 export default Loader;

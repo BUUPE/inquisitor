@@ -13,3 +13,9 @@ export const asyncForEach = async (array, callback) => {
     await callback(array[index], index, array);
   }
 };
+
+export function setStateAsync(state) {
+  return new Promise((resolve) => {
+    this.setState(state, resolve);
+  });
+}

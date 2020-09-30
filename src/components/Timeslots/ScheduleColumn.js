@@ -58,16 +58,16 @@ const ScheduleColumn = ({
   unselectTimeslot,
   startHour,
   endHour,
+  offsetHours,
 }) => {
   const [showToast, setShowToast] = useState(false);
-
   const numSlots = (endHour - startHour) * 4; // 15 min slots
   const slots = Array.from(Array(numSlots), (_, i) => i * 15); // total 15 min slots in a day
   const slotsPerTimeslot = timeslotLength / 15; // number of 15 min slots in an interview
 
   // converts a start offset (slot) into a Date object
   const dateFromSlot = (slot) => {
-    const hours = startHour + Math.floor(slot / 60);
+    const hours = startHour + Math.floor(slot / 60) - offsetHours;
     const minutes = slot % 60;
     return new Date(
       date.getFullYear(),
@@ -101,7 +101,7 @@ const ScheduleColumn = ({
           date.getFullYear(),
           date.getMonth(),
           date.getDate(),
-          startHour + Math.floor(offset / 60),
+          startHour + Math.floor(offset / 60) - offsetHours,
           offset % 60
         )
       );
@@ -113,7 +113,7 @@ const ScheduleColumn = ({
           date.getFullYear(),
           date.getMonth(),
           date.getDate(),
-          startHour + Math.floor(offset / 60),
+          startHour + Math.floor(offset / 60) - offsetHours,
           offset % 60
         )
       );
