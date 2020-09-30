@@ -67,8 +67,13 @@ const ScheduleColumn = ({
 
   // converts a start offset (slot) into a Date object
   const dateFromSlot = (slot) => {
-    const hours = startHour + Math.floor(slot / 60) - offsetHours;
+    const hours = startHour + Math.floor(slot / 60);
     const minutes = slot % 60;
+    if (slot === 0) {
+      console.log(
+        `hours: ${hours}, minutes: ${minutes}, startHour: ${startHour}, endHour: ${endHour}, offsetHours: ${offsetHours}`
+      );
+    }
     return new Date(
       date.getFullYear(),
       date.getMonth(),
@@ -101,7 +106,7 @@ const ScheduleColumn = ({
           date.getFullYear(),
           date.getMonth(),
           date.getDate(),
-          startHour + Math.floor(offset / 60) - offsetHours,
+          startHour + Math.floor(offset / 60),
           offset % 60
         )
       );
@@ -113,7 +118,7 @@ const ScheduleColumn = ({
           date.getFullYear(),
           date.getMonth(),
           date.getDate(),
-          startHour + Math.floor(offset / 60) - offsetHours,
+          startHour + Math.floor(offset / 60),
           offset % 60
         )
       );

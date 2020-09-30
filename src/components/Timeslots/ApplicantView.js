@@ -214,7 +214,7 @@ class ApplicantView extends Component {
         .timeslotSelected({
           firstName: authUser.name.split(" ")[0],
           email: authUser.email,
-          time: formatTime(timeslot.time),
+          time: `${formatTime(timeslot.time)}, ${timeslot.time.toDateString()}`,
         })
         .catch((error) => console.error(error));
       swal({
@@ -308,8 +308,11 @@ class ApplicantView extends Component {
         {selecting && <Loader opacity={0.75} />}
         <h1>Applicant Timeslot Selection</h1>
         <p>
-          The timeslots below show times, length, and interviewers. Don't select
-          a timeslot with interviewers that you know.
+          The timeslots below show start times, length, and interviewers. Please
+          don't select a timeslot with interviewers that you know as that could
+          introduce bias (admins will review these selections to enforce this).
+          Note that the times below are in your local timezone, but map to 9 AM
+          - 10 PM Boston time.
         </p>
         <ScrollableRow>
           {Object.entries(timeslots)

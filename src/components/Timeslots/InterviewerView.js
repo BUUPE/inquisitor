@@ -63,7 +63,7 @@ class InterviewerView extends Component {
     else {
       const now = moment();
       const localOffset = now.utcOffset();
-      now.tz("America/New_York"); // your time zone, not necessarily the server's
+      now.tz("America/New_York"); // BU timezone, normalize to this
       const centralOffset = now.utcOffset();
       const diffInMinutes = localOffset - centralOffset;
       const offsetHours = diffInMinutes / 60;
@@ -280,6 +280,10 @@ class InterviewerView extends Component {
     return (
       <Container flexdirection="column">
         <h1>Interviewer Timeslot Selection</h1>
+        <p>
+          The times below are in your local timezone, but map to 9 AM - 10 PM
+          Boston time.
+        </p>
         <ScrollableRow>
           {timeslotDays
             .sort((a, b) => a - b)

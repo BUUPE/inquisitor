@@ -164,7 +164,7 @@ class GeneralSettings extends Component {
 
     if (!settings.timeslotsOpen) {
       settings.timeslotsOpenForApplicants = false;
-      settings.timeslotDays = [];
+      //settings.timeslotDays = []; we don't want to do this for now
     }
 
     let confirm = true;
