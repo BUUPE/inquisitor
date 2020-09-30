@@ -12,9 +12,14 @@ import {
 import InterviewRoom from "./InterviewRoom";
 
 import Loader from "../Loader";
+import Logo from "../Logo";
 import Error from "../Error";
 import { isApplicant } from "../../util/conditions";
-import { Container } from "../../styles/global";
+import { Container, Centered } from "../../styles/global";
+
+const StyledP = styled.p`
+  white-space: pre-wrap;
+`;
 
 class ApplicantView extends Component {
   _initFirebase = false;
@@ -147,7 +152,14 @@ class ApplicantView extends Component {
       if (error) return <Error message={error} />;
 
       if (!currentApplication.interview.hasOwnProperty("level")) {
-        return <h1>Not yet started!</h1>;
+        return (
+          <Centered>
+            <Logo size="medium" />
+            <h1>Welcome!</h1>
+            <StyledP>{settings.interviewWelcomeText}</StyledP>
+            <p>Join the Zoom <a href={settings.zoomlink}>here</a>!</p>
+          </Centered>
+        );
       } else {
         const questionMap = {};
         levelConfig[currentApplication.interview.level].forEach((question) => {

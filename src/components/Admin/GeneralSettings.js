@@ -31,6 +31,7 @@ const DEFAULT_GENERAL_SETTINGS = {
   timeslotStart: 8,
   timeslotEnd: 22,
   zoomlink: "https://bostonu.zoom.us/s/96821681891",
+  interviewWelcomeText: "",
   interviewOverviewText: "",
   interviewInterviewerNotesText: "",
   interviewResumeNotesText: "",
@@ -430,6 +431,26 @@ class GeneralSettings extends Component {
                 }
               />
             </Form.Group>
+          </StyledFormRow>
+          <StyledFormRow>
+            <FullWidthFormGroup controlId="interviewWelcomeText">
+              <Form.Label>Welcome Text</Form.Label>
+              <Form.Control
+                required
+                as="textarea"
+                rows={3}
+                placeholder="FILL THIS OUT!"
+                value={settings.interviewWelcomeText}
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      interviewWelcomeText: e.target.value,
+                    },
+                  })
+                }
+              />
+            </FullWidthFormGroup>
           </StyledFormRow>
           <StyledFormRow>
             <FullWidthFormGroup controlId="interviewOverviewText">
