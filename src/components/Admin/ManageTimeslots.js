@@ -306,9 +306,9 @@ const ManageTimeslots = ({ firebase }) => {
       <Button
         style={{ marginBottom: 25, marginLeft: 10 }}
         onClick={() => {
-          firebase.interviewerTimeslotsOpen().catch((err) => {
-            console.log(err);
-          });
+          firebase
+            .interviewerTimeslotsOpen()
+            .catch((err) => console.error(err));
         }}
       >
         Alert Interviewers
@@ -316,9 +316,7 @@ const ManageTimeslots = ({ firebase }) => {
       <Button
         style={{ marginBottom: 25, marginLeft: 10 }}
         onClick={() => {
-          firebase.applicantTimeslotsOpen().catch((err) => {
-            console.log(err);
-          });
+          firebase.applicantTimeslotsOpen().catch((err) => console.error(err));
         }}
       >
         Alert Interviewees
