@@ -26,9 +26,8 @@ class ApplicantView extends Component {
   state = {
     error: null,
     loading: true,
-    timeslot: null,
     questions: [],
-    currentApplication: null,
+    currentApplication: { interview: {} },
     levelConfig: {},
   };
   unsubSettings = null;
@@ -50,40 +49,46 @@ class ApplicantView extends Component {
       this.unsubCurrentApplication();
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const interview = this.state?.currentApplication?.interview;
+    const nextInterview = nextState?.currentApplication?.interview;
+    if (this.state?.loading !== nextState?.loading) return true;
+    if (
+      interview.interviewed === nextInterview.interviewed &&
+      interview.level === nextInterview.level
+    )
+      return false;
+    return true;
+  }
+
   loadData = async () => {
     this._initFirebase = true;
     const authUser = this.context;
 
-    await this.props.firebase
+    const questions = await this.props.firebase
       .questions()
       .get()
-      .then((querySnapshot) => {
-        const questions = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
-        this.setState({ questions });
-      });
+      .then((querySnapshot) =>
+        querySnapshot.docs.map((doc) => {
+          const { name, image, description } = doc.data();
+          return {
+            name,
+            image,
+            description,
+            id: doc.id,
+          };
+        })
+      );
 
-    await this.props.firebase
+    const levelConfig = await this.props.firebase
       .levelConfig()
       .get()
       .then((doc) => {
-        if (!doc.exists)
-          return this.setState({ error: "LevelConfig does not exist!" });
-        this.setState({ levelConfig: doc.data() });
-      });
-
-    await this.props.firebase
-      .timeslots()
-      .where("applicant.id", "==", authUser.uid)
-      .get()
-      .then((querySnapshot) => {
-        const doc = querySnapshot.docs[0];
-        if (!doc.exists)
-          return this.setState({ error: "User timeslot not found!" });
-        const timeslot = doc.data();
-        this.setState({ timeslot });
+        if (!doc.exists) {
+          this.setState({ error: "LevelConfig does not exist!" });
+          return {};
+        }
+        return doc.data();
       });
 
     const settings = await new Promise((resolve, reject) => {
@@ -102,7 +107,6 @@ class ApplicantView extends Component {
           }
         }, reject);
     });
-    this.setState({ settings });
 
     const currentApplication = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
@@ -121,7 +125,13 @@ class ApplicantView extends Component {
           }
         }, reject);
     });
-    this.setState({ currentApplication, loading: false });
+    this.setState({
+      questions,
+      levelConfig,
+      settings,
+      currentApplication,
+      loading: false,
+    });
   };
 
   setIntervieweeOn = async (key) => {
@@ -138,7 +148,6 @@ class ApplicantView extends Component {
   render() {
     const {
       settings,
-      timeslot,
       error,
       loading,
       currentApplication,
@@ -151,13 +160,25 @@ class ApplicantView extends Component {
     const Content = () => {
       if (error) return <Error message={error} />;
 
-      if (!currentApplication.interview.hasOwnProperty("level")) {
+      if (currentApplication?.interview?.interviewed) {
+        window.localStorage.removeItem("currentApplication");
+        window.localStorage.removeItem("current-tab-key");
         return (
-          <Centered style={{maxWidth: 500, margin: "0 auto"}}>
+          <Centered style={{ maxWidth: 500, margin: "0 auto" }}>
+            <Logo size="medium" />
+            <h1>Congratulations!</h1>
+            <StyledP>{settings.interviewFinalNotesApplicantText}</StyledP>
+          </Centered>
+        );
+      } else if (!currentApplication.interview.hasOwnProperty("level")) {
+        return (
+          <Centered style={{ maxWidth: 500, margin: "0 auto" }}>
             <Logo size="medium" />
             <h1>Welcome!</h1>
             <StyledP>{settings.interviewWelcomeText}</StyledP>
-            <p>Join the Zoom <a href={settings.zoomlink}>here</a>!</p>
+            <p>
+              Join the Zoom <a href={settings.zoomlink}>here</a>!
+            </p>
           </Centered>
         );
       } else {
@@ -165,7 +186,6 @@ class ApplicantView extends Component {
         levelConfig[currentApplication.interview.level].forEach((question) => {
           questionMap[question.id] = question.order;
         });
-        const lastOrder = Math.max(Object.values(questionMap));
 
         const filteredQuestions = questions
           .filter((question) => questionMap.hasOwnProperty(question.id))
@@ -186,13 +206,11 @@ class ApplicantView extends Component {
               url: currentApplication.responses.find((r) => r.id === 6).value,
               notes: settings.interviewResumeNotesText,
             },
-            //{ id: "finalNotes", order: lastOrder + 2, title: "Submit Interview", text: settings.interviewFinalNotesInterviewerText }, // TODO: explain why + 2 in comment
           ])
           .sort((a, b) => (a.order > b.order ? 1 : -1));
 
         return (
           <InterviewRoom
-            currentApplication={currentApplication}
             questions={filteredQuestions}
             isApplicant={true}
             saveApplication={this.setIntervieweeOn}

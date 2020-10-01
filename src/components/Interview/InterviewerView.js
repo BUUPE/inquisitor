@@ -85,24 +85,25 @@ class InterviewerView extends Component {
     if (currentApplication !== null)
       this.fetchApplication(currentApplication.id);
 
-    await this.props.firebase
+    const questions = await this.props.firebase
       .questions()
       .get()
-      .then((querySnapshot) => {
-        const questions = querySnapshot.docs.map((doc) => ({
+      .then((querySnapshot) =>
+        querySnapshot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
-        }));
-        this.setState({ questions });
-      });
+        }))
+      );
 
-    await this.props.firebase
+    const levelConfig = await this.props.firebase
       .levelConfig()
       .get()
       .then((doc) => {
-        if (!doc.exists)
-          return this.setState({ error: "LevelConfig does not exist!" });
-        this.setState({ levelConfig: doc.data() });
+        if (!doc.exists) {
+          this.setState({ error: "LevelConfig does not exist!" });
+          return {};
+        }
+        return doc.data();
       });
 
     const settings = await new Promise((resolve, reject) => {
@@ -121,7 +122,6 @@ class InterviewerView extends Component {
           }
         }, reject);
     });
-    this.setState({ settings });
 
     const timeslots = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
@@ -145,7 +145,14 @@ class InterviewerView extends Component {
           resolveOnce(timeslots);
         }, reject);
     });
-    this.setState({ timeslots, loading: false });
+
+    this.setState({
+      questions,
+      levelConfig,
+      settings,
+      timeslots,
+      loading: false,
+    });
   };
 
   fetchApplication = (id) => {
@@ -224,7 +231,7 @@ class InterviewerView extends Component {
           } else {
             interview = update(application.interview, {
               $merge: {
-                interviewed: true,
+                interviewers,
               },
             });
           }
@@ -232,6 +239,9 @@ class InterviewerView extends Component {
           transaction.update(ref, { interview });
         }
       );
+      window.onbeforeunload = null;
+      window.localStorage.removeItem("currentApplication");
+      window.localStorage.removeItem("current-tab-key");
     } catch (e) {
       console.error("Transaction failure!", e);
     }
@@ -325,18 +335,20 @@ class InterviewerView extends Component {
       <FullSizeContainer fluid flexdirection="row">
         <Sidebar>
           <h1>Interviews</h1>
-          {timeslots.map((timeslot) => {
-            return (
-              <StyledLi
-                key={timeslot.id}
-                selected={timeslot.applicant?.id === currentApplication?.id}
-                onClick={() => this.fetchApplication(timeslot.applicant?.id)}
-              >
-                <strong>{timeslot.applicant?.name || "No applicant"}</strong> (
-                {formatTime(timeslot.time)})
-              </StyledLi>
-            );
-          })}
+          {timeslots
+            .sort((a, b) => (a.time > b.time ? 1 : -1))
+            .map((timeslot) => {
+              return (
+                <StyledLi
+                  key={timeslot.id}
+                  selected={timeslot.applicant?.id === currentApplication?.id}
+                  onClick={() => this.fetchApplication(timeslot.applicant?.id)}
+                >
+                  <strong>{timeslot.applicant?.name || "No applicant"}</strong>{" "}
+                  ({formatTime(timeslot.time)})
+                </StyledLi>
+              );
+            })}
         </Sidebar>
         <Col style={{ padding: 25 }}>
           <Content questions={questions} settings={settings} />
