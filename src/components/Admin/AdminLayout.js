@@ -5,7 +5,7 @@ import styled from "styled-components";
 import Nav from "react-bootstrap/Nav";
 import Col from "react-bootstrap/Col";
 
-import { Container } from "../../styles/global";
+import { FullSizeContainer } from "../../styles/global";
 
 const StyledNav = styled(Nav)`
   width: 200px;
@@ -39,17 +39,11 @@ const Sidebar = () => (
   </StyledNav>
 );
 
-const AdminContainer = styled(Container)`
-  padding-left: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-`;
-
 const AdminLayout = ({ children }) => (
-  <AdminContainer fluid flexdirection="row">
+  <FullSizeContainer fluid flexdirection="row">
     <Sidebar />
     <Col style={{ padding: 25 }}>{children}</Col>
-  </AdminContainer>
+  </FullSizeContainer>
 );
 
 export default AdminLayout;

@@ -18,8 +18,7 @@ import { withFirebase } from "upe-react-components";
 import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
-import { RequiredAsterisk } from "../ApplicationForm";
-import { FlexDiv } from "../../styles/global";
+import { FlexDiv, RequiredAsterisk } from "../../styles/global";
 
 // assumes this is run before the coming recruitment season
 const estimateSemester = () => {

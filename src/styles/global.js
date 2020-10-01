@@ -2,12 +2,26 @@ import styled, { createGlobalStyle } from "styled-components";
 import BootstrapContainer from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 
+export const RequiredAsterisk = styled.span`
+  color: red;
+
+  &:after {
+    content: "*";
+  }
+`;
+
 export const Container = styled(BootstrapContainer)`
   margin-top: 25px;
   margin-bottom: 25px;
   display: flex;
   flex: 1 0 auto;
   flex-direction: ${(props) => props.flexdirection};
+`;
+
+export const FullSizeContainer = styled(Container)`
+  padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 `;
 
 export const CenteredForm = styled(Form)`

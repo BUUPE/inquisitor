@@ -17,8 +17,15 @@ const ApplicationList = styled.ul`
   height: 100%;
 `;
 
+const StyledLi = styled.li`
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const ViewApplications = ({ firebase }) => {
-  const [applicationFormConfig, setApplicationFormConfig] = useState(null);
   const [applications, setApplications] = useState([]);
   const [currentApplication, setCurrentApplication] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,28 +33,21 @@ const ViewApplications = ({ firebase }) => {
 
   useEffect(() => {
     if (firebase) {
-      const loadApplicationFormConfig = firebase
-        .applicationFormConfig()
-        .get()
-        .then((snapshot) => setApplicationFormConfig(snapshot.data()))
-        .catch(() => {
-          setError("Application Form Config doesn't exist!");
-          setLoading(false);
-        });
-      const loadApplicationList = firebase
+      firebase
         .applications()
         .get()
-        .then((snapshot) =>
+        .then((snapshot) => {
           setApplications(
             snapshot.docs.map((doc) => {
               return { id: doc.id, ...doc.data() };
             })
-          )
-        );
-
-      Promise.all([loadApplicationFormConfig, loadApplicationList]).then(() =>
-        setLoading(false)
-      );
+          );
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error(error);
+          setError("Failed to load applications!");
+        });
     }
   }, [firebase]);
 
@@ -55,9 +55,9 @@ const ViewApplications = ({ firebase }) => {
   if (loading) return <Loader />;
 
   const ApplicationListItem = ({ data }) => (
-    <li onClick={() => setCurrentApplication(data)}>
+    <StyledLi onClick={() => setCurrentApplication(data)}>
       {data.responses.find((r) => r.id === 1).value}
-    </li>
+    </StyledLi>
   );
 
   const CurrentApplication = () => {
@@ -96,12 +96,14 @@ const ViewApplications = ({ firebase }) => {
     );
   };
 
+  const getApplicantName = application => application.responses.find(r => r.id === 1).value;
+
   return (
     <AdminLayout>
       <Row style={{ height: "100%" }}>
         <Col style={{ flexGrow: 0, flexBasis: 200 }}>
           <ApplicationList>
-            {applications.map((application) => (
+            {applications.sort((a,b) => getApplicantName(a) > getApplicantName(b) ? 1 : -1).map((application) => (
               <ApplicationListItem key={application.id} data={application} />
             ))}
           </ApplicationList>

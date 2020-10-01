@@ -355,7 +355,7 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {interviewers.map((interviewer) => (
+                    {interviewers.sort((a,b) => a.name > b.name ? 1 : -1).map((interviewer) => (
                       <option value={interviewer.id} key={interviewer.id}>
                         {interviewer.name}
                       </option>
@@ -377,7 +377,7 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {interviewers.map((interviewer) => (
+                    {interviewers.sort((a,b) => a.name > b.name ? 1 : -1).map((interviewer) => (
                       <option value={interviewer.id} key={interviewer.id}>
                         {interviewer.name}
                       </option>
@@ -394,7 +394,7 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {applicants.map((applicant) => (
+                    {applicants.sort((a,b) => a.name > b.name ? 1 : -1).map((applicant) => (
                       <option value={applicant.id} key={applicant.id}>
                         {applicant.name}
                       </option>

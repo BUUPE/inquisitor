@@ -1,17 +1,15 @@
 import React, { useContext } from "react";
-
-import { isRecruitmentTeam } from "../util/conditions";
 import { AuthUserContext } from "upe-react-components";
-import Layout from "../components/Layout";
+import { isRecruitmentTeam } from "../util/conditions";
 import { InterviewerView, ApplicantView } from "../components/Timeslots";
+import SEO from "../components/SEO";
 
-const TimeslotPage = () => {
+export default () => {
   const authUser = useContext(AuthUserContext);
-  return isRecruitmentTeam(authUser) ? <InterviewerView /> : <ApplicantView />;
+  return (
+    <>
+      <SEO title="Timeslots" route="/timeslots" />
+      {isRecruitmentTeam(authUser) ? <InterviewerView /> : <ApplicantView />}
+    </>
+  );
 };
-
-export default () => (
-  <Layout>
-    <TimeslotPage />
-  </Layout>
-);

@@ -1,10 +1,15 @@
-import React from "react";
-import Layout from "../components/Layout";
+import React, { useContext } from "react";
+import { AuthUserContext } from "upe-react-components";
+import { isRecruitmentTeam } from "../util/conditions";
+import { InterviewerView, ApplicantView } from "../components/Interview";
+import SEO from "../components/SEO";
 
-const RoomPage = () => (
-  <Layout>
-    <h1>Welcome to your Session</h1>
-  </Layout>
-);
-
-export default RoomPage;
+export default () => {
+  const authUser = useContext(AuthUserContext);
+  return (
+    <>
+      <SEO title="Interview" route="/room" />
+      {isRecruitmentTeam(authUser) ? <InterviewerView /> : <ApplicantView />}
+    </>
+  );
+};

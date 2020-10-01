@@ -1,3 +1,4 @@
+// todo: use ?. here
 export const isAdmin = (authUser) => authUser && !!authUser.roles.admin;
 export const isRecruitmentTeam = (authUser) =>
   authUser && !!authUser.roles.recruitmentteam;

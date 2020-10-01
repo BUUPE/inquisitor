@@ -141,7 +141,7 @@ const ManageQuestions = ({ firebase }) => {
       },
     }).then(async (confirm) => {
       if (confirm) {
-        await firebase.questionImage(filename).delete();
+        if (filename !== "") await firebase.questionImage(filename).delete();
 
         await firebase
           .question(uid)
@@ -161,7 +161,7 @@ const ManageQuestions = ({ firebase }) => {
   return (
     <AdminLayout>
       <Container>
-        <Row>
+        <Row style={{ width: "100%" }}>
           <Col>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <h1>Interview Questions</h1>

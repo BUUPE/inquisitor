@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { navigate } from "gatsby";
 
 import { withFirebase } from "upe-react-components";
-import Layout from "../components/Layout";
 import Logo from "../components/Logo";
+import SEO from "../components/SEO";
 import { Centered } from "../styles/global";
 
 const Login = ({ firebase }) => {
@@ -25,17 +25,14 @@ const Login = ({ firebase }) => {
   }, [firebase]);
 
   return (
-    <Centered>
-      <Logo size="medium" />
-      <h1>Authenticating...</h1>
-    </Centered>
+    <>
+      <SEO title="Login" route="/login" />
+      <Centered>
+        <Logo size="medium" />
+        <h1>Authenticating...</h1>
+      </Centered>
+    </>
   );
 };
 
-const LoginPage = withFirebase(Login);
-
-export default () => (
-  <Layout>
-    <LoginPage />
-  </Layout>
-);
+export default withFirebase(Login);

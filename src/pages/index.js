@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-import Layout from "../components/Layout";
 import SEO from "../components/SEO";
 import Logo from "../components/Logo";
 
@@ -20,7 +19,7 @@ const Landing = styled.div`
 `;
 
 const IndexPage = () => (
-  <Layout>
+  <>
     <SEO title="Home" route="/" />
     <Landing>
       <Logo size="medium" />
@@ -30,7 +29,7 @@ const IndexPage = () => (
         see links based on your status.
       </p>
     </Landing>
-  </Layout>
+  </>
 );
 
 export default IndexPage;

@@ -110,23 +110,23 @@ class ApplicantView extends Component {
                 (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
               );
 
-              // if timeslot exists, update the value, otherwise push it
-              if (index > -1) {
-                timeslots[day][index] = ts;
+                // if timeslot exists, update the value, otherwise push it
+                if (index > -1) {
+                  timeslots[day][index] = ts;
+                } else {
+                  timeslots[day].push(ts);
+                }
               } else {
-                timeslots[day].push(ts);
+                timeslots[day] = [ts];
               }
-            } else {
-              timeslots[day] = [ts];
-            }
-          });
+            });
 
-          // remove timeslots that no longer exist
-          const validIds = listenerData.map((ts) => ts.id);
-          for (const day in timeslots)
-            timeslots[day] = timeslots[day].filter((ts) =>
-              validIds.includes(ts.id)
-            );
+            // remove timeslots that no longer exist
+            const validIds = listenerData.map((ts) => ts.id);
+            for (const day in timeslots)
+              timeslots[day] = timeslots[day].filter((ts) =>
+                validIds.includes(ts.id)
+              );
 
           const clonedTimeslots = cloneDeep(timeslots);
           this.setState({ timeslots: clonedTimeslots });
