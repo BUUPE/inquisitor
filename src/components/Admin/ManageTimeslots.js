@@ -229,7 +229,7 @@ const ManageTimeslots = ({ firebase }) => {
     delete updatedTimeslot.applicant;
     if (newId !== "") {
       updatedTimeslot.applicant = {
-        id: newId,
+        uid: newId,
         name: applicants.find((applicant) => applicant.id === newId).name,
       };
     }
@@ -355,11 +355,13 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {interviewers.sort((a,b) => a.name > b.name ? 1 : -1).map((interviewer) => (
-                      <option value={interviewer.id} key={interviewer.id}>
-                        {interviewer.name}
-                      </option>
-                    ))}
+                    {interviewers
+                      .sort((a, b) => (a.name > b.name ? 1 : -1))
+                      .map((interviewer) => (
+                        <option value={interviewer.id} key={interviewer.id}>
+                          {interviewer.name}
+                        </option>
+                      ))}
                   </Form.Control>
                 </Form.Group>
 
@@ -377,11 +379,13 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {interviewers.sort((a,b) => a.name > b.name ? 1 : -1).map((interviewer) => (
-                      <option value={interviewer.id} key={interviewer.id}>
-                        {interviewer.name}
-                      </option>
-                    ))}
+                    {interviewers
+                      .sort((a, b) => (a.name > b.name ? 1 : -1))
+                      .map((interviewer) => (
+                        <option value={interviewer.id} key={interviewer.id}>
+                          {interviewer.name}
+                        </option>
+                      ))}
                   </Form.Control>
                 </Form.Group>
 
@@ -394,11 +398,13 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {applicants.sort((a,b) => a.name > b.name ? 1 : -1).map((applicant) => (
-                      <option value={applicant.id} key={applicant.id}>
-                        {applicant.name}
-                      </option>
-                    ))}
+                    {applicants
+                      .sort((a, b) => (a.name > b.name ? 1 : -1))
+                      .map((applicant) => (
+                        <option value={applicant.id} key={applicant.id}>
+                          {applicant.name}
+                        </option>
+                      ))}
                   </Form.Control>
                 </Form.Group>
 

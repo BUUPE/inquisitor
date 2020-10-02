@@ -21,7 +21,7 @@ import { formatTime } from "../../util/helper";
 import { FullSizeContainer } from "../../styles/global";
 
 const Sidebar = styled.ul`
-  min-width: 200px;
+  max-width: 300px;
   padding: 15px;
   background: ${(props) => props.theme.palette.darkShades};
   margin: 0;
@@ -42,6 +42,11 @@ const StyledLi = styled.li`
   padding-top: 10px;
   padding-bottom: 10px;
   border-bottom: 1px solid grey;
+
+  &:hover {
+    color: ${(props) => props.theme.palette.mainBrand};
+    text-decoration: underline;
+  }
 `;
 
 class InterviewerView extends Component {
@@ -171,6 +176,7 @@ class InterviewerView extends Component {
           "currentApplication",
           JSON.stringify(currentApplication)
         ); // this may lead to issues if the data is very old
+        window.onbeforeunload = null; // reset this when they go to a new person
       });
   };
 
@@ -331,21 +337,34 @@ class InterviewerView extends Component {
       return <h1>Please select an interview timeslot.</h1>;
     };
 
+    // TODO: remove the uid || id and stick to uid
     return (
       <FullSizeContainer fluid flexdirection="row">
         <Sidebar>
           <h1>Interviews</h1>
           {timeslots
-            .sort((a, b) => (a.time > b.time ? 1 : -1))
+            .sort((a, b) => {
+              if (a.time.getTime() === b.time.getTime())
+                return a.applicant.name > b.applicant.name ? 1 : -1;
+              else return a.time > b.time ? 1 : -1;
+            })
             .map((timeslot) => {
               return (
                 <StyledLi
                   key={timeslot.id}
-                  selected={timeslot.applicant?.id === currentApplication?.id}
-                  onClick={() => this.fetchApplication(timeslot.applicant?.id)}
+                  selected={
+                    timeslot.applicant?.id === currentApplication?.id ||
+                    timeslot.applicant?.uid === currentApplication?.id
+                  }
+                  onClick={() =>
+                    this.fetchApplication(
+                      timeslot.applicant?.id || timeslot.applicant?.uid
+                    )
+                  }
                 >
-                  <strong>{timeslot.applicant?.name || "No applicant"}</strong>{" "}
-                  ({formatTime(timeslot.time)})
+                  <strong>{timeslot.applicant?.name || "No applicant"}</strong>
+                  <br />
+                  {formatTime(timeslot.time)} {timeslot.time.toDateString()}
                 </StyledLi>
               );
             })}
