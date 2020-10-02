@@ -1,9 +1,15 @@
 import React, { useState } from "react";
+import styled from "styled-components";
+
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Toast from "react-bootstrap/Toast";
 import RangeSlider from "react-bootstrap-range-slider";
+
+const StyledP = styled.p`
+  white-space: pre-wrap;
+`;
 
 const QuestionNotes = ({
   question,
@@ -35,7 +41,7 @@ const QuestionNotes = ({
 
   return (
     <>
-      <p>{question.answer}</p>
+      <StyledP>{question.answer}</StyledP>
       <Form onSubmit={handleSubmit}>
         <div className="note-wrapper">
           <Col sm={9}>

@@ -62,32 +62,7 @@ class Firebase extends FirebaseSuper {
     this.inquisitorData
       .collection("applications")
       .where("interview.interviewed", "==", true)
-      .orderBy("interview.level")
-      .orderBy("applicant.name");
-
-  secondRoundApplicants = () =>
-    this.inquisitorData
-      .collection("applications")
-      .where("deliberation.acceptedUPE", "==", true)
-      .where("deliberation.applicantAccepted", "==", true)
-      .orderBy("interview.level")
-      .orderBy("applicant.name");
-
-  deliberatedApplicants = () =>
-    this.inquisitorData
-      .collection("applications")
-      .where("deliberation.voted", "==", true)
-      .where("deliberation.complete", "==", false)
-      .orderBy("interview.level")
-      .orderBy("applicant.name");
-
-  deliberatedApplicantsTwo = () =>
-    this.inquisitorData
-      .collection("applications")
-      .where("deliberation.secondRound.voted", "==", true)
-      .where("deliberation.secondRound.complete", "==", false)
-      .orderBy("interview.level")
-      .orderBy("applicant.name");
+      .orderBy("interview.level");
 
   question = (uid) => this.inquisitorData.collection("questions").doc(uid);
 

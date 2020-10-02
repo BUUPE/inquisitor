@@ -10,11 +10,9 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
 import {
-  AuthUserContext,
-  withFirebase,
   withAuthorization,
 } from "upe-react-components";
-import { isRecruitmentTeam } from "../../util/conditions";
+import { isAdmin } from "../../util/conditions";
 import { asyncForEach } from "../../util/helper";
 
 const StyledContainer = styled(Container)`
@@ -22,75 +20,16 @@ const StyledContainer = styled(Container)`
 `;
 
 class AdminSettings extends Component {
-  constructor(props) {
-    super(props);
-  }
-  _initFirebase = false;
   state = {
-    settings: null,
-    applicationList: null,
-    applicationList2: null,
-    loading: true,
-    error: null,
-  };
-  static contextType = AuthUserContext;
-  unsub = null;
-
-  componentDidMount() {
-    if (this.props.firebase && !this._initFirebase) this.loadData();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.firebase && !this._initFirebase) this.loadData();
-  }
-
-  componentWillUnmount() {
-    if (typeof this.unsub === "function") this.unsub();
-  }
-
-  loadData = async () => {
-    this._initFirebase = true;
-
-    const doc = await this.props.firebase.generalSettings().get();
-
-    if (!doc.exists) this.setState({ error: "Failed to load timeslots!" });
-    else {
-      const settings = doc.data();
-      this.setState({ settings }, () => {
-        console.log("Settings loaded");
-      });
-    }
-
-    this.props.firebase
-      .interviewedApplicants()
-      .get()
-      .then((querySnapshot) => {
-        const applicationList = querySnapshot.docs.map((doc) => {
-          return { id: doc.id, ...doc.data() };
-        });
-        this.setState({ applicationList }, () => {
-          console.log("Applicantions Loaded");
-        });
-      });
-
-    this.props.firebase
-      .deliberatedApplicants()
-      .get()
-      .then((querySnapshot) => {
-        const applicationList2 = querySnapshot.docs.map((doc) => {
-          return { id: doc.id, ...doc.data() };
-        });
-        this.setState({ applicationList2, loading: false }, () => {
-          console.log("Deliberated Applications Loaded");
-        });
-      });
+    settings: {},
+    applicationList: [],
+    applicationList2: [],
   };
 
   finishVoting = async () => {
     this.setState({ loading: true });
 
     const { settings, applicationList } = this.state;
-    const authUser = this.context;
 
     const dataOne = {
       votingComplete: true,
@@ -130,7 +69,6 @@ class AdminSettings extends Component {
     this.setState({ loading: true });
 
     const { settings, applicationList } = this.state;
-    const authUser = this.context;
 
     await asyncForEach(applicationList, async (application, index) => {
       if (application.deliberation.acceptedUPE) {
@@ -206,22 +144,10 @@ class AdminSettings extends Component {
 
   render() {
     const {
-      loading,
-      error,
       settings,
       applicationList,
       applicationList2,
     } = this.state;
-
-    if (loading) return <Loader />;
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>{error}</h1>
-        </Container>
-      );
-
-    const authUser = this.context;
 
     const ApplicantStatus = ({ data }) => {
       return (
@@ -355,4 +281,4 @@ class AdminSettings extends Component {
   }
 }
 
-export default withFirebase(AdminSettings);
+export default withAuthorization(isAdmin)(AdminSettings);

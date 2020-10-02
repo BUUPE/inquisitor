@@ -1,21 +1,14 @@
 import React, { useContext } from "react";
 
-import { memberOrRecruitmentTeam } from "../util/conditions";
+import { isMember } from "../util/conditions";
 import { AuthUserContext } from "upe-react-components";
-import Layout from "../components/Layout";
 import { InterviewerView, ApplicantView } from "../components/Deliberation";
 
-const DeliberationPage = () => {
+export default () => {
   const authUser = useContext(AuthUserContext);
-  return memberOrRecruitmentTeam(authUser) ? (
+  return isMember(authUser) ? (
     <InterviewerView />
   ) : (
     <ApplicantView />
   );
-};
-
-export default () => (
-  <Layout>
-    <DeliberationPage />
-  </Layout>
-);
+}

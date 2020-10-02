@@ -15,9 +15,7 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
-import { RequiredAsterisk } from "../ApplicationForm";
-
-import { Container } from "../../styles/global";
+import { Container, RequiredAsterisk } from "../../styles/global";
 import Loader from "../Loader";
 import Error from "../Error";
 
