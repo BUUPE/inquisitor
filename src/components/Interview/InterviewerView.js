@@ -319,7 +319,7 @@ class InterviewerView extends Component {
                 startTime={currentApplication.interview.startedAt}
                 limit={
                   timeslots.find(
-                    (ts) => ts.applicant?.uid === currentApplication?.id
+                    (ts) => (ts.applicant?.uid === currentApplication?.id || ts.applicant?.id === currentApplication?.id)
                   ).timeslotLength
                 }
               />
