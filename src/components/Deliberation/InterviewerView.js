@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
 import styled from "styled-components";
+import cloneDeep from "lodash.clonedeep";
+import swal from "@sweetalert/with-react";
 
 import Col from "react-bootstrap/Col";
 
@@ -10,7 +12,7 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
-import { isMember, isRecruitmentTeam, isAdmin} from "../../util/conditions";
+import { isMember, isRecruitmentTeam, isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
 import AdminSettings from "./AdminSettings";
@@ -23,7 +25,7 @@ const SidebarBase = styled.ul`
   width: 100%;
   height: 100%;
   padding: 15px;
-  background: ${(props) => props.theme.palette.darkShades};
+  background: ${props => props.theme.palette.darkShades};
   list-style: none;
 
   h1 {
@@ -41,15 +43,14 @@ const SidebarBase = styled.ul`
 `;
 
 const SidebarItem = styled.li`
-  color: ${(props) =>
-    props.selected ? props.theme.palette.mainBrand : "white"};
+  color: ${props => (props.selected ? props.theme.palette.mainBrand : "white")};
   font-weight: bold;
   padding-top: 10px;
   padding-bottom: 10px;
   cursor: pointer;
 
   &:hover {
-    color: ${(props) => props.theme.palette.mainBrand };
+    color: ${props => props.theme.palette.mainBrand};
     text-decoration: underline;
   }
 `;
@@ -57,41 +58,39 @@ const SidebarItem = styled.li`
 const DetailsDisplay = () => (
   <div>
     <h1> Welcome to Deliberations! </h1>
-      <p>
-        {" "}
-        Please read the instructions bellow carefully before proceeding
-        to deliberate on all the candidates.{" "}
-      </p>
+    <p>
+      {" "}
+      Please read the instructions bellow carefully before proceeding to
+      deliberate on all the candidates.{" "}
+    </p>
 
-      <h3> How to Vote </h3>
-      <p>
-        {" "}
-        In order to vote, select one of the candidates from the sidebar,
-        and proceed to review their application, in it, you'll be able
-        to see not only their general application, but also the details
-        of their interview.{" "}
-      </p>
-      <p>
-        {" "}
-        After reviewing their application, you'll find two buttons at
-        the bottom, approve & deny, you only get 1 vote per candidate,
-        although you will be able to switch your vote until the
-        deliberations close.{" "}
-      </p>
+    <h3> How to Vote </h3>
+    <p>
+      {" "}
+      In order to vote, select one of the candidates from the sidebar, and
+      proceed to review their application, in it, you'll be able to see not only
+      their general application, but also the details of their interview.{" "}
+    </p>
+    <p>
+      {" "}
+      After reviewing their application, you'll find two buttons at the bottom,
+      approve & deny, you only get 1 vote per candidate, although you will be
+      able to switch your vote until the deliberations close.{" "}
+    </p>
 
-      <h3> Final Details </h3>
-      <p>
-        {" "}
-        You will not be able to see anyone else's votes of the final
-        results until the EBoard announces them.{" "}
-      </p>
+    <h3> Final Details </h3>
+    <p>
+      {" "}
+      You will not be able to see anyone else's votes of the final results until
+      the EBoard announces them.{" "}
+    </p>
   </div>
 );
 
 class InterviewerView extends Component {
   _initFirebase = false;
   state = {
-    applications: null,
+    applications: [],
     currentApplication: "details",
     settings: null,
     loading: true,
@@ -119,14 +118,16 @@ class InterviewerView extends Component {
     this._initFirebase = true;
 
     const initialApplication = "details";
-    const cachedApplication = JSON.parse(window.localStorage.getItem("currentApplicationDeliberation"));
+    const cachedApplication = JSON.parse(
+      window.localStorage.getItem("currentApplicationDeliberation")
+    );
     const currentApplication = cachedApplication || initialApplication;
 
     const questions = await this.props.firebase
       .questions()
       .get()
-      .then((querySnapshot) =>
-        querySnapshot.docs.map((doc) => ({
+      .then(querySnapshot =>
+        querySnapshot.docs.map(doc => ({
           ...doc.data(),
           id: doc.id,
         }))
@@ -135,7 +136,7 @@ class InterviewerView extends Component {
     const levelConfig = await this.props.firebase
       .levelConfig()
       .get()
-      .then((doc) => {
+      .then(doc => {
         if (!doc.exists) {
           this.setState({ error: "LevelConfig does not exist!" });
           return {};
@@ -144,13 +145,13 @@ class InterviewerView extends Component {
       });
 
     const settings = await new Promise((resolve, reject) => {
-      let resolveOnce = (doc) => {
+      let resolveOnce = doc => {
         resolveOnce = () => null;
         resolve(doc);
       };
       this.unsubSettings = this.props.firebase
         .generalSettings()
-        .onSnapshot((doc) => {
+        .onSnapshot(doc => {
           if (!doc.exists) this.setState({ error: "Failed to load settings!" });
           else {
             const settings = doc.data();
@@ -161,56 +162,87 @@ class InterviewerView extends Component {
     });
 
     const applications = await new Promise((resolve, reject) => {
-      let resolveOnce = (doc) => {
+      let resolveOnce = doc => {
         resolveOnce = () => null;
         resolve(doc);
       };
-      this.unsubSettings = this.props.firebase
+      this.unsubApplications = this.props.firebase
         .interviewedApplicants()
-        .onSnapshot((querySnapshot) => {
-          const applications = querySnapshot.docs.map((doc) => {
+        .onSnapshot(querySnapshot => {
+          const applications = querySnapshot.docs.map(doc => {
             const application = doc.data();
             return {
               id: doc.id,
               ...application,
-              name: application.responses.find(r => r.id === 1).value
+              name: application.responses.find(r => r.id === 1).value,
             };
           });
           this.setState({ applications });
           resolveOnce(applications);
+
+          if (
+            typeof currentApplication === "object" &&
+            currentApplication !== null
+          ) {
+            this.setCurrentApplication(
+              applications.find(a => a.id === currentApplication.id)
+            );
+          }
         }, reject);
     });
+
     this.setState({
       settings,
-    applications,
-    questions,
-levelConfig,
-currentApplication,
-loading: false
-});
+      applications,
+      questions,
+      levelConfig,
+      currentApplication,
+      loading: false,
+    });
   };
 
-  setCurrentApplication = (currentApplication) => {
-    window.localStorage.setItem("currentApplicationDeliberation", JSON.stringify(currentApplication));
-    this.setState({currentApplication});
-  }
+  setCurrentApplication = currentApplication => {
+    window.localStorage.setItem(
+      "currentApplicationDeliberation",
+      JSON.stringify(currentApplication)
+    );
+    this.setState({ currentApplication });
+  };
+
+  voteApplicant = decision => {
+    const { currentApplication } = this.state;
+    const updatedApplication = cloneDeep(currentApplication);
+    delete updatedApplication.id;
+    updatedApplication.deliberation.votes[this.context.uid] = decision;
+
+    this.props.firebase
+      .application(currentApplication.id)
+      .update(updatedApplication)
+      .then(() =>
+        swal(
+          "You voted!",
+          `You chose to ${decision ? "accept" : "deny"}. Nice.`,
+          "success"
+        )
+      )
+      .catch(err => console.error(err));
+  };
 
   render() {
     const {
       loading,
       error,
+      settings,
       applications,
       currentApplication,
       questions,
-levelConfig,
-     } = this.state;
+      levelConfig,
+    } = this.state;
 
-    if (error) return <Error message={error} />
+    if (error) return <Error message={error} />;
     if (loading) return <Loader />;
 
-    const {
-      deliberationsOpen,
-    } = this.state.settings;
+    const { deliberationsOpen } = this.state.settings;
 
     const authUser = this.context;
 
@@ -223,27 +255,55 @@ levelConfig,
 
     let Content;
     if (currentApplication === "details") Content = () => <DetailsDisplay />;
-    else if (currentApplication === "admin") Content = () => <AdminSettings round={1} />;
-    else Content = () => <ApplicationDisplay questions={questions} levelConfig={levelConfig} {...currentApplication} />;
+    else if (currentApplication === "admin") {
+      Content = () => (
+        <AdminSettings
+          round={1}
+          settings={settings}
+          applications={applications}
+        />
+      );
+    } else
+      Content = () => (
+        <ApplicationDisplay
+          questions={questions}
+          levelConfig={levelConfig}
+          voteApplicant={this.voteApplicant}
+          vote={currentApplication.deliberation.votes[authUser.uid]}
+          {...currentApplication}
+        />
+      );
 
     const Sidebar = () => (
-      <Col className="flex-column" md={3} style={{padding: 0}}>
+      <Col className="flex-column" md={3} style={{ padding: 0 }}>
         <SidebarBase>
           <h1>Applications</h1>
-          <SidebarItem onClick={() => this.setCurrentApplication("details")}>
+          <SidebarItem
+            selected={currentApplication === "details"}
+            onClick={() => this.setCurrentApplication("details")}
+          >
             Voting Instructions
           </SidebarItem>
           {isAdmin(authUser) && (
-            <SidebarItem onClick={() => this.setCurrentApplication("admin")}>
-              Admin Settings
+            <SidebarItem
+              selected={currentApplication === "admin"}
+              onClick={() => this.setCurrentApplication("admin")}
+            >
+              Add Feedback
             </SidebarItem>
           )}
           <hr />
-          {applications.map((application) => (
-            <SidebarItem key={application.id} onClick={() => this.setCurrentApplication(application)}>
-              {application.name}
-            </SidebarItem>
-          ))}
+          {applications
+            .sort((a, b) => (a.name > b.name ? 1 : -1))
+            .map(application => (
+              <SidebarItem
+                selected={currentApplication.id === application.id}
+                key={application.id}
+                onClick={() => this.setCurrentApplication(application)}
+              >
+                {application.name}
+              </SidebarItem>
+            ))}
         </SidebarBase>
       </Col>
     );
@@ -251,7 +311,7 @@ levelConfig,
     return (
       <FullSizeContainer fluid flexdirection="row">
         <Sidebar />
-        <Col md={9} style={{padding: 15}}>
+        <Col md={9} style={{ padding: 15 }}>
           <Content />
         </Col>
       </FullSizeContainer>

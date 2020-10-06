@@ -1,17 +1,20 @@
 import React, { Component, Fragment } from "react";
 import styled from "styled-components";
 
-import Loader from "../Loader";
-import FeedbackForm from "./FeedbackForm";
-import QuestionDisplay from "./QuestionDisplay";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
+import Table from "react-bootstrap/Table";
+import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
 
-import {
-  withAuthorization,
-} from "upe-react-components";
+import { withAuthorization } from "upe-react-components";
+
+import Loader from "../Loader";
+import FeedbackForm from "./FeedbackForm";
+import QuestionDisplay from "./QuestionDisplay";
+
 import { isAdmin } from "../../util/conditions";
 import { asyncForEach } from "../../util/helper";
 
@@ -21,21 +24,15 @@ const StyledContainer = styled(Container)`
 
 class AdminSettings extends Component {
   state = {
-    settings: {},
-    applicationList: [],
-    applicationList2: [],
+    showModal: false,
+    currentApplicationId: null,
+    currentFeedback: "",
   };
-
   finishVoting = async () => {
-    this.setState({ loading: true });
-
-    const { settings, applicationList } = this.state;
-
-    const dataOne = {
-      votingComplete: true,
-    };
-
-    this.props.firebase.generalSettings().set(dataOne, { merge: true });
+    const { applications } = this.props;
+    await this.props.firebase
+      .generalSettings()
+      .update({ deliberationsOpen: false });
 
     await asyncForEach(applicationList, async (application, index) => {
       const dataTwo = {
@@ -61,8 +58,6 @@ class AdminSettings extends Component {
         .application(application.id)
         .set(dataTwo, { merge: true });
     });
-
-    this.loadData();
   };
 
   finishDeliberation = async () => {
@@ -91,7 +86,7 @@ class AdminSettings extends Component {
               name
             );
           })
-          .catch((err) => {
+          .catch(err => {
             console.log(err);
           });
       } else {
@@ -127,7 +122,7 @@ class AdminSettings extends Component {
               name
             );
           })
-          .catch((err) => {
+          .catch(err => {
             console.log(err);
           });
       }
@@ -143,95 +138,49 @@ class AdminSettings extends Component {
   };
 
   render() {
-    const {
-      settings,
-      applicationList,
-      applicationList2,
-    } = this.state;
+    const { applications, settings  } = this.props;
+    const {showModal, currentFeedback} = this.state;
+    settings.deliberationsOpen = false;
 
-    const ApplicantStatus = ({ data }) => {
+    const ApplicantStatus = ({ deliberation, name, id }) => {
+      const allVotes = Object.values(deliberation.votes);
+      const positiveVotes = allVotes.filter(vote => !!vote).length;
+      const negativeVotes = allVotes.filter(vote => !vote).length;
+      const accepted = positiveVotes / allVotes.length >= 0.75;
       return (
-        <Container>
-          <br />
-          <hr />
-          <Row>
-            <Col>
-              <h3> {data.applicant.name} </h3>
-            </Col>
-          </Row>
-          <br />
-          <Row>
-            <Col>
-              <h4> Positive Votes </h4>
-              <p> {data.deliberation.count.accept} </p>
-            </Col>
-            <Col>
-              <h4> Negative Votes </h4>
-              <p> {data.deliberation.count.deny} </p>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h4> Status </h4>
-              <p>
-                {data.deliberation.count.accept /
-                  (data.deliberation.count.accept +
-                    data.deliberation.count.deny) >=
-                0.75
-                  ? "Accepted"
-                  : "Not Accepted"}
-              </p>
-            </Col>
-          </Row>
-        </Container>
+        <tr>
+          <td>{name}</td>
+          <td>
+            +{positiveVotes}
+            /-
+            {negativeVotes}
+          </td>
+          <td style={{ color: accepted ? "green" : "red" }}>
+            {accepted ? "Accepted" : "Not Accepted"}
+          </td>
+          {!settings.deliberationsOpen && (
+            <td
+              onClick={() =>
+                this.setState({
+                  showModal: true,
+                  currentApplicationId: id,
+                  currentFeedback: deliberation.feedback,
+                })
+              }
+              style={{ cursor: "pointer" }}
+            >
+              Add Feedback
+            </td>
+          )}
+        </tr>
       );
     };
-
-    const applications = (
-      <Container>
-        <Row>
-          <Col>
-            {applicationList.map((application) => (
-              <ApplicantStatus key={application.id} data={application} />
-            ))}
-            <Container>
-              <Row>
-                <Col>
-                  <hr />
-                </Col>
-              </Row>
-            </Container>
-          </Col>
-        </Row>
-      </Container>
-    );
-
-    const applicationStatus = (
-      <>
-        <Container>
-          <Row>
-            <Col>
-              <h2> Current Status </h2>
-            </Col>
-          </Row>
-          <Row>{applications}</Row>
-        </Container>
-        <br />
-        <Container>
-          <Row>
-            <Col>
-              <Button onClick={this.finishVoting}>Finish Voting</Button>
-            </Col>
-          </Row>
-        </Container>
-      </>
-    );
 
     const feedbackFormList = (
       <Container>
         <Row>
           <Col>
-            {applicationList2.map((application) => (
+            {applications.map(application => (
               <Fragment key={application.id}>
                 {application.deliberation.complete ? null : (
                   <FeedbackForm
@@ -256,7 +205,7 @@ class AdminSettings extends Component {
             </Col>
           </Row>
           <Row>
-            {applicationList2.length !== 0 ? (
+            {applications.length !== 0 ? (
               feedbackFormList
             ) : (
               <StyledContainer>
@@ -277,7 +226,69 @@ class AdminSettings extends Component {
       </>
     );
 
-    return <>{settings.votingComplete ? feedbackForms : applicationStatus}</>;
+    return (
+      <>
+        <Table bordered hover>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Votes</th>
+              <th>Status</th>
+              {!settings.deliberationsOpen && <th>Feedback</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {applications.map(application => (
+              <ApplicantStatus key={application.id} {...application} />
+            ))}
+          </tbody>
+        </Table>
+
+        <Row>
+          <Col>
+            <Button>Finish Voting</Button>
+          </Col>
+        </Row>
+
+        <Modal
+          show={showModal}
+          onHide={() => this.setState({ showModal: false })}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Add Feedback</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="exampleForm.ControlTextarea1">
+                <Form.Label>Example textarea</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows="3"
+                  value={currentFeedback}
+                  onChange={e =>
+                    this.setState({ currentFeedback: e.target.value })
+                  }
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => this.setState({ showModal: false })}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => this.setState({ showModal: false })}
+            >
+              Save
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </>
+    );
   }
 }
 

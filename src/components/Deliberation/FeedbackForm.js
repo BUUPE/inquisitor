@@ -65,7 +65,7 @@ class FeedbackForm extends Component {
     this.setState({ loading: false });
   };
 
-  onSubmit = (event) => {
+  onSubmit = event => {
     this.setState({ sending: true });
 
     const { feedback } = this.state;
@@ -101,7 +101,7 @@ class FeedbackForm extends Component {
         });
         this.props.loadData();
       })
-      .catch((error) => {
+      .catch(error => {
         this.setState({ error });
       });
 
@@ -111,7 +111,7 @@ class FeedbackForm extends Component {
     event.preventDefault();
   };
 
-  onChange = (event) => {
+  onChange = event => {
     this.setState({ [event.target.name]: event.target.value });
   };
 

@@ -29,35 +29,41 @@ const ApplicantView = ({ firebase }) => {
 
   const authUser = useContext(AuthUserContext);
 
-  useEffect(() => {
-    if (firebase && !!authUser) {
-      const settingsUnsub = firebase
-        .generalSettings()
-        .onSnapshot((docSnapshot) => {
-          if (docSnapshot.exists) setSettings(docSnapshot.data());
-          else setError("No Settings!");
-          setLoadedSettings(true);
-        });
+  useEffect(
+    () => {
+      if (firebase && !!authUser) {
+        const settingsUnsub = firebase
+          .generalSettings()
+          .onSnapshot(docSnapshot => {
+            if (docSnapshot.exists) setSettings(docSnapshot.data());
+            else setError("No Settings!");
+            setLoadedSettings(true);
+          });
 
-      const applicationUnsub = firebase
-        .application(authUser.uid)
-        .onSnapshot((docSnapshot) => {
-          if (docSnapshot.exists) {
-            setApplication(docSnapshot.data());
-          } else setError("No Application!");
-          setLoadedApplication(true);
-        });
+        const applicationUnsub = firebase
+          .application(authUser.uid)
+          .onSnapshot(docSnapshot => {
+            if (docSnapshot.exists) {
+              setApplication(docSnapshot.data());
+            } else setError("No Application!");
+            setLoadedApplication(true);
+          });
 
-      return () => {
-        settingsUnsub();
-        applicationUnsub();
-      };
-    }
-  }, [firebase, authUser]);
+        return () => {
+          settingsUnsub();
+          applicationUnsub();
+        };
+      }
+    },
+    [firebase, authUser]
+  );
 
-  useEffect(() => {
-    if (loadedSettings && loadedApplication) setLoading(false);
-  }, [loadedApplication, loadedSettings]);
+  useEffect(
+    () => {
+      if (loadedSettings && loadedApplication) setLoading(false);
+    },
+    [loadedApplication, loadedSettings]
+  );
 
   if (error) return <Error error={error} />;
   if (loading) return <Loader />;
@@ -89,11 +95,11 @@ const ApplicantView = ({ firebase }) => {
     }
   };
 
-  const submitData = async (formData) => {
+  const submitData = async formData => {
     if (formData.file === null) return;
 
     const data = {
-      gradYear: application.responses.find((r) => r.id === 5).value,
+      gradYear: application.responses.find(r => r.id === 5).value,
       profileIMG: formData.profileIMG,
       socials: {
         facebook: formData.facebook,
@@ -107,14 +113,14 @@ const ApplicantView = ({ firebase }) => {
     await firebase
       .uploadProfile("Provisional", formData.profileIMG)
       .put(formData.file)
-      .catch((error) => {
+      .catch(error => {
         setError(error);
       });
 
     await firebase
       .user(authUser.uid)
       .update(data)
-      .catch((error) => {
+      .catch(error => {
         setError(error);
       });
 
@@ -150,6 +156,8 @@ const ApplicantView = ({ firebase }) => {
         <h1>Deliberations are still underway!</h1>
       </Container>
     );
+
+    // TODO: show denied state tell them to wait for email
 
   // theyre accepted
   if (!application.deliberation.confirmed) {
@@ -225,7 +233,7 @@ const ApplicantView = ({ firebase }) => {
       <DataForm
         submitFunction={submitData}
         firstName={
-          application.responses.find((r) => r.id === 1).value.split(" ")[0]
+          application.responses.find(r => r.id === 1).value.split(" ")[0]
         }
       />
     </Container>
@@ -243,7 +251,7 @@ const DataForm = ({ submitFunction, firstName }) => {
   });
   const [validated, setValidated] = useState(false);
 
-  const saveData = (e) => {
+  const saveData = e => {
     e.preventDefault();
     const form = e.currentTarget;
     if (form.checkValidity() === false) {
@@ -255,14 +263,14 @@ const DataForm = ({ submitFunction, firstName }) => {
     }
   };
 
-  const updateField = (e) =>
+  const updateField = e =>
     setFormData(
       update(formData, {
         [e.target.name]: { $set: e.target.value },
       })
     );
 
-  const updateImage = (e) => {
+  const updateImage = e => {
     const hasIMG = e.target.files.length === 1;
     let fileName = "";
     // TODO: Needs refactor after website
