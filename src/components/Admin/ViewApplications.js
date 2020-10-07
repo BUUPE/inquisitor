@@ -96,16 +96,21 @@ const ViewApplications = ({ firebase }) => {
     );
   };
 
-  const getApplicantName = application => application.responses.find(r => r.id === 1).value;
+  const getApplicantName = (application) =>
+    application.responses.find((r) => r.id === 1).value;
 
   return (
     <AdminLayout>
       <Row style={{ height: "100%" }}>
         <Col style={{ flexGrow: 0, flexBasis: 200 }}>
           <ApplicationList>
-            {applications.sort((a,b) => getApplicantName(a) > getApplicantName(b) ? 1 : -1).map((application) => (
-              <ApplicationListItem key={application.id} data={application} />
-            ))}
+            {applications
+              .sort((a, b) =>
+                getApplicantName(a) > getApplicantName(b) ? 1 : -1
+              )
+              .map((application) => (
+                <ApplicationListItem key={application.id} data={application} />
+              ))}
           </ApplicationList>
         </Col>
         <Col>

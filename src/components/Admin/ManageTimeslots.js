@@ -252,7 +252,6 @@ const ManageTimeslots = ({ firebase }) => {
             <TimeslotCard
               key={timeslot.id}
               onClick={() => {
-                console.log("setting", timeslot);
                 setCurrentTimeslot(timeslot);
                 setShowModal(true);
               }}
@@ -355,11 +354,13 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {interviewers.sort((a,b) => a.name > b.name ? 1 : -1).map((interviewer) => (
-                      <option value={interviewer.id} key={interviewer.id}>
-                        {interviewer.name}
-                      </option>
-                    ))}
+                    {interviewers
+                      .sort((a, b) => (a.name > b.name ? 1 : -1))
+                      .map((interviewer) => (
+                        <option value={interviewer.id} key={interviewer.id}>
+                          {interviewer.name}
+                        </option>
+                      ))}
                   </Form.Control>
                 </Form.Group>
 
@@ -377,11 +378,13 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {interviewers.sort((a,b) => a.name > b.name ? 1 : -1).map((interviewer) => (
-                      <option value={interviewer.id} key={interviewer.id}>
-                        {interviewer.name}
-                      </option>
-                    ))}
+                    {interviewers
+                      .sort((a, b) => (a.name > b.name ? 1 : -1))
+                      .map((interviewer) => (
+                        <option value={interviewer.id} key={interviewer.id}>
+                          {interviewer.name}
+                        </option>
+                      ))}
                   </Form.Control>
                 </Form.Group>
 
@@ -394,11 +397,13 @@ const ManageTimeslots = ({ firebase }) => {
                     custom
                   >
                     <option value="">-</option>
-                    {applicants.sort((a,b) => a.name > b.name ? 1 : -1).map((applicant) => (
-                      <option value={applicant.id} key={applicant.id}>
-                        {applicant.name}
-                      </option>
-                    ))}
+                    {applicants
+                      .sort((a, b) => (a.name > b.name ? 1 : -1))
+                      .map((applicant) => (
+                        <option value={applicant.id} key={applicant.id}>
+                          {applicant.name}
+                        </option>
+                      ))}
                   </Form.Control>
                 </Form.Group>
 

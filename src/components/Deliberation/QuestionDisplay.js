@@ -3,8 +3,9 @@ import styled from "styled-components";
 
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
+
+import { Container } from "../../styles/global";
 
 const StyledP = styled.p`
   white-space: pre-wrap;
@@ -79,7 +80,7 @@ const QuestionDisplay = ({
           style={{ marginBottom: 20 }}
           onClick={() => setShowDetails(!showDetails)}
         >
-          {showDetails ? "Hide" : "Show"} Details
+          {showDetails ? "▲ Hide" : "▼ Show"} Details
         </Button>
         {showDetails && <QuestionDetails />}
       </>

@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
+import swal from "@sweetalert/with-react";
 import styled from "styled-components";
 import cloneDeep from "lodash.clonedeep";
-import swal from "@sweetalert/with-react";
+import update from "immutability-helper";
 
 import Col from "react-bootstrap/Col";
 
@@ -12,10 +13,10 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
-import { isMember, isRecruitmentTeam, isAdmin } from "../../util/conditions";
+import { isMember, isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
-import AdminSettings from "./AdminSettings";
+import FeedbackPage from "./FeedbackPage";
 import ApplicationDisplay from "./ApplicationDisplay";
 import { Container, FullSizeContainer } from "../../styles/global";
 
@@ -25,7 +26,7 @@ const SidebarBase = styled.ul`
   width: 100%;
   height: 100%;
   padding: 15px;
-  background: ${props => props.theme.palette.darkShades};
+  background: ${(props) => props.theme.palette.darkShades};
   list-style: none;
 
   h1 {
@@ -43,14 +44,15 @@ const SidebarBase = styled.ul`
 `;
 
 const SidebarItem = styled.li`
-  color: ${props => (props.selected ? props.theme.palette.mainBrand : "white")};
+  color: ${(props) =>
+    props.selected ? props.theme.palette.mainBrand : "white"};
   font-weight: bold;
   padding-top: 10px;
   padding-bottom: 10px;
   cursor: pointer;
 
   &:hover {
-    color: ${props => props.theme.palette.mainBrand};
+    color: ${(props) => props.theme.palette.mainBrand};
     text-decoration: underline;
   }
 `;
@@ -90,7 +92,7 @@ const DetailsDisplay = () => (
 class InterviewerView extends Component {
   _initFirebase = false;
   state = {
-    applications: [],
+    applications: [], // TODO: instead of loading all the applications by default, load their ids, then pass that id to application display/admin settings so they can handle accordingly
     currentApplication: "details",
     settings: null,
     loading: true,
@@ -126,8 +128,8 @@ class InterviewerView extends Component {
     const questions = await this.props.firebase
       .questions()
       .get()
-      .then(querySnapshot =>
-        querySnapshot.docs.map(doc => ({
+      .then((querySnapshot) =>
+        querySnapshot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
         }))
@@ -136,7 +138,7 @@ class InterviewerView extends Component {
     const levelConfig = await this.props.firebase
       .levelConfig()
       .get()
-      .then(doc => {
+      .then((doc) => {
         if (!doc.exists) {
           this.setState({ error: "LevelConfig does not exist!" });
           return {};
@@ -145,13 +147,13 @@ class InterviewerView extends Component {
       });
 
     const settings = await new Promise((resolve, reject) => {
-      let resolveOnce = doc => {
+      let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
       };
       this.unsubSettings = this.props.firebase
         .generalSettings()
-        .onSnapshot(doc => {
+        .onSnapshot((doc) => {
           if (!doc.exists) this.setState({ error: "Failed to load settings!" });
           else {
             const settings = doc.data();
@@ -162,19 +164,19 @@ class InterviewerView extends Component {
     });
 
     const applications = await new Promise((resolve, reject) => {
-      let resolveOnce = doc => {
+      let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
       };
       this.unsubApplications = this.props.firebase
         .interviewedApplicants()
-        .onSnapshot(querySnapshot => {
-          const applications = querySnapshot.docs.map(doc => {
+        .onSnapshot((querySnapshot) => {
+          const applications = querySnapshot.docs.map((doc) => {
             const application = doc.data();
             return {
               id: doc.id,
               ...application,
-              name: application.responses.find(r => r.id === 1).value,
+              name: application.responses.find((r) => r.id === 1).value,
             };
           });
           this.setState({ applications });
@@ -185,7 +187,7 @@ class InterviewerView extends Component {
             currentApplication !== null
           ) {
             this.setCurrentApplication(
-              applications.find(a => a.id === currentApplication.id)
+              applications.find((a) => a.id === currentApplication.id)
             );
           }
         }, reject);
@@ -201,7 +203,7 @@ class InterviewerView extends Component {
     });
   };
 
-  setCurrentApplication = currentApplication => {
+  setCurrentApplication = (currentApplication) => {
     window.localStorage.setItem(
       "currentApplicationDeliberation",
       JSON.stringify(currentApplication)
@@ -209,7 +211,7 @@ class InterviewerView extends Component {
     this.setState({ currentApplication });
   };
 
-  voteApplicant = decision => {
+  voteApplicant = (decision) => {
     const { currentApplication } = this.state;
     const updatedApplication = cloneDeep(currentApplication);
     delete updatedApplication.id;
@@ -225,8 +227,88 @@ class InterviewerView extends Component {
           "success"
         )
       )
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
   };
+
+  saveFeedback = async (applicationId, feedback) =>
+    await this.props.firebase.application(applicationId).update({
+      "deliberation.feedback": feedback,
+    });
+
+  sendResults = () =>
+    swal({
+      title: "Hold up!",
+      text:
+        "If you press Yes, you're going to send emails to all the applicants with their results. If you haven't filled out feedback for everyone, this will be bad!",
+      icon: "warning",
+      buttons: {
+        cancel: {
+          text: "No",
+          value: false,
+          visible: true,
+        },
+        confirm: {
+          text: "Yes",
+          value: true,
+          visible: true,
+        },
+      },
+    }).then((confirm) => {
+      if (confirm) {
+        const everyoneHasFeedback = this.state.applications
+          .map(({ deliberation: { feedback, votes } }) => {
+            const allVotes = Object.values(votes);
+            const positiveVotes = allVotes.filter((vote) => !!vote).length;
+            const accepted = positiveVotes / allVotes.length >= 0.75;
+            return accepted || feedback !== "";
+          })
+          .reduce((prev, cur) => prev && cur);
+
+        if (everyoneHasFeedback) {
+          // Update everyone's accepted status
+          // Get a new write batch
+          const batch = this.props.firebase.firestore.batch();
+          const appsWithResult = this.state.applications.map((application) => {
+            const {
+              id,
+              deliberation: { votes },
+            } = application;
+            const allVotes = Object.values(votes);
+            const positiveVotes = allVotes.filter((vote) => !!vote).length;
+            const accepted = positiveVotes / allVotes.length >= 0.75;
+            if (accepted) {
+              const ref = this.props.firebase.application(id);
+              batch.update(ref, { "deliberation.accepted": true });
+            }
+
+            const newApp = update(application, {
+              deliberation: { accepted: { $set: accepted } },
+            });
+
+            return newApp;
+          });
+
+          // Commit the batch
+          batch.commit().then(() => {
+            /* eslint-disable no-unused-vars */
+            const accepted = appsWithResult.filter(
+              (app) => app.deliberation.accepted
+            );
+            const denied = appsWithResult.filter(
+              (app) => !app.deliberation.accepted
+            );
+            /* eslint-enable no-unused-vars */
+            // send emails here
+          });
+        } else {
+          swal(
+            "Nope",
+            "Make sure everyone who was denied has feedback!",
+            "error"
+          );
+        }
+      }
+    });
 
   render() {
     const {
@@ -257,10 +339,11 @@ class InterviewerView extends Component {
     if (currentApplication === "details") Content = () => <DetailsDisplay />;
     else if (currentApplication === "admin") {
       Content = () => (
-        <AdminSettings
-          round={1}
+        <FeedbackPage
           settings={settings}
           applications={applications}
+          saveFeedback={this.saveFeedback}
+          sendResults={this.sendResults}
         />
       );
     } else
@@ -295,7 +378,7 @@ class InterviewerView extends Component {
           <hr />
           {applications
             .sort((a, b) => (a.name > b.name ? 1 : -1))
-            .map(application => (
+            .map((application) => (
               <SidebarItem
                 selected={currentApplication.id === application.id}
                 key={application.id}

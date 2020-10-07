@@ -29,41 +29,35 @@ const ApplicantView = ({ firebase }) => {
 
   const authUser = useContext(AuthUserContext);
 
-  useEffect(
-    () => {
-      if (firebase && !!authUser) {
-        const settingsUnsub = firebase
-          .generalSettings()
-          .onSnapshot(docSnapshot => {
-            if (docSnapshot.exists) setSettings(docSnapshot.data());
-            else setError("No Settings!");
-            setLoadedSettings(true);
-          });
+  useEffect(() => {
+    if (firebase && !!authUser) {
+      const settingsUnsub = firebase
+        .generalSettings()
+        .onSnapshot((docSnapshot) => {
+          if (docSnapshot.exists) setSettings(docSnapshot.data());
+          else setError("No Settings!");
+          setLoadedSettings(true);
+        });
 
-        const applicationUnsub = firebase
-          .application(authUser.uid)
-          .onSnapshot(docSnapshot => {
-            if (docSnapshot.exists) {
-              setApplication(docSnapshot.data());
-            } else setError("No Application!");
-            setLoadedApplication(true);
-          });
+      const applicationUnsub = firebase
+        .application(authUser.uid)
+        .onSnapshot((docSnapshot) => {
+          if (docSnapshot.exists) {
+            setApplication(docSnapshot.data());
+          } else setError("No Application!");
+          setLoadedApplication(true);
+        });
 
-        return () => {
-          settingsUnsub();
-          applicationUnsub();
-        };
-      }
-    },
-    [firebase, authUser]
-  );
+      return () => {
+        settingsUnsub();
+        applicationUnsub();
+      };
+    }
+  }, [firebase, authUser]);
 
-  useEffect(
-    () => {
-      if (loadedSettings && loadedApplication) setLoading(false);
-    },
-    [loadedApplication, loadedSettings]
-  );
+  useEffect(() => {
+    if (loadedSettings && loadedApplication) setLoading(false);
+  }, [loadedApplication, loadedSettings]);
 
   if (error) return <Error error={error} />;
   if (loading) return <Loader />;
@@ -80,13 +74,15 @@ const ApplicantView = ({ firebase }) => {
       await firebase.user(authUser.uid).update({ roles });
       await firebase
         .application(authUser.uid)
-        .update({ deliberation: { confirmed: true } });
+        .update({ "deliberation.confirmed": true });
     } else {
       delete roles.provisionalMember;
       delete roles.applicant;
       roles.upemember = true;
 
-      await firebase.user(authUser.uid).update({ roles });
+      const gradYear = application.responses.find((r) => r.id === 5).value;
+
+      await firebase.user(authUser.uid).update({ roles, gradYear });
       await firebase.application(authUser.uid).delete();
 
       // TODO: make this welcome actually pretty
@@ -95,11 +91,10 @@ const ApplicantView = ({ firebase }) => {
     }
   };
 
-  const submitData = async formData => {
+  const submitData = async (formData) => {
     if (formData.file === null) return;
 
     const data = {
-      gradYear: application.responses.find(r => r.id === 5).value,
       profileIMG: formData.profileIMG,
       socials: {
         facebook: formData.facebook,
@@ -113,14 +108,14 @@ const ApplicantView = ({ firebase }) => {
     await firebase
       .uploadProfile("Provisional", formData.profileIMG)
       .put(formData.file)
-      .catch(error => {
+      .catch((error) => {
         setError(error);
       });
 
     await firebase
       .user(authUser.uid)
       .update(data)
-      .catch(error => {
+      .catch((error) => {
         setError(error);
       });
 
@@ -128,6 +123,7 @@ const ApplicantView = ({ firebase }) => {
     navigate("/");
   };
 
+  // Hasn't applied yet
   if (!authUser.roles.applicant)
     return (
       <Container flexdirection="column">
@@ -138,6 +134,7 @@ const ApplicantView = ({ firebase }) => {
       </Container>
     );
 
+  // Hasn't interviewed yet
   if (!application.interview.interviewed)
     return (
       <Container flexdirection="column">
@@ -145,6 +142,7 @@ const ApplicantView = ({ firebase }) => {
       </Container>
     );
 
+  // Deliberations are incomplete or feedback hasn't been given
   if (
     settings.deliberationsOpen ||
     (!application.deliberation.accepted &&
@@ -157,13 +155,20 @@ const ApplicantView = ({ firebase }) => {
       </Container>
     );
 
-    // TODO: show denied state tell them to wait for email
+  // Denied but waiting for emails to go out
+  if (
+    !application.deliberation.accepted &&
+    application.deliberation.feedback !== ""
+  )
+    return (
+      <Container flexdirection="column">
+        <h1>Keep an eye on your inbox for an email update!</h1>
+      </Container>
+    );
 
-  // theyre accepted
+  // Theyre accepted and need to confirm
+  // TODO: get eboard to fix the wording
   if (!application.deliberation.confirmed) {
-    {
-      /*TODO: get eboard to fix the wording*/
-    }
     const ResultText = () =>
       settings.useTwoRoundDeliberations && !authUser.roles.provisionalMember ? (
         <>
@@ -201,9 +206,7 @@ const ApplicantView = ({ firebase }) => {
     );
   }
 
-  {
-    /* make this pretty */
-  }
+  // make this pretty
   if (authUser.profileIMG !== "")
     return (
       <Container flexdirection="column">
@@ -232,9 +235,7 @@ const ApplicantView = ({ firebase }) => {
       <h2> Data Form </h2>
       <DataForm
         submitFunction={submitData}
-        firstName={
-          application.responses.find(r => r.id === 1).value.split(" ")[0]
-        }
+        firstName={authUser.name.split(" ")[0]}
       />
     </Container>
   );
@@ -251,26 +252,49 @@ const DataForm = ({ submitFunction, firstName }) => {
   });
   const [validated, setValidated] = useState(false);
 
-  const saveData = e => {
+  const setFileValidity = (fileUpload) => {
+    if (fileUpload.files.length === 0) {
+      fileUpload.setCustomValidity("You must upload a file!");
+      swal("Uh oh!", "You must upload a file!", "error");
+    } else if (fileUpload.files.length > 1) {
+      fileUpload.setCustomValidity("You can only upload 1 file!");
+      swal("Uh oh!", "You can only upload 1 file!", "error");
+    } else if (fileUpload.files[0].size > 1048576 * 5) {
+      fileUpload.setCustomValidity("Max file size is 5MB!");
+      fileUpload.value = "";
+      swal("Uh oh!", "Max file size is 5MB!", "error");
+    } else {
+      fileUpload.setCustomValidity("");
+    }
+  };
+
+  const saveData = (e) => {
     e.preventDefault();
     const form = e.currentTarget;
+    const fileUploads = Array.from(form.querySelectorAll(".form-control-file"));
+    fileUploads.forEach((fileUpload) => setFileValidity(fileUpload));
     if (form.checkValidity() === false) {
       e.stopPropagation();
       setValidated(true);
+      swal(
+        "Missing photo!",
+        "Please provide a headshot for your profile photo.",
+        "error"
+      );
     } else {
       submitFunction(cloneDeep(formData));
       setValidated(false);
     }
   };
 
-  const updateField = e =>
+  const updateField = (e) =>
     setFormData(
       update(formData, {
         [e.target.name]: { $set: e.target.value },
       })
     );
 
-  const updateImage = e => {
+  const updateImage = (e) => {
     const hasIMG = e.target.files.length === 1;
     let fileName = "";
     // TODO: Needs refactor after website
