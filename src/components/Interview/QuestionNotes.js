@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import styled from "styled-components";
+
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -10,6 +12,10 @@ const StyledP = styled.p`
   white-space: pre-wrap;
 `;
 
+
+const StyledP = styled.p`
+  white-space: pre-wrap;
+`;
 
 const QuestionNotes = ({
   question,

@@ -66,6 +66,12 @@ const Header = ({ firebase }) => {
             </Link>
           )}
 
+          {isApplicantOrRecruitmentTeam(authUser) && (
+            <Link to="/deliberation" className="hvr-underline-from-center">
+              Deliberation
+            </Link>
+          )}
+
           {isAdmin(authUser) && (
             <Link to="/admin" className="hvr-underline-from-center">
               Admin

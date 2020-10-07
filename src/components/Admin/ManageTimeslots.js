@@ -252,7 +252,6 @@ const ManageTimeslots = ({ firebase }) => {
             <TimeslotCard
               key={timeslot.id}
               onClick={() => {
-                console.log("setting", timeslot);
                 setCurrentTimeslot(timeslot);
                 setShowModal(true);
               }}

@@ -23,6 +23,8 @@ const StyledFormRow = styled(Form.Row)`
 
 // TODO: refactor settings to have sub sections
 const DEFAULT_GENERAL_SETTINGS = {
+  deliberationsOpen: false,
+  useTwoRoundDeliberations: false,
   applicationsOpen: false,
   timeslotsOpen: false,
   timeslotsOpenForApplicants: false,
@@ -552,6 +554,48 @@ class GeneralSettings extends Component {
               />
             </FullWidthFormGroup>
           </StyledFormRow>
+          <hr />
+          {/* TODO: warning here with swal when flipping deliberations, it will reset deliberation object in applications */}
+          <Form.Row>
+            <Form.Check
+              custom
+              checked={settings.deliberationsOpen}
+              type="switch"
+              label={`Deliberations are ${
+                settings.deliberationsOpen ? "open" : "closed"
+              }`}
+              id="deliberationsOpen"
+              onChange={(e) =>
+                this.setState({
+                  settings: {
+                    ...settings,
+                    deliberationsOpen: e.target.checked,
+                  },
+                })
+              }
+            />
+          </Form.Row>
+          <br />
+          <Form.Row>
+            <Form.Check
+              custom
+              checked={settings.useTwoRoundDeliberations}
+              type="switch"
+              label={`Two Round Deliberations is ${
+                settings.useTwoRoundDeliberations ? "enabled" : "disabled"
+              }`}
+              id="useTwoRoundDeliberations"
+              onChange={(e) =>
+                this.setState({
+                  settings: {
+                    ...settings,
+                    useTwoRoundDeliberations: e.target.checked,
+                  },
+                })
+              }
+            />
+          </Form.Row>
+
           <hr />
           <FlexDiv>
             <FlexDiv

@@ -17,6 +17,7 @@ class Firebase extends FirebaseSuper {
 
     this.inquisitorData = app.firestore().doc("inquisitor/data");
     this.storage = app.storage().ref("inquisitor");
+    this.profiles = app.storage().ref("profiles");
     this.functions = app.functions();
 
     // *** Functions API ***
@@ -39,6 +40,15 @@ class Firebase extends FirebaseSuper {
     this.timeslotUnselected = this.functions.httpsCallable(
       "timeslotUnselected"
     );
+    this.sendAcceptedEmail = this.functions.httpsCallable("applicantAccepted");
+    this.sendDeniedEmail = this.functions.httpsCallable("applicantDenied");
+
+    this.sendFinalAcceptedEmail = this.functions.httpsCallable(
+      "applicantFinalAccepted"
+    );
+    this.sendFinalDeniedEmail = this.functions.httpsCallable(
+      "applicantFinalDenied"
+    );
   }
 
   question = (uid) => this.inquisitorData.collection("questions").doc(uid);
@@ -47,6 +57,14 @@ class Firebase extends FirebaseSuper {
   application = (uid) =>
     this.inquisitorData.collection("applications").doc(uid);
   applications = () => this.inquisitorData.collection("applications");
+
+  interviewedApplicants = () =>
+    this.inquisitorData
+      .collection("applications")
+      .where("interview.interviewed", "==", true)
+      .orderBy("interview.level");
+
+  question = (uid) => this.inquisitorData.collection("questions").doc(uid);
 
   timeslot = (uid) => this.inquisitorData.collection("timeslots").doc(uid);
   timeslots = () => this.inquisitorData.collection("timeslots");
@@ -57,6 +75,9 @@ class Firebase extends FirebaseSuper {
   levelConfig = () => this.firestore.doc("inquisitor/levelConfig");
 
   allRoles = () => this.firestore.doc("config/roles");
+
+  uploadProfile = (className, fileName) =>
+    this.profiles.child(`${className}/${fileName}`);
 
   // *** Storage API ***
   file = (uid, name) => this.storage.child(`files/${uid}/${name}`);
