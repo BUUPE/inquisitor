@@ -6,12 +6,6 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Toast from "react-bootstrap/Toast";
 import RangeSlider from "react-bootstrap-range-slider";
-import styled from "styled-components";
-
-const StyledP = styled.p`
-  white-space: pre-wrap;
-`;
-
 
 const StyledP = styled.p`
   white-space: pre-wrap;
