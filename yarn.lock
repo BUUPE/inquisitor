@@ -14101,7 +14101,7 @@ update-notifier@^3.0.1:
 
 "upe-react-components@https://github.com/BUUPE/React-Components.git#dist":
   version "0.0.0"
-  resolved "https://github.com/BUUPE/React-Components.git#32efa189262003a7427ce5574f1a23228c9601f7"
+  resolved "https://github.com/BUUPE/React-Components.git#efae995dafd0b2b880fda11debba811f545ce516"
 
 uri-js@^4.2.2:
   version "4.2.2"
