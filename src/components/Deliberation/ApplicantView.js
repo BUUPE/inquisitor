@@ -86,7 +86,11 @@ const ApplicantView = ({ firebase }) => {
       await firebase.application(authUser.uid).delete();
 
       // TODO: make this welcome actually pretty
-      await swal("You're in!", "Welcome to the club!", "success");
+      await swal(
+        "You're in!",
+        "Welcome to Upsilon Pi Epsilon at Boston University",
+        "success"
+      );
       navigate("/");
     }
   };
@@ -162,7 +166,7 @@ const ApplicantView = ({ firebase }) => {
   )
     return (
       <Container flexdirection="column">
-        <h1>Keep an eye on your inbox for an email update!</h1>
+        <h1>Keep an eye on your inbox for an update on your deliberation!</h1>
       </Container>
     );
 
@@ -175,9 +179,12 @@ const ApplicantView = ({ firebase }) => {
           <h2>You have been provisionally accepted into UPE!</h2>
           <br />
           <p>
-            We are pleased to extend provisional membership to UPE. This means
-            (explain here). If you'd like to accept this and start your
-            onboarding period, please click the button below to confirm.
+            We are pleased to extend to you provisional membership to UPE. This
+            means that you are now on the way to becoming a fully fledged member
+            of our group. Now you must go through the provisional period
+            requirements as described in the info sessions. If you'd like to
+            accept this and start your onboarding period, please click the
+            button below to confirm.
           </p>
         </>
       ) : (
@@ -228,7 +235,7 @@ const ApplicantView = ({ firebase }) => {
         <p>
           For the time being however, we ask that you fill out the form bellow,
           so that once onboarding is over, we can induct you and add you to our
-          database & website.
+          database & website in a timely manner.
         </p>
       </div>
       <br />
