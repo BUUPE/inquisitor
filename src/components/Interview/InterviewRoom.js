@@ -16,7 +16,7 @@ import { isRecruitmentTeam } from "../../util/conditions";
 const StyledLink = styled(Nav.Link)`
   font-size: 1.5rem;
 
-  &[aria-selected= "true" ] {
+  &[aria-selected="true"] {
     font-weight: bold;
   }
 

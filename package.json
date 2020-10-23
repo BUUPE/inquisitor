@@ -61,7 +61,7 @@
     "husky": "^4.2.5",
     "lint-staged": "^10.2.11",
     "prettier": "^2.1.2",
-    "prettylint": "^1.0.0"
+    "prettier-check": "^2.0.0"
   },
   "lint-staged": {
     "src/**/*.{js,jsx}": [
@@ -83,7 +83,7 @@
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "lint": "eslint src",
-    "prettylint": "prettylint \"**/*.{js,jsx,json,md}\"",
+    "lint-style": "prettier-check src/**/*.js",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
     "deploy": "gatsby clean && gatsby build --prefix-paths && gh-pages -d public"
   }

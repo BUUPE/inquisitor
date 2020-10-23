@@ -28,7 +28,7 @@ jobs:
 
     - name: Check Formatting
       run: |
-        yarn prettylint
+        yarn lint-style
 
     - name: Ensure Build Succeeds
       run: |
