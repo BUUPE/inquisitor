@@ -1,0 +1,35 @@
+name: PR Status Check
+
+on:
+  pull_request:
+    # By default, a workflow only runs when a pull_request's activity type is opened, synchronize, or reopened. We
+    # explicity override here so that PR titles are re-linted when the PR text content is edited.
+    #
+    # Possible values: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  pr-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2.1.0
+
+    - name: Install Dependencies
+      run: |
+        yarn install
+
+    - name: Lint Code
+      run: |
+        yarn lint
+
+    - name: Check Formatting
+      run: |
+        yarn lint-style
+
+    - name: Ensure Build Succeeds
+      run: |
+        yarn buildProd
