@@ -17,6 +17,7 @@ const ApplicationDisplay = memo(
     questions,
     levelConfig,
     voteApplicant,
+    provisional,
   }) => {
     const { level } = interview;
     const classYear = responses.find((r) => r.id === 5).value;
@@ -88,6 +89,16 @@ const ApplicationDisplay = memo(
           break;
       }
 
+      if (
+        provisional &&
+        name !== "Full Name" &&
+        name !== "Email" &&
+        name !== "Major" &&
+        name !== "Minor" &&
+        name !== "Class Year"
+      )
+        return null;
+
       return (
         <div style={style}>
           <h4>{name}</h4>
@@ -108,29 +119,56 @@ const ApplicationDisplay = memo(
         </Row>
 
         <hr style={{ width: "100%", margin: "30px 0", background: "black" }} />
-
-        <Row style={{ alignItems: "center", justifyContent: "space-between" }}>
-          <h1>Interview Details</h1>
-          <h2>
-            Level: <span>{interview.level}</span>
-          </h2>
-        </Row>
-        <Row>
-          {augmentedQuestions
-            .sort((a, b) => (a.order > b.order ? 1 : -1))
-            .map((question, i) => (
-              <Fragment key={question.id}>
-                <QuestionDisplay
-                  level={level}
-                  classYear={classYear}
-                  {...question}
-                />
-                {i < augmentedQuestions.length - 1 && (
-                  <hr style={{ width: "100%", margin: "30px 0" }} />
-                )}
-              </Fragment>
-            ))}
-        </Row>
+        {provisional ? (
+          <>
+            <Row
+              style={{ alignItems: "center", justifyContent: "space-between" }}
+            >
+              <h1>Provisional Period Status</h1>
+            </Row>
+            <Row
+              style={{ alignItems: "center", justifyContent: "space-between" }}
+            >
+              <div>
+                <h4>Meeting Requirement</h4>
+                <p>{provisional.meetings ? "Completed" : "Not Completed"}</p>
+              </div>
+              <div>
+                <h4>Contribution Requirement</h4>
+                <p>
+                  {provisional.contribution ? "Completed" : "Not Completed"}
+                </p>
+              </div>
+            </Row>
+          </>
+        ) : (
+          <>
+            <Row
+              style={{ alignItems: "center", justifyContent: "space-between" }}
+            >
+              <h1>Interview Details</h1>
+              <h2>
+                Level: <span>{interview.level}</span>
+              </h2>
+            </Row>
+            <Row>
+              {augmentedQuestions
+                .sort((a, b) => (a.order > b.order ? 1 : -1))
+                .map((question, i) => (
+                  <Fragment key={question.id}>
+                    <QuestionDisplay
+                      level={level}
+                      classYear={classYear}
+                      {...question}
+                    />
+                    {i < augmentedQuestions.length - 1 && (
+                      <hr style={{ width: "100%", margin: "30px 0" }} />
+                    )}
+                  </Fragment>
+                ))}
+            </Row>
+          </>
+        )}
 
         <hr style={{ width: "100%", margin: "30px 0", background: "black" }} />
 
