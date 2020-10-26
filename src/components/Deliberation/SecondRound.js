@@ -109,10 +109,10 @@ class SecondRound extends Component {
                       {currentContributionStatus
                         ? "completed"
                         : "not completed"}{" "}
-                      his contribution
+                      their contribution
                     </span>
                   }
-                  id="timeslotsOpen"
+                  id="contributionSwitch"
                   onChange={(e) =>
                     this.setState({
                       currentContributionStatus: e.target.checked,
@@ -129,11 +129,11 @@ class SecondRound extends Component {
                   label={
                     <span>
                       Applicant has{" "}
-                      {currentMeetingStatus ? "completed" : "not completed"} his
-                      meetings
+                      {currentMeetingStatus ? "completed" : "not completed"}{" "}
+                      their meetings
                     </span>
                   }
-                  id="timeslotsOpen"
+                  id="meetingSwitch"
                   onChange={(e) =>
                     this.setState({
                       currentMeetingStatus: e.target.checked,
