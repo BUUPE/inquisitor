@@ -321,13 +321,20 @@ class InterviewerView extends Component {
             const positiveVotes = allVotes.filter((vote) => !!vote).length;
             const accepted = positiveVotes / allVotes.length >= 0.75;
             if (accepted) {
-              const ref = this.props.firebase.application(id);
-              batch.update(ref, {
-                "provisional.contribution": false,
-                "provisional.meetings": false,
+              let updateData = {
                 "deliberation.accepted": true,
                 "deliberation.votes": {},
-              });
+              };
+
+              if (this.state.settings.useTwoRoundDeliberations) {
+                updateData["provisional"] = {
+                  meetings: false,
+                  contribution: false,
+                };
+              }
+
+              const ref = this.props.firebase.application(id);
+              batch.update(ref, updateData);
             }
 
             const newApp = update(application, {
