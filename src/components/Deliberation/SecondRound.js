@@ -22,7 +22,7 @@ class SecondRound extends Component {
   render() {
     const { applications, settings } = this.props;
 
-    const filteredApplications = applications.filter((app) =>
+    const provisionalMemberApplications = applications.filter((app) =>
       app.hasOwnProperty("provisional")
     );
 
@@ -38,31 +38,29 @@ class SecondRound extends Component {
       provisional: { contribution, meetings },
       name,
       id,
-    }) => {
-      return (
-        <tr>
-          <td>{name}</td>
-          <td>{contribution ? "Complete" : "Not Complete"}</td>
-          <td>{meetings ? "Complete" : "Not Complete"}</td>
-          {!settings.deliberationsOpen && (
-            <td
-              onClick={() =>
-                this.setState({
-                  showModal: true,
-                  currentApplicationId: id,
-                  currentContributionStatus: contribution,
-                  currentMeetingStatus: meetings,
-                  currentName: name,
-                })
-              }
-              style={{ cursor: "pointer" }}
-            >
-              Edit Status
-            </td>
-          )}
-        </tr>
-      );
-    };
+    }) => (
+      <tr>
+        <td>{name}</td>
+        <td>{contribution ? "Complete" : "Not Complete"}</td>
+        <td>{meetings ? "Complete" : "Not Complete"}</td>
+        {!settings.deliberationsOpen && (
+          <td
+            onClick={() =>
+              this.setState({
+                showModal: true,
+                currentApplicationId: id,
+                currentContributionStatus: contribution,
+                currentMeetingStatus: meetings,
+                currentName: name,
+              })
+            }
+            style={{ cursor: "pointer" }}
+          >
+            Edit Status
+          </td>
+        )}
+      </tr>
+    );
 
     return (
       <Container flexdirection="column">
@@ -76,7 +74,7 @@ class SecondRound extends Component {
             </tr>
           </thead>
           <tbody>
-            {filteredApplications.map((application) => (
+            {provisionalMemberApplications.map((application) => (
               <ApplicantStatus key={application.id} {...application} />
             ))}
           </tbody>
@@ -97,7 +95,7 @@ class SecondRound extends Component {
           </Modal.Header>
           <Modal.Body>
             <Form>
-              <Form.Group controlId="contribution">
+              <Form.Group>
                 <Form.Label>Contribution</Form.Label>
                 <Form.Check
                   custom
@@ -109,10 +107,10 @@ class SecondRound extends Component {
                       {currentContributionStatus
                         ? "completed"
                         : "not completed"}{" "}
-                      his contribution
+                      their contribution
                     </span>
                   }
-                  id="timeslotsOpen"
+                  id="contributionToggle"
                   onChange={(e) =>
                     this.setState({
                       currentContributionStatus: e.target.checked,
@@ -120,7 +118,7 @@ class SecondRound extends Component {
                   }
                 />
               </Form.Group>
-              <Form.Group controlId="meetings">
+              <Form.Group>
                 <Form.Label>Meetings</Form.Label>
                 <Form.Check
                   custom
@@ -129,11 +127,11 @@ class SecondRound extends Component {
                   label={
                     <span>
                       Applicant has{" "}
-                      {currentMeetingStatus ? "completed" : "not completed"} his
-                      meetings
+                      {currentMeetingStatus ? "completed" : "not completed"}{" "}
+                      their meetings
                     </span>
                   }
-                  id="timeslotsOpen"
+                  id="meetingToggle"
                   onChange={(e) =>
                     this.setState({
                       currentMeetingStatus: e.target.checked,
