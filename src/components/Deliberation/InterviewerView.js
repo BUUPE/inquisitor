@@ -321,13 +321,13 @@ class InterviewerView extends Component {
             const positiveVotes = allVotes.filter((vote) => !!vote).length;
             const accepted = positiveVotes / allVotes.length >= 0.75;
             if (accepted) {
-              let updateData = {
+              const updateData = {
                 "deliberation.accepted": true,
                 "deliberation.votes": {},
               };
 
               if (this.state.settings.useTwoRoundDeliberations) {
-                updateData["provisional"] = {
+                updateData.provisional = {
                   meetings: false,
                   contribution: false,
                 };
