@@ -267,17 +267,14 @@ class InterviewerView extends Component {
     }).then((confirm) => {
       if (confirm) {
         const batch = this.props.firebase.firestore.batch();
-        this.state.applications.map((application) => {
+        this.state.applications.forEach((application) => {
           const ref = this.props.firebase.application(application.id);
           batch.update(ref, {
             "deliberation.accepted": false,
             "deliberation.confirmed": false,
             "deliberation.feedback": "",
           });
-
-          return application;
         });
-
         batch.commit();
       }
     });
@@ -311,9 +308,7 @@ class InterviewerView extends Component {
           })
           .reduce((prev, cur) => prev && cur);
 
-        console.log("almost there");
         if (everyoneHasFeedback) {
-          console.log("there");
           // Update everyone's accepted status
           // Get a new write batch
           const batch = this.props.firebase.firestore.batch();
@@ -352,7 +347,7 @@ class InterviewerView extends Component {
               (app) => !app.deliberation.accepted
             );
             /* eslint-enable no-unused-vars */
-            // send emails here
+            // TODO: send emails here
           });
         } else {
           swal(
