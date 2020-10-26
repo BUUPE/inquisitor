@@ -16,6 +16,7 @@ import {
 import { isMember, isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
+import SecondRound from "./SecondRound";
 import FeedbackPage from "./FeedbackPage";
 import ApplicationDisplay from "./ApplicationDisplay";
 import { Container, FullSizeContainer } from "../../styles/global";
@@ -235,6 +236,49 @@ class InterviewerView extends Component {
       "deliberation.feedback": feedback,
     });
 
+  saveSecondRoundStatus = async (
+    applicationId,
+    currentMeetingStatus,
+    currentContributionStatus
+  ) =>
+    await this.props.firebase.application(applicationId).update({
+      "provisional.meetings": currentMeetingStatus,
+      "provisional.contribution": currentContributionStatus,
+    });
+
+  readyRoundTwo = () =>
+    swal({
+      title: "Hold up!",
+      text:
+        "If you press Yes, you're going to open the second round of deliberation, which will commit significant changes to the database! Are you sure?",
+      icon: "warning",
+      buttons: {
+        cancel: {
+          text: "No",
+          value: false,
+          visible: true,
+        },
+        confirm: {
+          text: "Yes",
+          value: true,
+          visible: true,
+        },
+      },
+    }).then((confirm) => {
+      if (confirm) {
+        const batch = this.props.firebase.firestore.batch();
+        this.state.applications.forEach((application) => {
+          const ref = this.props.firebase.application(application.id);
+          batch.update(ref, {
+            "deliberation.accepted": false,
+            "deliberation.confirmed": false,
+            "deliberation.feedback": "",
+          });
+        });
+        batch.commit();
+      }
+    });
+
   sendResults = () =>
     swal({
       title: "Hold up!",
@@ -277,8 +321,20 @@ class InterviewerView extends Component {
             const positiveVotes = allVotes.filter((vote) => !!vote).length;
             const accepted = positiveVotes / allVotes.length >= 0.75;
             if (accepted) {
+              const updateData = {
+                "deliberation.accepted": true,
+                "deliberation.votes": {},
+              };
+
+              if (this.state.settings.useTwoRoundDeliberations) {
+                updateData.provisional = {
+                  meetings: false,
+                  contribution: false,
+                };
+              }
+
               const ref = this.props.firebase.application(id);
-              batch.update(ref, { "deliberation.accepted": true });
+              batch.update(ref, updateData);
             }
 
             const newApp = update(application, {
@@ -298,7 +354,7 @@ class InterviewerView extends Component {
               (app) => !app.deliberation.accepted
             );
             /* eslint-enable no-unused-vars */
-            // send emails here
+            // TODO: send emails here
           });
         } else {
           swal(
@@ -346,6 +402,15 @@ class InterviewerView extends Component {
           sendResults={this.sendResults}
         />
       );
+    } else if (currentApplication === "secondRound") {
+      Content = () => (
+        <SecondRound
+          settings={settings}
+          applications={applications}
+          saveSecondRoundStatus={this.saveSecondRoundStatus}
+          readyRoundTwo={this.readyRoundTwo}
+        />
+      );
     } else
       Content = () => (
         <ApplicationDisplay
@@ -373,6 +438,14 @@ class InterviewerView extends Component {
               onClick={() => this.setCurrentApplication("admin")}
             >
               Add Feedback
+            </SidebarItem>
+          )}
+          {isAdmin(authUser) && (
+            <SidebarItem
+              selected={currentApplication === "secondRound"}
+              onClick={() => this.setCurrentApplication("secondRound")}
+            >
+              Second Round Status
             </SidebarItem>
           )}
           <hr />
