@@ -22,6 +22,7 @@ const QuestionDisplay = ({
   updateQuestion,
   removeQuestionImage,
   deleteQuestion,
+  scores,
 }) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -40,7 +41,10 @@ const QuestionDisplay = ({
       }}
     >
       <Button type="submit">Save</Button>
-      <Button variant="danger" onClick={() => deleteQuestion(id, imageName)}>
+      <Button
+        variant="danger"
+        onClick={() => deleteQuestion(id, imageName, scores)}
+      >
         Delete
       </Button>
     </div>
@@ -59,7 +63,7 @@ const QuestionDisplay = ({
             id,
           }}
           submitFunction={updateQuestion}
-          imageClearFunc={() => removeQuestionImage(id, imageName)}
+          imageClearFunc={() => removeQuestionImage(id, imageName, scores)}
           SubmitButton={FormSubmit}
         />
       </Card.Body>
