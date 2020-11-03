@@ -22,7 +22,6 @@ const QuestionDisplay = ({
   updateQuestion,
   removeQuestionImage,
   deleteQuestion,
-  scores,
 }) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
