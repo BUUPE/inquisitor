@@ -60,7 +60,7 @@ const QuestionDisplay = ({
             id,
           }}
           submitFunction={updateQuestion}
-          imageClearFunc={() => removeQuestionImage(id, imageName, scores)}
+          imageClearFunc={() => removeQuestionImage(id, imageName)}
           SubmitButton={FormSubmit}
         />
       </Card.Body>
