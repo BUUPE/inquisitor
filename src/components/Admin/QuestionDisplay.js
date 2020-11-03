@@ -41,10 +41,7 @@ const QuestionDisplay = ({
       }}
     >
       <Button type="submit">Save</Button>
-      <Button
-        variant="danger"
-        onClick={() => deleteQuestion(id, imageName, scores)}
-      >
+      <Button variant="danger" onClick={() => deleteQuestion(id, imageName)}>
         Delete
       </Button>
     </div>

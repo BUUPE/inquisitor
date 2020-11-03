@@ -121,7 +121,7 @@ const ManageQuestions = ({ firebase }) => {
     setShowToast(true);
   };
 
-  const deleteQuestion = (uid, filename, scores) =>
+  const deleteQuestion = (uid, filename) =>
     swal({
       title: "Are you sure?",
       text:
@@ -161,28 +161,27 @@ const ManageQuestions = ({ firebase }) => {
             }
             return doc.data();
           });
-        let updates = {};
-        for (let level in levels) {
-          if (level in scores) {
-            let order = -1;
-            for (let i = 0; i < levels[level].length; i++) {
-              if (levels[level][i]["id"] === uid) {
-                order = levels[level][i]["order"];
-                levels[level].splice(i, 1);
-                break;
-              }
-            }
-            for (let i = 0; i < levels[level].length; i++) {
-              if (levels[level][i]["order"] > order) {
-                levels[level][i]["order"] -= 1;
-              }
-            }
-            updates[level] = levels[level];
-          }
-        }
-        if (Object.keys(updates).length !== 0) {
-          await firebase.levelConfig().update(updates);
-        }
+
+        const updatedLevels = {};
+        Object.entries(levels).map((level) => {
+          const filteredLevels = level[1].filter(
+            (question) => question.id !== uid
+          );
+
+          let order = 0;
+          const updatedLevel = filteredLevels.map((value) => {
+            value["order"] = order;
+            order += 1;
+
+            return value;
+          });
+
+          updatedLevels[level[0]] = updatedLevel;
+
+          return null;
+        });
+
+        await firebase.levelConfig().update(updatedLevels);
 
         setShowToast(true);
       }
