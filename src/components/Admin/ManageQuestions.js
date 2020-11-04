@@ -15,6 +15,7 @@ import { withFirebase } from "upe-react-components";
 import Loader from "../Loader";
 import Error from "../Error";
 import { Container } from "../../styles/global";
+import { objectMap } from "../../util/helper";
 
 const ManageQuestions = ({ firebase }) => {
   const [questionList, setQuestionList] = useState([]);
@@ -145,43 +146,31 @@ const ManageQuestions = ({ firebase }) => {
 
         await firebase
           .question(uid)
-          .delete()
-          .catch((err) => {
-            console.error(err);
-            setError(err);
-          });
+          .delete();
 
-        let levels = await firebase
+        const levelConfig = await firebase
           .levelConfig()
           .get()
           .then((doc) => {
             if (!doc.exists) {
-              console.error("LevelConfig does not exist!");
-              return {};
+              throw new Error("LevelConfig does not exist!");
             }
             return doc.data();
           });
 
-        const updatedLevels = {};
-        Object.entries(levels).map((level) => {
-          const filteredLevels = level[1].filter(
-            (question) => question.id !== uid
-          );
-
+        const updatedLevelConfig = objectMap(levelConfig, (questions) => {
           let order = 0;
-          const updatedLevel = filteredLevels.map((value) => {
-            value["order"] = order;
-            order += 1;
-
-            return value;
+          const updatedQuestions = questions.filter(
+            (question) => question.id !== uid
+          ).map((question) => {
+            question.order = order++;
+            return question;
           });
 
-          updatedLevels[level[0]] = updatedLevel;
-
-          return null;
+          return updatedQuestions;
         });
 
-        await firebase.levelConfig().update(updatedLevels);
+        await firebase.levelConfig().update(updatedLevelConfig);
 
         setShowToast(true);
       }
