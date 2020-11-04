@@ -23,8 +23,4 @@ export function setStateAsync(state) {
 
 // like Array.map but for objects
 export const objectMap = (obj, fn) =>
-  Object.fromEntries(
-    Object.entries(obj).map(
-      ([k, v], i) => [k, fn(v, k, i)]
-    )
-  )
+  Object.fromEntries(Object.entries(obj).map(([k, v], i) => [k, fn(v, k, i)]));

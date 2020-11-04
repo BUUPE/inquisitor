@@ -144,9 +144,7 @@ const ManageQuestions = ({ firebase }) => {
       if (confirm) {
         if (filename !== "") await firebase.questionImage(filename).delete();
 
-        await firebase
-          .question(uid)
-          .delete();
+        await firebase.question(uid).delete();
 
         const levelConfig = await firebase
           .levelConfig()
@@ -160,12 +158,12 @@ const ManageQuestions = ({ firebase }) => {
 
         const updatedLevelConfig = objectMap(levelConfig, (questions) => {
           let order = 0;
-          const updatedQuestions = questions.filter(
-            (question) => question.id !== uid
-          ).map((question) => {
-            question.order = order++;
-            return question;
-          });
+          const updatedQuestions = questions
+            .filter((question) => question.id !== uid)
+            .map((question) => {
+              question.order = order++;
+              return question;
+            });
 
           return updatedQuestions;
         });
