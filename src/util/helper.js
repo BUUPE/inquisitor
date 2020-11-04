@@ -14,8 +14,17 @@ export const asyncForEach = async (array, callback) => {
   }
 };
 
+// this needs to be a normal function vs arrow because we need "this" to be in context of calling component
 export function setStateAsync(state) {
   return new Promise((resolve) => {
     this.setState(state, resolve);
   });
 }
+
+// like Array.map but for objects
+export const objectMap = (obj, fn) =>
+  Object.fromEntries(
+    Object.entries(obj).map(
+      ([k, v], i) => [k, fn(v, k, i)]
+    )
+  )
