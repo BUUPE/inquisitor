@@ -15,6 +15,7 @@ import { withFirebase } from "upe-react-components";
 import Loader from "../Loader";
 import Error from "../Error";
 import { Container } from "../../styles/global";
+import { objectMap } from "../../util/helper";
 
 const ManageQuestions = ({ firebase }) => {
   const [questionList, setQuestionList] = useState([]);
@@ -143,13 +144,31 @@ const ManageQuestions = ({ firebase }) => {
       if (confirm) {
         if (filename !== "") await firebase.questionImage(filename).delete();
 
-        await firebase
-          .question(uid)
-          .delete()
-          .catch((err) => {
-            console.error(err);
-            setError(err);
+        await firebase.question(uid).delete();
+
+        const levelConfig = await firebase
+          .levelConfig()
+          .get()
+          .then((doc) => {
+            if (!doc.exists) {
+              throw new Error("LevelConfig does not exist!");
+            }
+            return doc.data();
           });
+
+        const updatedLevelConfig = objectMap(levelConfig, (questions) => {
+          let order = 0;
+          const updatedQuestions = questions
+            .filter((question) => question.id !== uid)
+            .map((question) => {
+              question.order = order++;
+              return question;
+            });
+
+          return updatedQuestions;
+        });
+
+        await firebase.levelConfig().update(updatedLevelConfig);
 
         setShowToast(true);
       }
