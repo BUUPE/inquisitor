@@ -32,14 +32,13 @@ module.exports = {
       },
     },
     {
-      resolve: `gatsby-plugin-prefetch-google-fonts`,
+      resolve: `gatsby-plugin-google-fonts`,
       options: {
         fonts: [
-          {
-            family: `Libre Baskerville`,
-          },
+          `Libre Baskerville`
         ],
-      },
+        display: 'swap'
+      }
     },
     {
       resolve: `gatsby-styled-components-dark-mode`,
