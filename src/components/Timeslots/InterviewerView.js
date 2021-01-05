@@ -70,8 +70,8 @@ class InterviewerView extends Component {
 
       const settings = doc.data();
       const timeslots = {};
-      settings.timeslotStart += offsetHours;
-      settings.timeslotEnd += offsetHours;
+      settings.timeslotStart = (settings.timeslotStart + offsetHours) % 24;
+      settings.timeslotEnd = (settings.timeslotEnd + offsetHours) % 24;
       settings.timeslotDays = settings.timeslotDays.map((day) => {
         const date = day.toDate();
         timeslots[date.toDateString()] = [];
@@ -96,7 +96,6 @@ class InterviewerView extends Component {
               id: doc.id,
             };
           });
-
           // add new data from listener
           listenerData
             .filter(
@@ -130,7 +129,6 @@ class InterviewerView extends Component {
             timeslots[day] = timeslots[day].filter((ts) =>
               validIds.includes(ts.id)
             );
-
           this.setState({ timeslots });
           resolveOnce(timeslots);
         }, reject);

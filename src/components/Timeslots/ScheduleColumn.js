@@ -64,16 +64,10 @@ const ScheduleColumn = ({
   const numSlots = (endHour - startHour) * 4; // 15 min slots
   const slots = Array.from(Array(numSlots), (_, i) => i * 15); // total 15 min slots in a day
   const slotsPerTimeslot = timeslotLength / 15; // number of 15 min slots in an interview
-
   // converts a start offset (slot) into a Date object
   const dateFromSlot = (slot) => {
     const hours = startHour + Math.floor(slot / 60);
     const minutes = slot % 60;
-    if (slot === 0) {
-      console.log(
-        `hours: ${hours}, minutes: ${minutes}, startHour: ${startHour}, endHour: ${endHour}, offsetHours: ${offsetHours}`
-      );
-    }
     return new Date(
       date.getFullYear(),
       date.getMonth(),
