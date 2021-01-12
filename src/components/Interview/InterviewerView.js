@@ -170,11 +170,26 @@ class InterviewerView extends Component {
       .onSnapshot((doc) => {
         if (!doc.exists)
           return this.setState({ error: "Application not found!" });
-        const currentApplication = { ...doc.data(), id: doc.id };
-        this.setState({ currentApplication });
+        const fetchedApplication = { ...doc.data(), id: doc.id };
+
+        if (
+          this.currentApplication &&
+          this.currentApplication.id === fetchedApplication.id &&
+          this.currentApplication.hasOwnProperty("scores") &&
+          this.currentApplication.scores.hasOwnProperty(this.context.uid)
+        ) {
+          fetchedApplication["notes"][
+            this.context.uid
+          ] = this.currentApplication["notes"][this.context.uid];
+          fetchedApplication["scores"][
+            this.context.uid
+          ] = this.currentApplication["scores"][this.context.uid];
+        }
+
+        this.setState({ currentApplication: fetchedApplication });
         localStorage.setItem(
           "currentApplication",
-          JSON.stringify(currentApplication)
+          JSON.stringify(fetchedApplication)
         ); // this may lead to issues if the data is very old
         window.onbeforeunload = null; // reset this when they go to a new person
       });
