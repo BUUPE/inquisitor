@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import isEqual from "lodash.isequal";
 import { compose } from "recompose";
 import styled from "styled-components";
 import update from "immutability-helper";
@@ -176,8 +177,10 @@ class InterviewerView extends Component {
         if (
           this.currentApplication &&
           this.currentApplication.id === fetchedApplication.id &&
-          this.currentApplication.scores?.[this.context.uid] ===
-            fetchedApplication.scores?.[this.context.uid]
+          isEqual(
+            this.currentApplication.interview.notes?.[this.context.uid],
+            fetchedApplication.interview.notes?.[this.context.uid]
+          )
         ) {
           this.setState({ overwritten: true });
         }
