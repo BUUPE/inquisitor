@@ -62,7 +62,7 @@ class QuestionNotes extends Component {
                   placeholder="Enter notes here..."
                   value={this.state.note}
                   onChange={(e) => this.setState({ note: e.target.value })}
-                  onBlur={this.handleSave}
+                  onBlur={() => this.handleSave()}
                   required
                 />
               </Form.Group>
@@ -73,9 +73,9 @@ class QuestionNotes extends Component {
               <RangeSlider
                 value={this.state.score}
                 onChange={(e) =>
-                  this.setState({ note: parseFloat(e.target.value) })
+                  this.setState({ score: parseFloat(e.target.value) })
                 }
-                onAfterChange={this.handleSave}
+                onAfterChange={() => this.handleSave()}
                 step={0.5}
                 max={5}
                 min={0}
