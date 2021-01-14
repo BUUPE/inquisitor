@@ -175,7 +175,7 @@ class InterviewerView extends Component {
         if (
           this.currentApplication &&
           this.currentApplication.id === fetchedApplication.id &&
-          this.currentApplication?.scores?.[this.context.uid]
+          this.currentApplication.scores?.[this.context.uid]
         ) {
           fetchedApplication["notes"][
             this.context.uid
