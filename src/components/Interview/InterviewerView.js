@@ -58,6 +58,7 @@ class InterviewerView extends Component {
     questions: [],
     currentApplication: null,
     levelConfig: {},
+    overwritten: false,
   };
   unsubSettings = null;
   unsubTimeslots = null;
@@ -175,14 +176,10 @@ class InterviewerView extends Component {
         if (
           this.currentApplication &&
           this.currentApplication.id === fetchedApplication.id &&
-          this.currentApplication.scores?.[this.context.uid]
+          this.currentApplication.scores?.[this.context.uid] ===
+            fetchedApplication.scores?.[this.context.uid]
         ) {
-          fetchedApplication["notes"][
-            this.context.uid
-          ] = this.currentApplication["notes"][this.context.uid];
-          fetchedApplication["scores"][
-            this.context.uid
-          ] = this.currentApplication["scores"][this.context.uid];
+          this.setState({ overwritten: true });
         }
 
         this.setState({ currentApplication: fetchedApplication });
@@ -276,6 +273,7 @@ class InterviewerView extends Component {
       currentApplication,
       levelConfig,
       questions,
+      overwritten,
     } = this.state;
 
     if (loading) return <Loader />;
@@ -345,6 +343,7 @@ class InterviewerView extends Component {
               questions={filteredQuestions}
               saveApplication={this.saveApplication}
               submitApplication={this.submitApplication}
+              overwritten={overwritten}
             />
           </>
         );
