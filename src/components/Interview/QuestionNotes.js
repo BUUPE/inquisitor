@@ -18,12 +18,11 @@ class QuestionNotes extends Component {
     showToast: false,
   };
 
-  getSnapshotBeforeUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.overwritten) {
       this.setState(prevState);
       this.props.resetOverwritten();
     }
-    return null;
   }
 
   handleSubmit = async (event) => {
