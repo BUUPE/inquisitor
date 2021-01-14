@@ -20,7 +20,7 @@ class QuestionNotes extends Component {
 
   getSnapshotBeforeUpdate(prevProps, prevState) {
     if (this.props.overwritten) {
-      this.props = prevProps;
+      this.setState(prevState);
     }
     return null;
   }
