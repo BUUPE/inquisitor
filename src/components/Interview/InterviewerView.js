@@ -175,10 +175,10 @@ class InterviewerView extends Component {
         const fetchedApplication = { ...doc.data(), id: doc.id };
 
         if (
-          this.currentApplication &&
-          this.currentApplication.id === fetchedApplication.id &&
+          this.state.currentApplication &&
+          this.state.currentApplication.id === fetchedApplication.id &&
           isEqual(
-            this.currentApplication.interview.notes?.[this.context.uid],
+            this.state.currentApplication.interview.notes?.[this.context.uid],
             fetchedApplication.interview.notes?.[this.context.uid]
           )
         ) {
