@@ -162,6 +162,10 @@ class InterviewerView extends Component {
     });
   };
 
+  resetOverwritten = () => {
+    this.setState({ overwritten: false });
+  };
+
   fetchApplication = (id) => {
     if (!id) return;
 
@@ -174,12 +178,20 @@ class InterviewerView extends Component {
           return this.setState({ error: "Application not found!" });
         const fetchedApplication = { ...doc.data(), id: doc.id };
 
+        console.log("curr", this.state.currentApplication);
+        console.log("fetched", fetchedApplication);
+        console.log(
+          isEqual(
+            this.state.currentApplication?.interview?.notes?.[this.context.uid],
+            fetchedApplication?.interview?.notes?.[this.context.uid]
+          )
+        );
         if (
           this.state.currentApplication &&
           this.state.currentApplication.id === fetchedApplication.id &&
           isEqual(
-            this.state.currentApplication.interview.notes?.[this.context.uid],
-            fetchedApplication.interview.notes?.[this.context.uid]
+            this.state.currentApplication?.interview?.notes?.[this.context.uid],
+            fetchedApplication?.interview?.notes?.[this.context.uid]
           )
         ) {
           this.setState({ overwritten: true });
@@ -347,6 +359,7 @@ class InterviewerView extends Component {
               saveApplication={this.saveApplication}
               submitApplication={this.submitApplication}
               overwritten={overwritten}
+              resetOverwritten={this.resetOverwritten}
             />
           </>
         );

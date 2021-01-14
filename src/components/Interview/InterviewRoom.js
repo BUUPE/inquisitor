@@ -33,6 +33,7 @@ const InterviewRoom = memo(
     saveApplication,
     submitApplication,
     overwritten,
+    resetOverwritten,
   }) => {
     const initialTabKey = "-1";
     const cachedTabKey = window.localStorage.getItem("current-tab-key");
@@ -190,6 +191,7 @@ const InterviewRoom = memo(
                 setTabKey={handleChangTab}
                 finalQuestionId={questions.length - 2}
                 overwritten={overwritten}
+                resetOverwritten={resetOverwritten}
               />
             ))}
           </Tab.Content>
