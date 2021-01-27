@@ -31,8 +31,6 @@ const ResumeDisplay = ({
   score,
   isInterviewer,
   saveApplication,
-  overwritten,
-  resetOverwritten,
 }) => (
   <>
     <h3>Resume Review</h3>
@@ -53,8 +51,6 @@ const ResumeDisplay = ({
           note={note}
           score={score}
           saveApplication={saveApplication}
-          overwritten={overwritten}
-          resetOverwritten={resetOverwritten}
         />
       </>
     )}
@@ -68,8 +64,6 @@ const FinalNotesDisplay = ({
   isInterviewer,
   saveApplication,
   submitApplication,
-  overwritten,
-  resetOverwritten,
 }) => {
   return (
     <>
@@ -83,8 +77,6 @@ const FinalNotesDisplay = ({
           score={score}
           saveApplication={saveApplication}
           submitApplication={submitApplication}
-          overwritten={overwritten}
-          resetOverwritten={resetOverwritten}
         />
       )}
     </>
@@ -101,8 +93,6 @@ const QuestionDisplay = ({
   finalQuestionId,
   saveApplication,
   submitApplication,
-  overwritten,
-  resetOverwritten,
 }) => {
   let Content = null;
   // TODO: Add code style rule in wiki to use switch when conditions > 2
@@ -120,8 +110,6 @@ const QuestionDisplay = ({
           score={score}
           isInterviewer={isInterviewer}
           saveApplication={saveApplication}
-          overwritten={overwritten}
-          resetOverwritten={resetOverwritten}
         />
       );
       break;
@@ -134,8 +122,6 @@ const QuestionDisplay = ({
           isInterviewer={isInterviewer}
           saveApplication={saveApplication}
           submitApplication={submitApplication}
-          overwritten={overwritten}
-          resetOverwritten={resetOverwritten}
         />
       );
       break;
@@ -153,8 +139,6 @@ const QuestionDisplay = ({
               note={note}
               score={score}
               saveApplication={saveApplication}
-              overwritten={overwritten}
-              resetOverwritten={resetOverwritten}
             />
           )}
         </>

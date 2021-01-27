@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
 import Col from "react-bootstrap/Col";
@@ -11,97 +11,85 @@ const StyledP = styled.p`
   white-space: pre-wrap;
 `;
 
-class QuestionNotes extends Component {
-  state = {
-    note: this.props.note,
-    score: this.props.score,
-    showToast: false,
-  };
+const QuestionNotes = ({
+  question,
+  note: propNote,
+  score: propScore,
+  saveApplication,
+  submitApplication,
+}) => {
+  const [note, setNote] = useState(propNote);
+  const [score, setScore] = useState(propScore);
+  const [showToast, setShowToast] = useState(false);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.overwritten) {
-      this.setState(prevState);
-      this.props.resetOverwritten();
-    }
-  }
-
-  handleSubmit = async (event) => {
-    const { note, score } = this.state;
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    await this.props.saveApplication({
+    await saveApplication({
       note,
       score,
-      id: this.props.question.id,
+      id: question.id,
     });
-    await this.props.submitApplication();
+    await submitApplication();
   };
 
-  handleSave = () => {
-    const { note, score } = this.state;
-    this.props.saveApplication({
+  const handleSave = () =>
+    saveApplication({
       note,
       score,
-      id: this.props.question.id,
+      id: question.id,
     });
-  };
 
-  render() {
-    return (
-      <>
-        <StyledP>{this.props.question.answer}</StyledP>
-        <Form onSubmit={this.handleSubmit}>
-          <div className="note-wrapper">
-            <Col sm={9}>
-              <Form.Group controlId="formBasicEmail">
-                <Form.Label>
-                  <strong>Notes</strong>
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows="10"
-                  placeholder="Enter notes here..."
-                  value={this.state.note}
-                  onChange={(e) => this.setState({ note: e.target.value })}
-                  onBlur={() => this.handleSave()}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col sm={3}>
-              <strong>Score</strong>
-
-              <RangeSlider
-                value={this.state.score}
-                onChange={(e) =>
-                  this.setState({ score: parseFloat(e.target.value) })
-                }
-                onAfterChange={() => this.handleSave()}
-                step={0.5}
-                max={5}
-                min={0}
+  return (
+    <>
+      <StyledP>{question.answer}</StyledP>
+      <Form onSubmit={handleSubmit}>
+        <div className="note-wrapper">
+          <Col sm={9}>
+            <Form.Group controlId="formBasicEmail">
+              <Form.Label>
+                <strong>Notes</strong>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows="10"
+                placeholder="Enter notes here..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                onBlur={handleSave}
+                required
               />
-            </Col>
-          </div>
+            </Form.Group>
+          </Col>
+          <Col sm={3}>
+            <strong>Score</strong>
 
-          {this.props.submitApplication && (
-            <Button type="submit">Submit</Button>
-          )}
+            <RangeSlider
+              value={score}
+              onChange={(e) => setScore(parseFloat(e.target.value))}
+              onAfterChange={handleSave}
+              step={0.5}
+              max={5}
+              min={0}
+            />
+          </Col>
+        </div>
 
-          <Toast
-            onClose={() => this.setState({ showToast: false })}
-            show={this.state.showToast}
-            delay={3000}
-            autohide
-          >
-            <Toast.Body>
-              <strong>Saved!</strong>
-            </Toast.Body>
-          </Toast>
-        </Form>
-        <hr />
-      </>
-    );
-  }
-}
+        {submitApplication && <Button type="submit">Submit</Button>}
+
+        <Toast
+          onClose={() => setShowToast(false)}
+          show={showToast}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body>
+            <strong>Saved!</strong>
+          </Toast.Body>
+        </Toast>
+      </Form>
+      <hr />
+    </>
+  );
+};
 
 export default QuestionNotes;

@@ -59,7 +59,6 @@ class InterviewerView extends Component {
     questions: [],
     currentApplication: null,
     levelConfig: {},
-    overwritten: false,
   };
   unsubSettings = null;
   unsubTimeslots = null;
@@ -162,10 +161,6 @@ class InterviewerView extends Component {
     });
   };
 
-  resetOverwritten = () => {
-    this.setState({ overwritten: false });
-  };
-
   fetchApplication = (id) => {
     if (!id) return;
 
@@ -178,31 +173,21 @@ class InterviewerView extends Component {
           return this.setState({ error: "Application not found!" });
         const fetchedApplication = { ...doc.data(), id: doc.id };
 
-        console.log("curr", this.state.currentApplication);
-        console.log("fetched", fetchedApplication);
-        console.log(
-          isEqual(
-            this.state.currentApplication?.interview?.notes?.[this.context.uid],
-            fetchedApplication?.interview?.notes?.[this.context.uid]
-          )
-        );
         if (
-          this.state.currentApplication &&
-          this.state.currentApplication.id === fetchedApplication.id &&
-          isEqual(
+          !this.state.currentApplication ||
+          this.state.currentApplication.id !== fetchedApplication.id ||
+          !isEqual(
             this.state.currentApplication?.interview?.notes?.[this.context.uid],
             fetchedApplication?.interview?.notes?.[this.context.uid]
           )
         ) {
-          this.setState({ overwritten: true });
+          this.setState({ currentApplication: fetchedApplication });
+          localStorage.setItem(
+            "currentApplication",
+            JSON.stringify(fetchedApplication)
+          ); // this may lead to issues if the data is very old
+          window.onbeforeunload = null; // reset this when they go to a new person
         }
-
-        this.setState({ currentApplication: fetchedApplication });
-        localStorage.setItem(
-          "currentApplication",
-          JSON.stringify(fetchedApplication)
-        ); // this may lead to issues if the data is very old
-        window.onbeforeunload = null; // reset this when they go to a new person
       });
   };
 
@@ -288,7 +273,6 @@ class InterviewerView extends Component {
       currentApplication,
       levelConfig,
       questions,
-      overwritten,
     } = this.state;
 
     if (loading) return <Loader />;
@@ -358,8 +342,6 @@ class InterviewerView extends Component {
               questions={filteredQuestions}
               saveApplication={this.saveApplication}
               submitApplication={this.submitApplication}
-              overwritten={overwritten}
-              resetOverwritten={this.resetOverwritten}
             />
           </>
         );
