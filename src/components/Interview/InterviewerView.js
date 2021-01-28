@@ -204,7 +204,6 @@ class InterviewerView extends Component {
   };
 
   saveApplication = async (interview) => {
-    console.log(interview);
     try {
       await this.props.firebase.firestore.runTransaction(
         async (transaction) => {
