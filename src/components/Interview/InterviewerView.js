@@ -204,6 +204,7 @@ class InterviewerView extends Component {
   };
 
   saveApplication = async (interview) => {
+    console.log(interview);
     try {
       await this.props.firebase.firestore.runTransaction(
         async (transaction) => {
@@ -213,7 +214,12 @@ class InterviewerView extends Component {
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
           const application = { ...doc.data() };
-          transaction.update(ref, { interview });
+          const updateObject = {};
+          updateObject[`interview/notes/${this.context.uid}`] =
+            interview.notes[this.context.uid];
+          updateObject[`interview/scores/${this.context.uid}`] =
+            interview.scores[this.context.uid];
+          transaction.update(ref, updateObject);
         }
       );
     } catch (e) {
