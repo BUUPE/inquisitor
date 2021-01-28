@@ -214,9 +214,9 @@ class InterviewerView extends Component {
           // eslint-disable-next-line no-unused-vars
           const application = { ...doc.data() };
           const updateObject = {};
-          updateObject[`interview/notes/${this.context.uid}`] =
+          updateObject[`interview.notes.${this.context.uid}`] =
             interview.notes[this.context.uid];
-          updateObject[`interview/scores/${this.context.uid}`] =
+          updateObject[`interview.scores.${this.context.uid}`] =
             interview.scores[this.context.uid];
           transaction.update(ref, updateObject);
         }
