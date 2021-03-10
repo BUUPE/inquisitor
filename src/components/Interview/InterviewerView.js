@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import isEqual from "lodash.isequal";
 import { compose } from "recompose";
 import styled from "styled-components";
 import update from "immutability-helper";
@@ -170,13 +171,23 @@ class InterviewerView extends Component {
       .onSnapshot((doc) => {
         if (!doc.exists)
           return this.setState({ error: "Application not found!" });
-        const currentApplication = { ...doc.data(), id: doc.id };
-        this.setState({ currentApplication });
-        localStorage.setItem(
-          "currentApplication",
-          JSON.stringify(currentApplication)
-        ); // this may lead to issues if the data is very old
-        window.onbeforeunload = null; // reset this when they go to a new person
+        const fetchedApplication = { ...doc.data(), id: doc.id };
+
+        if (
+          !this.state.currentApplication ||
+          this.state.currentApplication.id !== fetchedApplication.id ||
+          !isEqual(
+            this.state.currentApplication?.interview?.notes?.[this.context.uid],
+            fetchedApplication?.interview?.notes?.[this.context.uid]
+          )
+        ) {
+          this.setState({ currentApplication: fetchedApplication });
+          localStorage.setItem(
+            "currentApplication",
+            JSON.stringify(fetchedApplication)
+          ); // this may lead to issues if the data is very old
+          window.onbeforeunload = null; // reset this when they go to a new person
+        }
       });
   };
 
@@ -202,7 +213,12 @@ class InterviewerView extends Component {
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
           const application = { ...doc.data() };
-          transaction.update(ref, { interview });
+          const updateObject = {};
+          updateObject[`interview.notes.${this.context.uid}`] =
+            interview.notes[this.context.uid];
+          updateObject[`interview.scores.${this.context.uid}`] =
+            interview.scores[this.context.uid];
+          transaction.update(ref, updateObject);
         }
       );
     } catch (e) {
