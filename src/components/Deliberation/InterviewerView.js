@@ -93,7 +93,7 @@ const DetailsDisplay = () => (
 class InterviewerView extends Component {
   _initFirebase = false;
   state = {
-    applications: [], // TODO: instead of loading all the applications by default, load their ids, then pass that id to application display/admin settings so they can handle accordingly
+    applications: [],
     currentApplicationID: "details",
     currentApplication: null,
     settings: null,
@@ -213,8 +213,6 @@ class InterviewerView extends Component {
   };
 
   setCurrentApplication = (currentApplication) => {
-    console.log(currentApplication);
-
     const currentApplicationID =
       typeof currentApplication === "object" && currentApplication !== null
         ? currentApplication.id
