@@ -189,9 +189,14 @@ class InterviewerView extends Component {
             currentApplicationID !== null &&
             currentApplicationID !== undefined
           ) {
+            const fallBack =
+              currentApplicationID === "admin" ||
+              currentApplicationID === "secondRound"
+                ? currentApplicationID
+                : "details";
             this.setCurrentApplication(
               applications.find((a) => a.id === currentApplicationID) ||
-                currentApplicationID
+                fallBack
             );
           }
         }, reject);
@@ -208,6 +213,8 @@ class InterviewerView extends Component {
   };
 
   setCurrentApplication = (currentApplication) => {
+    console.log(currentApplication);
+
     const currentApplicationID =
       typeof currentApplication === "object" && currentApplication !== null
         ? currentApplication.id
@@ -419,7 +426,7 @@ class InterviewerView extends Component {
           readyRoundTwo={this.readyRoundTwo}
         />
       );
-    } else
+    } else if (typeof currentApplication === "object") {
       Content = () => (
         <ApplicationDisplay
           questions={questions}
@@ -429,6 +436,7 @@ class InterviewerView extends Component {
           {...currentApplication}
         />
       );
+    } else Content = () => <DetailsDisplay />;
 
     const Sidebar = () => (
       <Col className="flex-column" md={3} style={{ padding: 0 }}>
