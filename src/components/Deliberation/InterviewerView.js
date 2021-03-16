@@ -93,8 +93,9 @@ const DetailsDisplay = () => (
 class InterviewerView extends Component {
   _initFirebase = false;
   state = {
-    applications: [], // TODO: instead of loading all the applications by default, load their ids, then pass that id to application display/admin settings so they can handle accordingly
-    currentApplication: "details",
+    applications: [],
+    currentApplicationID: "details",
+    currentApplication: null,
     settings: null,
     loading: true,
     error: null,
@@ -121,10 +122,11 @@ class InterviewerView extends Component {
     this._initFirebase = true;
 
     const initialApplication = "details";
-    const cachedApplication = JSON.parse(
-      window.localStorage.getItem("currentApplicationDeliberation")
+    const cachedApplicationID = window.localStorage.getItem(
+      "currentApplicationDeliberation"
     );
-    const currentApplication = cachedApplication || initialApplication;
+
+    const currentApplicationID = cachedApplicationID || initialApplication;
 
     const questions = await this.props.firebase
       .questions()
@@ -184,11 +186,17 @@ class InterviewerView extends Component {
           resolveOnce(applications);
 
           if (
-            typeof currentApplication === "object" &&
-            currentApplication !== null
+            currentApplicationID !== null &&
+            currentApplicationID !== undefined
           ) {
+            const fallBack =
+              currentApplicationID === "admin" ||
+              currentApplicationID === "secondRound"
+                ? currentApplicationID
+                : "details";
             this.setCurrentApplication(
-              applications.find((a) => a.id === currentApplication.id)
+              applications.find((a) => a.id === currentApplicationID) ||
+                fallBack
             );
           }
         }, reject);
@@ -199,17 +207,21 @@ class InterviewerView extends Component {
       applications,
       questions,
       levelConfig,
-      currentApplication,
+      currentApplicationID,
       loading: false,
     });
   };
 
   setCurrentApplication = (currentApplication) => {
+    const currentApplicationID =
+      typeof currentApplication === "object" && currentApplication !== null
+        ? currentApplication.id
+        : currentApplication;
     window.localStorage.setItem(
       "currentApplicationDeliberation",
-      JSON.stringify(currentApplication)
+      currentApplicationID
     );
-    this.setState({ currentApplication });
+    this.setState({ currentApplication, currentApplicationID });
   };
 
   voteApplicant = (decision) => {
@@ -373,6 +385,7 @@ class InterviewerView extends Component {
       settings,
       applications,
       currentApplication,
+      currentApplicationID,
       questions,
       levelConfig,
     } = this.state;
@@ -392,8 +405,8 @@ class InterviewerView extends Component {
       );
 
     let Content;
-    if (currentApplication === "details") Content = () => <DetailsDisplay />;
-    else if (currentApplication === "admin") {
+    if (currentApplicationID === "details") Content = () => <DetailsDisplay />;
+    else if (currentApplicationID === "admin") {
       Content = () => (
         <FeedbackPage
           settings={settings}
@@ -402,7 +415,7 @@ class InterviewerView extends Component {
           sendResults={this.sendResults}
         />
       );
-    } else if (currentApplication === "secondRound") {
+    } else if (currentApplicationID === "secondRound") {
       Content = () => (
         <SecondRound
           settings={settings}
@@ -411,7 +424,7 @@ class InterviewerView extends Component {
           readyRoundTwo={this.readyRoundTwo}
         />
       );
-    } else
+    } else if (typeof currentApplication === "object") {
       Content = () => (
         <ApplicationDisplay
           questions={questions}
@@ -421,6 +434,7 @@ class InterviewerView extends Component {
           {...currentApplication}
         />
       );
+    } else Content = () => <DetailsDisplay />;
 
     const Sidebar = () => (
       <Col className="flex-column" md={3} style={{ padding: 0 }}>
