@@ -118,8 +118,12 @@ class ApplicationForm extends Component {
           values[1].roles.hasOwnProperty("applicant") &&
           values[1].roles.applicant,
         blackListed:
-          values[1].roles.hasOwnProperty("blacklisted") &&
-          values[1].roles.blacklisted,
+          (values[1].roles.hasOwnProperty("blacklisted") &&
+            values[1].roles.blacklisted) ||
+          (values[1].roles.hasOwnProperty("upemember") &&
+            values[1].roles.upemember) ||
+          (values[1].roles.hasOwnProperty("provisionalMember") &&
+            values[1].roles.provisionalMember),
         generalSettings: values[2],
         initialApplicationData: values[3],
       })
@@ -154,9 +158,9 @@ class ApplicationForm extends Component {
           <Logo size="medium" />
           <h1>You are not allowed to apply!</h1>
           <p>
-            Unfortunately you have been Blacklisted from re-applying to UPE, if
-            you believe this is a mistake, please contact us at upe@bu.edu so we
-            may sort this out.
+            Unfortunately you are not eligible to apply. If you think this is a
+            mistake, or want further information on this, please contact
+            upe@bu.edu.
           </p>
         </Container>
       );
