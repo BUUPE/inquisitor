@@ -287,7 +287,7 @@ class ApplicationForm extends Component {
             interviewed: false,
           },
         });
-        const updateRoles = this.props.firebase.user(uid).update({
+        const updateUser = this.props.firebase.user(uid).update({
           roles,
           name: newName,
           profileIMG: "",
@@ -297,7 +297,7 @@ class ApplicationForm extends Component {
           firstName,
         });
 
-        await Promise.all([uploadApplicationData, updateRoles, sendReceipt]);
+        await Promise.all([uploadApplicationData, updateUser, sendReceipt]);
         this.setState({ submitted: true, sending: false });
       }
 
