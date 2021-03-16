@@ -290,6 +290,7 @@ class ApplicationForm extends Component {
         const updateRoles = this.props.firebase.user(uid).update({
           roles,
           name: newName,
+          profileIMG: "",
         });
         const sendReceipt = this.props.firebase.sendApplicationReceipt({
           email,
