@@ -54,6 +54,7 @@ class ApplicationForm extends Component {
     sending: false,
     submitted: false,
     alreadyApplied: false,
+    blackListed: false,
     errorMsg: "",
   };
   static contextType = AuthUserContext;
@@ -113,7 +114,16 @@ class ApplicationForm extends Component {
       this.setState({
         loading: false,
         applicationFormConfig: values[0],
-        alreadyApplied: values[1].roles.hasOwnProperty("applicant"),
+        alreadyApplied:
+          values[1].roles.hasOwnProperty("applicant") &&
+          values[1].roles.applicant,
+        blackListed:
+          (values[1].roles.hasOwnProperty("blacklisted") &&
+            values[1].roles.blacklisted) ||
+          (values[1].roles.hasOwnProperty("upemember") &&
+            values[1].roles.upemember) ||
+          (values[1].roles.hasOwnProperty("provisionalMember") &&
+            values[1].roles.provisionalMember),
         generalSettings: values[2],
         initialApplicationData: values[3],
       })
@@ -129,10 +139,31 @@ class ApplicationForm extends Component {
       applicationFormConfig,
       sending,
       alreadyApplied,
+      blackListed,
       generalSettings,
     } = this.state;
 
     if (loading) return <Loader />;
+
+    if (blackListed)
+      return (
+        <Container
+          flexdirection="column"
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            maxWidth: 700,
+          }}
+        >
+          <Logo size="medium" />
+          <h1>You are not allowed to apply!</h1>
+          <p>
+            Unfortunately you are not eligible to apply. If you think this is a
+            mistake, or want further information on this, please contact
+            upe@bu.edu.
+          </p>
+        </Container>
+      );
 
     if (!generalSettings.applicationsOpen)
       return (
@@ -186,12 +217,14 @@ class ApplicationForm extends Component {
         const { uid, roles } = this.context;
         roles.applicant = true;
 
-        let firstName, email;
+        let firstName, email, newName;
         let responses = inputs.map(({ id: inputId, value }) => {
           const id = parseInt(inputId);
 
-          if (id === 1) firstName = value.split(" ")[0];
-          else if (id === 2) email = value;
+          if (id === 1) {
+            firstName = value.split(" ")[0];
+            newName = value;
+          } else if (id === 2) email = value;
 
           const { name, order, type } = questions.find((q) => q.id === id);
           return {
@@ -258,15 +291,17 @@ class ApplicationForm extends Component {
             interviewed: false,
           },
         });
-        const updateRoles = this.props.firebase.user(uid).update({
+        const updateUser = this.props.firebase.user(uid).update({
           roles,
+          name: newName,
+          profileIMG: "",
         });
         const sendReceipt = this.props.firebase.sendApplicationReceipt({
           email,
           firstName,
         });
 
-        await Promise.all([uploadApplicationData, updateRoles, sendReceipt]);
+        await Promise.all([uploadApplicationData, updateUser, sendReceipt]);
         this.setState({ submitted: true, sending: false });
       }
 
