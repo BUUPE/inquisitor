@@ -292,7 +292,8 @@ class ApplicantView extends Component {
               <Card.Body>
                 <Card.Title>{formatTime(slot.time)}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {Object.values(slot.interviewers).join(", ")}
+                  Number of interviewers:{" "}
+                  {Object.values(slot.interviewers).length}
                 </Card.Subtitle>
                 <Card.Subtitle className="mb-2 text-muted">
                   {slot.timeslotLength} mins
