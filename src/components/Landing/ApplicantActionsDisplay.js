@@ -70,11 +70,7 @@ class ApplicantActionsDisplay extends Component {
       .application(!!this.context ? this.context.uid : "1")
       .get()
       .then((snapshot) => (snapshot.exists ? snapshot.data() : null))
-      .catch(() =>
-        this.setState({
-          loading: false,
-        })
-      );
+      .catch(() => console.log("No application"));
 
     Promise.all([loadGeneralSettings, loadApplication]).then((values) =>
       this.setState({
@@ -127,7 +123,7 @@ class ApplicantActionsDisplay extends Component {
                 onclick={() => this.navigateTo("/login/")}
               />
             )}
-            {!!!this.context.roles.applicant &&
+            {!!!this.context?.roles.applicant &&
               generalSettings.applicationsOpen && (
                 <ActionCard
                   title={"New Application"}
@@ -137,7 +133,7 @@ class ApplicantActionsDisplay extends Component {
                   onclick={() => this.navigateTo("/apply/")}
                 />
               )}
-            {!!this.context.roles.applicant &&
+            {!!this.context?.roles.applicant &&
               generalSettings.applicationsOpen && (
                 <ActionCard
                   title={"Edit Application"}
@@ -145,7 +141,7 @@ class ApplicantActionsDisplay extends Component {
                   onclick={() => this.navigateTo("/apply/")}
                 />
               )}
-            {!!this.context.roles.applicant &&
+            {!!this.context?.roles.applicant &&
               generalSettings.timeslotsOpenForApplicants && (
                 <ActionCard
                   title={"Select Timeslots"}
@@ -155,14 +151,14 @@ class ApplicantActionsDisplay extends Component {
                   onclick={() => this.navigateTo("/timeslots/")}
                 />
               )}
-            {!!this.context.roles.applicant && isDay && (
+            {!!this.context?.roles.applicant && isDay && (
               <ActionCard
                 title={"Enter Interview"}
                 text={"Click the link below to enter your Interview Room"}
                 onclick={() => this.navigateTo("/room/")}
               />
             )}
-            {!!this.context.roles.applicant &&
+            {!!this.context?.roles.applicant &&
               !!application &&
               application.interview.interviewed && (
                 <ActionCard
@@ -173,7 +169,8 @@ class ApplicantActionsDisplay extends Component {
                   onclick={() => this.navigateTo("/deliberation/")}
                 />
               )}
-            {!!!this.context.roles.applicant &&
+            {!!this.context &&
+              !!!this.context.roles.applicant &&
               !generalSettings.applicationsOpen && (
                 <ActionCard
                   title={"Interest Form"}
