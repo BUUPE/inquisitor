@@ -4,7 +4,7 @@ import { AuthUserContext, withFirebase } from "upe-react-components";
 
 import SEO from "../components/SEO";
 import Loader from "../components/Loader";
-import WelcomeDisplay from "../components/Landing/WelcomeDisplay";
+import TextDisplay from "../components/TextDisplay";
 import ApplicantActionsDisplay from "../components/Landing/ApplicantActionsDisplay";
 import InterviewerActionsDisplay from "../components/Landing/InterviewerActionsDisplay";
 
@@ -59,8 +59,8 @@ class IndexPage extends Component {
     if (!!!this.context)
       return (
         <>
-          <WelcomeDisplay
-            name={"to Inquisitor"}
+          <TextDisplay
+            name={"Welcome to Inquisitor!"}
             text={
               "It seems that you are not logged in, if you'd like to continue into Inquisitor, please Login below with your BU account."
             }
@@ -84,7 +84,10 @@ class IndexPage extends Component {
 
       return (
         <>
-          <WelcomeDisplay name={this.context.name.split(" ")[0]} text={text} />
+          <TextDisplay
+            name={`Welcome ${this.context.name.split(" ")[0]}!`}
+            text={text}
+          />
           <InterviewerActionsDisplay />
         </>
       );
@@ -109,7 +112,10 @@ class IndexPage extends Component {
     return (
       <>
         <SEO title="Landing" route="/" />
-        <WelcomeDisplay name={this.context.name.split(" ")[0]} text={text} />
+        <TextDisplay
+          name={`Welcome ${this.context.name.split(" ")[0]}!`}
+          text={text}
+        />
         <ApplicantActionsDisplay />
       </>
     );

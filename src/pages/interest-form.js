@@ -7,6 +7,7 @@ import { withFirebase, withAuthorization } from "upe-react-components";
 import { isLoggedIn } from "../util/conditions";
 import SEO from "../components/SEO";
 import { Container } from "../styles/global";
+import { BackIcon } from "../components/TextDisplay";
 
 const Title = styled.div`
   padding-left: 5%;
@@ -77,6 +78,7 @@ const InterestForm = () => {
   return (
     <>
       <SEO title="Interest Form" route="/interest-form" />
+      <BackIcon />
       <Title>
         <h1> Interest Form </h1>
       </Title>

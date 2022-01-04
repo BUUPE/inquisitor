@@ -14,17 +14,55 @@ import {
 
 import { isLoggedIn } from "../util/conditions";
 import Loader from "../components/Loader";
-import Logo from "../components/Logo";
+import TextDisplay, { BackIcon } from "../components/TextDisplay";
 import SEO from "../components/SEO";
 import { Container, RequiredAsterisk } from "../styles/global";
 
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
 const CenteredForm = styled(Form)`
+  font-family: Georgia;
   display: flex;
   flex-direction: column;
   align-items: center;
   max-width: 500px;
   flex: auto;
   margin-bottom: 25px;
+`;
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #f21131;
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 2% 10% 2% 10%;
+  margin-top: 5%;
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #600613;
+    border: none;
+  }
 `;
 
 const setFileValidity = (fileUpload) => {
@@ -54,8 +92,7 @@ class ApplicationForm extends Component {
     sending: false,
     submitted: false,
     alreadyApplied: false,
-    blackListed: false,
-    errorMsg: "",
+    denyListed: false,
   };
   static contextType = AuthUserContext;
 
@@ -80,7 +117,6 @@ class ApplicationForm extends Component {
       .then((snapshot) => snapshot.data())
       .catch(() =>
         this.setState({
-          errorMsg: "Application Form Config doesn't exist!",
           loading: false,
         })
       );
@@ -95,7 +131,6 @@ class ApplicationForm extends Component {
       .then((snapshot) => snapshot.data())
       .catch(() =>
         this.setState({
-          errorMsg: "General settings doesn't exist!",
           loading: false,
         })
       );
@@ -117,9 +152,9 @@ class ApplicationForm extends Component {
         alreadyApplied:
           values[1].roles.hasOwnProperty("applicant") &&
           values[1].roles.applicant,
-        blackListed:
-          (values[1].roles.hasOwnProperty("blacklisted") &&
-            values[1].roles.blacklisted) ||
+        denyListed:
+          (values[1].roles.hasOwnProperty("denyListed") &&
+            values[1].roles.denyListed) ||
           (values[1].roles.hasOwnProperty("upemember") &&
             values[1].roles.upemember) ||
           (values[1].roles.hasOwnProperty("provisionalMember") &&
@@ -133,59 +168,37 @@ class ApplicationForm extends Component {
   render() {
     const {
       loading,
-      errorMsg,
       submitted,
       validated,
       applicationFormConfig,
       sending,
       alreadyApplied,
-      blackListed,
+      denyListed,
       generalSettings,
     } = this.state;
 
     if (loading) return <Loader />;
 
-    if (blackListed)
+    if (denyListed)
       return (
-        <Container
-          flexdirection="column"
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            maxWidth: 700,
-          }}
-        >
-          <Logo size="medium" />
-          <h1>You are not allowed to apply!</h1>
-          <p>
-            Unfortunately you are not eligible to apply. If you think this is a
-            mistake, or want further information on this, please contact
-            upe@bu.edu.
-          </p>
-        </Container>
+        <>
+          <TextDisplay
+            name={"Your Application"}
+            text={
+              "Unfortunately you are not eligible to apply to Upsilon PI Epsilon. If you think this is a mistake, or want further information on the situation, please contact our EBoard at upe@bu.edu."
+            }
+            displayBack={true}
+          />
+        </>
       );
 
     if (!generalSettings.applicationsOpen)
       return (
-        <Container
-          flexdirection="column"
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            maxWidth: 700,
-          }}
-        >
-          <Logo size="medium" />
-          <h1>Applications are closed!</h1>
-          <p>
-            Unfortunately, the application for the{" "}
-            {applicationFormConfig.semester} season has closed. If you're
-            interesting in joining BU UPE, please come back next semester and
-            apply, we'd love to have you! In the meantime, feel free to check
-            out the public events on{" "}
-            <a href="https://upe.bu.edu/events">our calendar</a>.
-          </p>
-        </Container>
+        <TextDisplay
+          name={"Your Application"}
+          text={`Unfortunately, the application for the ${applicationFormConfig.semester} season has closed. If you're interesting in joining BU UPE, please come back next semester and apply, we'd love to have you!`}
+          displayBack={true}
+        />
       );
 
     const onSubmit = async (event) => {
@@ -311,29 +324,14 @@ class ApplicationForm extends Component {
     };
 
     const successMessage = (
-      <Container flexdirection="column">
-        <div style={{ alignSelf: "center" }}>
-          <Logo size="medium" />
-        </div>
-
-        <h1>Application Submitted!</h1>
-        <p>
-          Thank you for applying to join BU UPE. Please check your email for a
-          confirmation of your submission. Further details, such as interview
-          timeslots, will be prompted via email and can be entered in this
-          application. If you'd like to edit your submission, simply refresh
-          this page and re-apply.
-        </p>
-      </Container>
+      <TextDisplay
+        name={"Your Application"}
+        text={
+          "Your application has been submitted! Thank you for applying to join BU UPE. Please check your email for a confirmation of your submission. Further details, such as interview timeslots, will be prompted via email and can be entered in this application. If you'd like to edit your submission, simply refresh this page and re-apply."
+        }
+        displayBack={true}
+      />
     );
-
-    if (errorMsg)
-      return (
-        <Container flexdirection="column">
-          <h1>Uh oh!</h1>
-          <p>{errorMsg}</p>
-        </Container>
-      );
 
     if (submitted) return successMessage;
 
@@ -424,27 +422,20 @@ class ApplicationForm extends Component {
     return (
       <>
         <SEO title="Apply" route="/apply" />
+        <BackIcon />
+        <Title>
+          <h1> Your Application </h1>
+        </Title>
         <Container flexdirection="row" style={{ justifyContent: "center" }}>
           <CenteredForm noValidate validated={validated} onSubmit={onSubmit}>
-            <Logo size="medium" />
-            <h1>Apply to BU UPE</h1>
-            {/* Pre application welcome message, perhaps make this configurable in admin settings
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
-            fringilla, dui vitae maximus luctus, magna urna convallis purus,
-            condimentum ullamcorper velit dui eu dolor. Pellentesque et
-            tincidunt tellus. Fusce venenatis magna sed elit bibendum, sed
-            scelerisque augue placerat. Vestibulum nec mi efficitur, posuere
-            nisl at, pretium ex. Quisque quam dui, pulvinar a pellentesque eu,
-            cursus et elit. Ut volutpat imperdiet ex, id commodo nulla pretium
-            id. Proin accumsan dignissim tortor, id pulvinar urna euismod ac.
-            Morbi suscipit massa id dui feugiat ultrices. Nulla ac faucibus
-            tortor, quis pharetra leo.
-          </p>
-          */}
-
             {alreadyApplied && (
-              <p style={{ color: "red" }}>
+              <p
+                style={{
+                  color: "red",
+                  paddingTop: "10px",
+                  paddingBottom: "10px",
+                }}
+              >
                 Look's like you've already applied! Feel free to reapply
                 however, just note that it will overwrite your previous
                 submission.
@@ -455,9 +446,9 @@ class ApplicationForm extends Component {
               .sort((a, b) => (a.order > b.order ? 1 : -1))
               .map((question) => renderQuestion(question))}
 
-            <Button type="submit" disabled={sending}>
+            <StyledButton type="submit" disabled={sending}>
               {sending ? "Submitting..." : "Submit"}
-            </Button>
+            </StyledButton>
           </CenteredForm>
         </Container>
       </>
