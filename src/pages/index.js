@@ -58,12 +58,15 @@ class IndexPage extends Component {
     // Not Logged In
     if (!!!this.context)
       return (
-        <WelcomeDisplay
-          name={"to Inquisitor"}
-          text={
-            "It seems that you are not logged in, if you'd like to continue into Inquisitor, please Login below with your BU account."
-          }
-        />
+        <>
+          <WelcomeDisplay
+            name={"to Inquisitor"}
+            text={
+              "It seems that you are not logged in, if you'd like to continue into Inquisitor, please Login below with your BU account."
+            }
+          />
+          <ApplicantActionsDisplay />
+        </>
       );
 
     // Declare Display Text Variable
@@ -72,8 +75,12 @@ class IndexPage extends Component {
 
     // UPE Member
     if (!!this.context.roles.upemember) {
-      if (!!this.context.roles.recruitmentteam) text = "RECRUITMENT TEAM";
-      else text = "REGULAR MEMBER";
+      if (!!this.context.roles.recruitmentteam)
+        text =
+          "Thank you for helping us run this Semester's Recruitment Season! Below you can find all the available actions you can take at this time.";
+      else
+        text =
+          "Thank you, as always, for helping us make the final deliberations on the New Members this Semester! Below you can find all the available actions you can take at this time.";
 
       return (
         <>
@@ -82,8 +89,9 @@ class IndexPage extends Component {
         </>
       );
     }
+
     // Denylisted
-    else if (!!this.context.roles.denyListed)
+    if (!!this.context.roles.denyListed)
       text =
         "Unfortunately you are not eligible to apply to Upsilon PI Epsilon. If you think this is a mistake, or want further information on the situation, please contact our EBoard at upe@bu.edu.";
     // Not Applicant
