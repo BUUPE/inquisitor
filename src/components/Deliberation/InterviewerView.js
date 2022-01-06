@@ -19,19 +19,23 @@ import Error from "../Error";
 import SecondRound from "./SecondRound";
 import FeedbackPage from "./FeedbackPage";
 import ApplicationDisplay from "./ApplicationDisplay";
-import { Container, FullSizeContainer } from "../../styles/global";
+import { FullSizeContainer } from "../../styles/global";
+import TextDisplay, { BackIcon } from "../TextDisplay";
 
-// TODO: use this to constrcut a Sidebar base in global styles
 const SidebarBase = styled.ul`
+  font-family: Georgia;
   text-align: center;
-  width: 100%;
-  height: 100%;
+  max-width: 300px;
   padding: 15px;
   background: ${(props) => props.theme.palette.darkShades};
   list-style: none;
+  margin-left: 1%;
+  margin-right: 1%;
+  border-radius: 25px;
 
   h1 {
     color: white;
+    font-style: italic;
     font-weight: bold;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -44,49 +48,93 @@ const SidebarBase = styled.ul`
   }
 `;
 
+const Text = styled.div`
+  padding-left: 7%;
+  font-family: Georgia;
+  width: 100%;
+  padding-top: 80px;
+  padding-bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  h3 {
+    max-width: 50%;
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 2%;
+    color: #f21131;
+    font-style: italic;
+  }
+  p {
+    max-width: 50%;
+    font-weight: bold;
+    font-size: 15px;
+    padding-bottom: 1%;
+  }
+`;
+
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
 const SidebarItem = styled.li`
-  color: ${(props) =>
-    props.selected ? props.theme.palette.mainBrand : "white"};
+  color: ${(props) => (props.selected ? "#f21131" : "white")};
   font-weight: bold;
   padding-top: 10px;
   padding-bottom: 10px;
   cursor: pointer;
 
   &:hover {
-    color: ${(props) => props.theme.palette.mainBrand};
+    color: #f21131;
     text-decoration: underline;
   }
 `;
 
 const DetailsDisplay = () => (
   <div>
-    <h1> Welcome to Deliberations! </h1>
-    <p>
-      {" "}
-      Please read the instructions bellow carefully before proceeding to
-      deliberate on all the candidates.{" "}
-    </p>
+    <BackIcon />
+    <Title>
+      <h1> Welcome to Deliberations! </h1>
+    </Title>
+    <Text>
+      <p>
+        {" "}
+        Please read the instructions bellow carefully before proceeding to
+        deliberate on all the candidates.{" "}
+      </p>
 
-    <h3> How to Vote </h3>
-    <p>
-      {" "}
-      In order to vote, select one of the candidates from the sidebar, and
-      proceed to review their application, in it, you'll be able to see not only
-      their general application, but also the details of their interview.{" "}
-    </p>
-    <p>
-      {" "}
-      After reviewing their application, you'll find two buttons at the bottom,
-      approve & deny, you only get 1 vote per candidate, although you will be
-      able to switch your vote until the deliberations close.{" "}
-    </p>
+      <h3> How to Vote </h3>
+      <p>
+        {" "}
+        In order to vote, select one of the candidates from the sidebar, and
+        proceed to review their application, in it, you'll be able to see not
+        only their general application, but also the details of their interview.{" "}
+      </p>
+      <p>
+        {" "}
+        After reviewing their application, you'll find two buttons at the
+        bottom, approve & deny, you only get 1 vote per candidate, although you
+        will be able to switch your vote until the deliberations close.{" "}
+      </p>
 
-    <h3> Final Details </h3>
-    <p>
-      {" "}
-      You will not be able to see anyone else's votes of the final results until
-      the EBoard announces them.{" "}
-    </p>
+      <h3> Final Details </h3>
+      <p>
+        {" "}
+        You will not be able to see anyone else's votes of the final results
+        until the EBoard announces them.{" "}
+      </p>
+    </Text>
   </div>
 );
 
@@ -399,9 +447,11 @@ class InterviewerView extends Component {
 
     if (!deliberationsOpen && !isAdmin(authUser))
       return (
-        <Container flexdirection="column">
-          <h1>Deliberations are closed!</h1>
-        </Container>
+        <TextDisplay
+          name={"Deliberations Menu"}
+          text={"Deliberations are currently closed!"}
+          displayBack={true}
+        />
       );
 
     let Content;
@@ -437,51 +487,49 @@ class InterviewerView extends Component {
     } else Content = () => <DetailsDisplay />;
 
     const Sidebar = () => (
-      <Col className="flex-column" md={3} style={{ padding: 0 }}>
-        <SidebarBase>
-          <h1>Applications</h1>
+      <SidebarBase>
+        <h1>Applications</h1>
+        <SidebarItem
+          selected={currentApplication === "details"}
+          onClick={() => this.setCurrentApplication("details")}
+        >
+          Voting Instructions
+        </SidebarItem>
+        {isAdmin(authUser) && (
           <SidebarItem
-            selected={currentApplication === "details"}
-            onClick={() => this.setCurrentApplication("details")}
+            selected={currentApplication === "admin"}
+            onClick={() => this.setCurrentApplication("admin")}
           >
-            Voting Instructions
+            Add Feedback
           </SidebarItem>
-          {isAdmin(authUser) && (
+        )}
+        {isAdmin(authUser) && (
+          <SidebarItem
+            selected={currentApplication === "secondRound"}
+            onClick={() => this.setCurrentApplication("secondRound")}
+          >
+            Second Round Status
+          </SidebarItem>
+        )}
+        <hr />
+        {applications
+          .sort((a, b) => (a.name > b.name ? 1 : -1))
+          .map((application) => (
             <SidebarItem
-              selected={currentApplication === "admin"}
-              onClick={() => this.setCurrentApplication("admin")}
+              selected={currentApplication.id === application.id}
+              key={application.id}
+              onClick={() => this.setCurrentApplication(application)}
             >
-              Add Feedback
+              {application.name}
             </SidebarItem>
-          )}
-          {isAdmin(authUser) && (
-            <SidebarItem
-              selected={currentApplication === "secondRound"}
-              onClick={() => this.setCurrentApplication("secondRound")}
-            >
-              Second Round Status
-            </SidebarItem>
-          )}
-          <hr />
-          {applications
-            .sort((a, b) => (a.name > b.name ? 1 : -1))
-            .map((application) => (
-              <SidebarItem
-                selected={currentApplication.id === application.id}
-                key={application.id}
-                onClick={() => this.setCurrentApplication(application)}
-              >
-                {application.name}
-              </SidebarItem>
-            ))}
-        </SidebarBase>
-      </Col>
+          ))}
+      </SidebarBase>
     );
 
     return (
       <FullSizeContainer fluid flexdirection="row">
         <Sidebar />
-        <Col md={9} style={{ padding: 15 }}>
+        <Col style={{ padding: 25 }}>
           <Content />
         </Col>
       </FullSizeContainer>

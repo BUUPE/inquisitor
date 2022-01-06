@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
+import styled from "styled-components";
 import swal from "@sweetalert/with-react";
 import { compose } from "recompose";
 import cloneDeep from "lodash.clonedeep";
-import { Link, navigate } from "gatsby";
+import { navigate } from "gatsby";
 import update from "immutability-helper";
 
 import Form from "react-bootstrap/Form";
@@ -15,9 +16,99 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
-import { Container, RequiredAsterisk } from "../../styles/global";
+import { RequiredAsterisk } from "../../styles/global";
 import Loader from "../Loader";
 import Error from "../Error";
+import TextDisplay, { BackIcon } from "../TextDisplay";
+
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
+const Text = styled.div`
+  font-family: Georgia;
+  width: 100%;
+  padding-top: 80px;
+  padding-bottom: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  h2 {
+    font-weight: bold;
+    font-size: 35px;
+    border-bottom: 2px solid #f21131;
+    margin-bottom: 2%;
+    font-style: italic;
+  }
+  h3 {
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 2%;
+    color: #f21131;
+    font-style: italic;
+  }
+  h4 {
+    font-weight: bold;
+    font-size: 25px;
+    padding-bottom: 1.5%;
+    font-style: italic;
+  }
+  h5 {
+    font-weight: bold;
+    font-size: 20px;
+    padding-bottom: 1.5%;
+  }
+  h5:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+  p {
+    font-weight: bold;
+    font-size: 15px;
+    padding-bottom: 1%;
+    max-width: 50%;
+  }
+`;
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 0.5% 2% 0.5% 2%;
+  &:focus,
+  &:active,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
+    border: none;
+  }
+  &:hover {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
+    border: none;
+  }
+`;
 
 const ApplicantView = ({ firebase }) => {
   const [settings, setSettings] = useState({});
@@ -130,20 +221,23 @@ const ApplicantView = ({ firebase }) => {
   // Hasn't applied yet
   if (!authUser.roles.applicant)
     return (
-      <Container flexdirection="column">
-        <h1>You have not yet applied this semester.</h1>
-        <Link to="/apply">
-          <Button>Apply!</Button>
-        </Link>
-      </Container>
+      <TextDisplay
+        name={"Deliberation Results"}
+        text={"You have yet to apply this Semester."}
+        displayBack={true}
+      />
     );
 
   // Hasn't interviewed yet
   if (!application.interview.interviewed)
     return (
-      <Container flexdirection="column">
-        <h1>You must first complete your interview!</h1>
-      </Container>
+      <TextDisplay
+        name={"Deliberation Results"}
+        text={
+          "You must complete your interview before getting any deliberation results."
+        }
+        displayBack={true}
+      />
     );
 
   // Deliberations are incomplete or feedback hasn't been given
@@ -154,9 +248,11 @@ const ApplicantView = ({ firebase }) => {
   )
     // TODO: make this centered, prettier
     return (
-      <Container flexdirection="column">
-        <h1>Deliberations are still underway!</h1>
-      </Container>
+      <TextDisplay
+        name={"Deliberation Results"}
+        text={"Deliberations are still underway."}
+        displayBack={true}
+      />
     );
 
   // Denied but waiting for emails to go out
@@ -165,9 +261,11 @@ const ApplicantView = ({ firebase }) => {
     application.deliberation.feedback !== ""
   )
     return (
-      <Container flexdirection="column">
-        <h1>Keep an eye on your inbox for an update on your deliberation!</h1>
-      </Container>
+      <TextDisplay
+        name={"Deliberation Results"}
+        text={"Keep an eye on your inbox for an update on your deliberation!"}
+        displayBack={true}
+      />
     );
 
   // Theyre accepted and need to confirm
@@ -176,8 +274,7 @@ const ApplicantView = ({ firebase }) => {
     const ResultText = () =>
       settings.useTwoRoundDeliberations && !authUser.roles.provisionalMember ? (
         <>
-          <h2>You have been provisionally accepted into UPE!</h2>
-          <br />
+          <h3>You have been provisionally accepted into UPE!</h3>
           <p>
             We are pleased to extend to you provisional membership to UPE. This
             means that you are now on the way to becoming a fully fledged member
@@ -189,8 +286,7 @@ const ApplicantView = ({ firebase }) => {
         </>
       ) : (
         <>
-          <h2>You have been officially accepted into UPE!</h2>
-          <br />
+          <h3>You have been officially accepted into UPE!</h3>
           <p>
             We are pleased to announce that you have been officially accepted
             into UPE. In order for us to complete this process, we require that
@@ -200,31 +296,37 @@ const ApplicantView = ({ firebase }) => {
       );
 
     return (
-      <Container flexdirection="column">
-        <div>
-          <h1>Your Results</h1>
-        </div>
-        <br />
-        <div>
+      <>
+        <BackIcon />
+        <Title>
+          <h1> Deliberation Results </h1>
+        </Title>
+        <Text>
           <ResultText />
-          <Button onClick={confirm}>Confirm</Button>
-        </div>
-      </Container>
+          <StyledButton onClick={confirm}>Confirm</StyledButton>
+        </Text>
+      </>
     );
   }
 
   // make this pretty
   if (authUser.profileIMG !== "")
     return (
-      <Container flexdirection="column">
-        <h1>You're all set!</h1>
-      </Container>
+      <TextDisplay
+        name={"Deliberation Results"}
+        text={"You're all set!"}
+        displayBack={true}
+      />
     );
 
   return (
-    <Container flexdirection="column">
-      <div>
-        <h1>Next Steps</h1>
+    <>
+      <BackIcon />
+      <Title>
+        <h1> Deliberation Results </h1>
+      </Title>
+      <Text>
+        <h2>Next Steps</h2>
         <p>
           Now that you've accepted to join UPE, you will continue on with the
           onboarding period, during this time, and has mentioned during the Info
@@ -237,14 +339,14 @@ const ApplicantView = ({ firebase }) => {
           so that once onboarding is over, we can induct you and add you to our
           database & website in a timely manner.
         </p>
-      </div>
-      <br />
-      <h2> Data Form </h2>
-      <DataForm
-        submitFunction={submitData}
-        firstName={authUser.name.split(" ")[0]}
-      />
-    </Container>
+        <br />
+        <h2> Data Form </h2>
+        <DataForm
+          submitFunction={submitData}
+          firstName={authUser.name.split(" ")[0]}
+        />
+      </Text>
+    </>
   );
 };
 
@@ -285,7 +387,7 @@ const DataForm = ({ submitFunction, firstName }) => {
       setValidated(true);
       swal(
         "Missing photo!",
-        "Please provide a headshot for your profile photo.",
+        "Please provide a headshot for your profile photo of size less than 5MB.",
         "error"
       );
     } else {
@@ -323,7 +425,7 @@ const DataForm = ({ submitFunction, firstName }) => {
 
   // TODO: Look into custom form issue
   return (
-    <Container flexdirection="column">
+    <Text>
       <Form noValidate validated={validated} onSubmit={saveData}>
         <Form.Row>
           <Form.Group>
@@ -407,9 +509,9 @@ const DataForm = ({ submitFunction, firstName }) => {
           </Form.Group>
         </Form.Row>
 
-        <Button type="submit">Submit</Button>
+        <StyledButton type="submit">Submit</StyledButton>
       </Form>
-    </Container>
+    </Text>
   );
 };
 
