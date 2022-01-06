@@ -62,6 +62,7 @@ const ScheduleColumn = ({
 }) => {
   const [showToast, setShowToast] = useState(false);
   const numSlots = (endHour - startHour) * 4; // 15 min slots
+  console.log(numSlots, endHour, startHour);
   const slots = Array.from(Array(numSlots), (_, i) => i * 15); // total 15 min slots in a day
   const slotsPerTimeslot = timeslotLength / 15; // number of 15 min slots in an interview
   // converts a start offset (slot) into a Date object

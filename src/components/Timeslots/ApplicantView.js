@@ -6,6 +6,7 @@ import cloneDeep from "lodash.clonedeep";
 
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
 
 import {
   AuthUserContext,
@@ -18,6 +19,7 @@ import Loader from "../Loader";
 import { Container } from "../../styles/global";
 import { isApplicant } from "../../util/conditions";
 import { formatTime, setStateAsync } from "../../util/helper";
+import TextDisplay from "../TextDisplay";
 
 const TimeslotCard = styled(Card)`
   width: 18rem;
@@ -27,6 +29,26 @@ const TimeslotCard = styled(Card)`
 
   &:hover {
     background: ${(props) => (props.selected ? "#fb8787" : "#87fb87")};
+  }
+`;
+
+const TimeslotDiv = styled.div`
+  font-family: Georgia;
+  padding-left: 15%;
+  padding-right: 15%;
+  width: 100%;
+  h1 {
+    font-family: Georgia;
+    font-size: 40px;
+    font-style: italic;
+    padding-bottom: 5%;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
   }
 `;
 
@@ -268,15 +290,16 @@ class ApplicantView extends Component {
 
     if (!settings.timeslotsOpenForApplicants)
       return (
-        <Container flexdirection="column">
-          <h1>Timeslot selection isn't open yet!</h1>
-        </Container>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={"Timeslot selection is currently closed."}
+          displayBack={true}
+        />
       );
 
     const TimeslotColumn = ({ date, slots }) => (
-      <Col style={{ width: 300, flex: "none" }}>
-        <h1>{date}</h1>
-
+      <Col style={{ width: "100%", flex: "none" }}>
+        <h1> {date} </h1>
         {slots
           .sort((a, b) => {
             if (a.time.getTime() === b.time.getTime())
@@ -305,24 +328,38 @@ class ApplicantView extends Component {
     );
 
     return (
-      <Container flexdirection="column">
-        {selecting && <Loader opacity={0.75} />}
-        <h1>Applicant Timeslot Selection</h1>
-        <p>
-          The timeslots below show start times, length, and interviewers. Please
-          don't select a timeslot with interviewers that you know as that could
-          introduce bias (admins will review these selections to enforce this).
-          Note that the times below are in your local timezone, but map to 9 AM
-          - 10 PM Boston time.
-        </p>
-        <ScrollableRow>
-          {Object.entries(timeslots)
-            .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
-            .map(([date, slots]) => (
-              <TimeslotColumn key={date} date={date} slots={slots} />
-            ))}
-        </ScrollableRow>
-      </Container>
+      <>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={
+            "The timeslots below show start times, length, and interviewers. You should receive a confirmation email, but in case you don't, please refer back to this page."
+          }
+          displayBack={true}
+        />
+        <TimeslotDiv>
+          <Row
+            lg={2}
+            md={2}
+            sm={1}
+            xl={2}
+            xs={1}
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              paddingBottom: "5%",
+            }}
+          >
+            {selecting && <Loader opacity={0.75} />}
+            <ScrollableRow>
+              {Object.entries(timeslots)
+                .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
+                .map(([date, slots]) => (
+                  <TimeslotColumn key={date} date={date} slots={slots} />
+                ))}
+            </ScrollableRow>
+          </Row>
+        </TimeslotDiv>
+      </>
     );
   }
 }

@@ -1,9 +1,11 @@
 import React, { Component } from "react";
+import styled from "styled-components";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 import cloneDeep from "lodash.clonedeep";
 
 import Button from "react-bootstrap/Button";
+import Row from "react-bootstrap/Row";
 import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
 
@@ -16,12 +18,18 @@ import {
 import { isRecruitmentTeam } from "../../util/conditions";
 import { formatTime, setStateAsync } from "../../util/helper";
 import Loader from "../Loader";
-import { Container } from "../../styles/global";
 
 import ScrollableRow from "./ScrollableRow";
 import ScheduleColumn from "./ScheduleColumn";
+import TextDisplay from "../TextDisplay";
 
 import moment from "moment-timezone";
+
+const TimeslotDiv = styled.div`
+  font-family: Georgia;
+  padding-left: 15%;
+  padding-right: 15%;
+`;
 
 class InterviewerView extends Component {
   _initFirebase = false;
@@ -29,7 +37,6 @@ class InterviewerView extends Component {
     super(props);
     this.state = {
       loading: true,
-      error: null,
       settings: null,
       timeslots: {}, // TODO: this needs a better name
       timeslotOptions: [],
@@ -58,8 +65,7 @@ class InterviewerView extends Component {
     this._initFirebase = true;
     const doc = await this.props.firebase.generalSettings().get();
 
-    if (!doc.exists)
-      return this.setState({ error: "Failed to load settings!" });
+    if (!doc.exists) return console.log("No Doc");
     else {
       const now = moment();
       const localOffset = now.utcOffset();
@@ -243,19 +249,12 @@ class InterviewerView extends Component {
     const {
       loading,
       runningTransaction,
-      error,
       timeslots,
       showModal,
       timeslotOptions,
       offsetHours,
     } = this.state;
 
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>{error}</h1>
-        </Container>
-      );
     if (loading || runningTransaction) return <Loader />;
 
     const {
@@ -270,132 +269,151 @@ class InterviewerView extends Component {
 
     if (!timeslotsOpen)
       return (
-        <Container flexdirection="column">
-          <h1>Timeslot selection is closed!</h1>
-        </Container>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={"Timeslot selection is currently closed."}
+          displayBack={true}
+        />
       );
 
     return (
-      <Container flexdirection="column">
-        <h1>Interviewer Timeslot Selection</h1>
-        <p>
-          The times below are in your local timezone, but map to 9 AM - 10 PM
-          Boston time.
-        </p>
-        <ScrollableRow>
-          {timeslotDays
-            .sort((a, b) => a - b)
-            .map((date, i) => {
-              // TODO: explain this data structure in depth, good place for docz
-              // selectedSlots is an object/hashmap for performance reasons
-              const timeslotsForDay = timeslots[date.toDateString()];
-              const userSelectedSlots = timeslotsForDay
-                ? this.timeslotsToSlots(
-                    timeslotsForDay.filter((ts) =>
-                      ts.interviewers.hasOwnProperty(authUser.uid)
-                    )
-                  )
-                : {};
-              const slotsWithOpening = timeslotsForDay
-                ? this.timeslotsToSlots(
-                    timeslotsForDay.filter(
-                      (ts) =>
-                        !ts.interviewers.hasOwnProperty(authUser.uid) &&
-                        Object.keys(ts.interviewers).length === 1
-                    )
-                  )
-                : {};
-              const orphanedApplicants = timeslotsForDay
-                ? this.timeslotsToSlots(
-                    timeslotsForDay.filter(
-                      (ts) =>
-                        ts.hasOwnProperty("applicant") &&
-                        Object.keys(ts.interviewers).length === 0
-                    )
-                  )
-                : {};
-              return (
-                <ScheduleColumn
-                  key={i}
-                  date={date}
-                  timeslotLength={timeslotLength}
-                  userSelectedSlots={userSelectedSlots}
-                  slotsWithOpening={slotsWithOpening}
-                  orphanedApplicants={orphanedApplicants}
-                  selectTimeslot={this.selectTimeslotByDate}
-                  unselectTimeslot={this.unselectTimeslot}
-                  startHour={timeslotStart}
-                  endHour={timeslotEnd}
-                  offsetHours={offsetHours}
-                />
-              );
-            })}
-        </ScrollableRow>
-
-        <Modal
-          show={showModal}
-          onHide={() => this.setState({ showModal: false })}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Choose a timeslot</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
+      <>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={
+            "Green slots are slots you occupy, Blue slots are slots that only have 1 Interviewer, Red slots are slots with an Applicant but without Interviewers."
+          }
+          displayBack={true}
+        />
+        <TimeslotDiv>
+          <Row
+            lg={2}
+            md={2}
+            sm={1}
+            xl={2}
+            xs={1}
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              paddingBottom: "5%",
+            }}
+          >
             <ScrollableRow>
-              {timeslotOptions.map((ts) => (
-                <Card
-                  key={ts.id}
-                  style={{
-                    minWidth: "15rem",
-                    margin: "0 10px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => this.selectTimeslot(ts)}
-                >
-                  <Card.Body>
-                    <Card.Title>
-                      Interviewer: {Object.values(ts.interviewers).join(", ")}
-                    </Card.Title>
-                    {ts.applicant && (
-                      <Card.Subtitle className="mb-2 text-muted">
-                        Applicant: {ts.applicant.name}
-                      </Card.Subtitle>
-                    )}
-                    <Card.Subtitle className="mb-2 text-muted">
-                      {formatTime(ts.time)}
-                    </Card.Subtitle>
-                  </Card.Body>
-                </Card>
-              ))}
-
-              {timeslotOptions.length > 0 && (
-                <Card
-                  style={{
-                    minWidth: "15rem",
-                    margin: "0 10px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => this.addNewTimeslot(timeslotOptions[0].time)}
-                >
-                  <Card.Body>
-                    <Card.Title>Create new slot</Card.Title>
-                    <Card.Subtitle className="mb-2 text-muted">
-                      {formatTime(timeslotOptions[0].time)}
-                    </Card.Subtitle>
-                  </Card.Body>
-                </Card>
-              )}
+              {timeslotDays
+                .sort((a, b) => a - b)
+                .map((date, i) => {
+                  // TODO: explain this data structure in depth, good place for docz
+                  // selectedSlots is an object/hashmap for performance reasons
+                  const timeslotsForDay = timeslots[date.toDateString()];
+                  const userSelectedSlots = timeslotsForDay
+                    ? this.timeslotsToSlots(
+                        timeslotsForDay.filter((ts) =>
+                          ts.interviewers.hasOwnProperty(authUser.uid)
+                        )
+                      )
+                    : {};
+                  const slotsWithOpening = timeslotsForDay
+                    ? this.timeslotsToSlots(
+                        timeslotsForDay.filter(
+                          (ts) =>
+                            !ts.interviewers.hasOwnProperty(authUser.uid) &&
+                            Object.keys(ts.interviewers).length === 1
+                        )
+                      )
+                    : {};
+                  const orphanedApplicants = timeslotsForDay
+                    ? this.timeslotsToSlots(
+                        timeslotsForDay.filter(
+                          (ts) =>
+                            ts.hasOwnProperty("applicant") &&
+                            Object.keys(ts.interviewers).length === 0
+                        )
+                      )
+                    : {};
+                  return (
+                    <ScheduleColumn
+                      key={i}
+                      date={date}
+                      timeslotLength={timeslotLength}
+                      userSelectedSlots={userSelectedSlots}
+                      slotsWithOpening={slotsWithOpening}
+                      orphanedApplicants={orphanedApplicants}
+                      selectTimeslot={this.selectTimeslotByDate}
+                      unselectTimeslot={this.unselectTimeslot}
+                      startHour={timeslotStart}
+                      endHour={timeslotEnd}
+                      offsetHours={offsetHours}
+                    />
+                  );
+                })}
             </ScrollableRow>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => this.setState({ showModal: false })}
-            >
-              Cancel
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </Container>
+          </Row>
+
+          <Modal
+            show={showModal}
+            onHide={() => this.setState({ showModal: false })}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Choose a timeslot</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <ScrollableRow>
+                {timeslotOptions.map((ts) => (
+                  <Card
+                    key={ts.id}
+                    style={{
+                      minWidth: "15rem",
+                      margin: "0 10px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => this.selectTimeslot(ts)}
+                  >
+                    <Card.Body>
+                      <Card.Title>
+                        Interviewer: {Object.values(ts.interviewers).join(", ")}
+                      </Card.Title>
+                      {ts.applicant && (
+                        <Card.Subtitle className="mb-2 text-muted">
+                          Applicant: {ts.applicant.name}
+                        </Card.Subtitle>
+                      )}
+                      <Card.Subtitle className="mb-2 text-muted">
+                        {formatTime(ts.time)}
+                      </Card.Subtitle>
+                    </Card.Body>
+                  </Card>
+                ))}
+
+                {timeslotOptions.length > 0 && (
+                  <Card
+                    style={{
+                      minWidth: "15rem",
+                      margin: "0 10px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => this.addNewTimeslot(timeslotOptions[0].time)}
+                  >
+                    <Card.Body>
+                      <Card.Title>Create new slot</Card.Title>
+                      <Card.Subtitle className="mb-2 text-muted">
+                        {formatTime(timeslotOptions[0].time)}
+                      </Card.Subtitle>
+                    </Card.Body>
+                  </Card>
+                )}
+              </ScrollableRow>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => this.setState({ showModal: false })}
+              >
+                Cancel
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </TimeslotDiv>
+      </>
     );
   }
 }
