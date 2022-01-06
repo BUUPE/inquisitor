@@ -8,18 +8,47 @@ import QuestionNotes from "./QuestionNotes";
 
 const StyledP = styled.p`
   white-space: pre-wrap;
+  font-family: Georgia;
+`;
+
+const StyledH3 = styled.h3`
+  font-family: Georgia;
+  padding-bottom: 1%;
+  font-weight: bold;
+`;
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #f21131;
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 0.5% 2% 0.5% 2%;
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #f88898;
+    border: none;
+  }
+  &:hover {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #600613;
+    border: none;
+  }
 `;
 
 const OverviewDisplay = ({ question, isInterviewer }) => (
   <>
-    <h3>Overview</h3>
+    <StyledH3>Overview</StyledH3>
     <StyledP>{question.overview}</StyledP>
-    <hr />
+    <hr style={{ marginTop: "3%", marginBottom: "3%" }} />
 
     {isInterviewer && (
       <>
         <StyledP>{question.interviewerNotes}</StyledP>
-        <hr />
+        <hr style={{ marginTop: "3%", marginBottom: "3%" }} />
       </>
     )}
   </>
@@ -33,7 +62,7 @@ const ResumeDisplay = ({
   saveApplication,
 }) => (
   <>
-    <h3>Resume Review</h3>
+    <StyledH3>Resume Review</StyledH3>
     <embed
       src={question.url}
       width="100%"
@@ -41,7 +70,8 @@ const ResumeDisplay = ({
       type="application/pdf"
       style={{ margin: "25px 0" }}
     />
-    <hr />
+    <hr style={{ marginTop: "3%", marginBottom: "3%" }} />
+
     {isInterviewer && (
       <>
         <StyledP>{question.notes}</StyledP>
@@ -67,9 +97,10 @@ const FinalNotesDisplay = ({
 }) => {
   return (
     <>
-      <h3>{question.title}</h3>
+      <StyledH3>{question.title}</StyledH3>
       <StyledP>{question.text}</StyledP>
-      <hr />
+      <hr style={{ marginTop: "3%", marginBottom: "3%" }} />
+
       {isInterviewer && (
         <QuestionNotes
           question={question}
@@ -128,10 +159,10 @@ const QuestionDisplay = ({
     default:
       Content = () => (
         <>
-          <h3>{question.name}</h3>
+          <StyledH3>{question.name}</StyledH3>
           {question.image && <img src={question.image} alt={question.name} />}
           <StyledP>{question.description}</StyledP>
-          <hr />
+          <hr style={{ marginTop: "3%", marginBottom: "3%" }} />
 
           {isInterviewer && (
             <QuestionNotes
@@ -150,18 +181,18 @@ const QuestionDisplay = ({
     <Tab.Pane eventKey={`${question.order}`}>
       <Content />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Button
+        <StyledButton
           disabled={tabKey === -1}
           onClick={() => setTabKey(`${tabKey - 1}`)}
         >
           Previous
-        </Button>
-        <Button
+        </StyledButton>
+        <StyledButton
           disabled={tabKey === finalQuestionId}
           onClick={() => setTabKey(`${tabKey + 1}`)}
         >
           Next
-        </Button>
+        </StyledButton>
       </div>
     </Tab.Pane>
   );

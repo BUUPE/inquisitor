@@ -9,6 +9,32 @@ import RangeSlider from "react-bootstrap-range-slider";
 
 const StyledP = styled.p`
   white-space: pre-wrap;
+  font-family: Georgia;
+`;
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #f21131;
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 0.5% 2% 0.5% 2%;
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #f88898;
+    border: none;
+  }
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #600613;
+    border: none;
+  }
 `;
 
 const QuestionNotes = ({
@@ -47,7 +73,7 @@ const QuestionNotes = ({
           <Col sm={9}>
             <Form.Group controlId="formBasicEmail">
               <Form.Label>
-                <strong>Notes</strong>
+                <strong style={{ fontFamily: "Georgia" }}>Notes</strong>
               </Form.Label>
               <Form.Control
                 as="textarea"
@@ -61,9 +87,10 @@ const QuestionNotes = ({
             </Form.Group>
           </Col>
           <Col sm={3}>
-            <strong>Score</strong>
+            <strong style={{ fontFamily: "Georgia" }}>Score</strong>
 
             <RangeSlider
+              variant={"danger"}
               value={score}
               onChange={(e) => setScore(parseFloat(e.target.value))}
               onAfterChange={handleSave}
@@ -74,7 +101,14 @@ const QuestionNotes = ({
           </Col>
         </div>
 
-        {submitApplication && <Button type="submit">Submit</Button>}
+        {submitApplication && (
+          <StyledButton
+            style={{ marginTop: "2%", marginBottom: "2%" }}
+            type="submit"
+          >
+            Submit
+          </StyledButton>
+        )}
 
         <Toast
           onClose={() => setShowToast(false)}
@@ -83,11 +117,11 @@ const QuestionNotes = ({
           autohide
         >
           <Toast.Body>
-            <strong>Saved!</strong>
+            <strong style={{ fontFamily: "Georgia" }}>Saved!</strong>
           </Toast.Body>
         </Toast>
       </Form>
-      <hr />
+      <hr style={{ marginTop: "3%", marginBottom: "3%" }} />
     </>
   );
 };

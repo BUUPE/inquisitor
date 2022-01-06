@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
 const Wrapper = styled.div`
+  font-family: Georgia;
   font-size: 2rem;
   display: flex;
   top: 10px;
@@ -46,7 +47,7 @@ const Stopwatch = ({ startTime, limit }) => {
   }, [startTime]);
 
   return (
-    <Wrapper>
+    <Wrapper style={{ paddingLeft: "7%" }}>
       <TimeDisplay overtime={getMinutes(time) >= limit}>
         Time Elapsed: {msToHMS(time)}
       </TimeDisplay>

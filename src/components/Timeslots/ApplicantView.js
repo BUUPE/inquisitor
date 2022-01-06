@@ -22,11 +22,11 @@ import { formatTime, setStateAsync } from "../../util/helper";
 import TextDisplay from "../TextDisplay";
 
 const TimeslotCard = styled(Card)`
+  font-family: Georgia;
   width: 18rem;
   margin: 10px;
   cursor: pointer;
   background: ${(props) => (props.selected ? "#87fb87" : "white")};
-
   &:hover {
     background: ${(props) => (props.selected ? "#fb8787" : "#87fb87")};
   }
@@ -332,7 +332,7 @@ class ApplicantView extends Component {
         <TextDisplay
           name={"Timeslot Selection"}
           text={
-            "The timeslots below show start times, length, and interviewers. You should receive a confirmation email, but in case you don't, please refer back to this page."
+            "The timeslots below show start times, length, and the number of interviewers. You should receive a confirmation email, but in case you don't, please refer back to this page."
           }
           displayBack={true}
         />

@@ -14,11 +14,50 @@ import InterviewRoom from "./InterviewRoom";
 import Loader from "../Loader";
 import Logo from "../Logo";
 import Error from "../Error";
+import { BackIcon } from "../TextDisplay";
 import { isApplicant } from "../../util/conditions";
-import { Container, Centered } from "../../styles/global";
+import { Container } from "../../styles/global";
 
-const StyledP = styled.p`
-  white-space: pre-wrap;
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
+const Text = styled.div`
+  font-family: Georgia;
+  width: 100%;
+  padding-top: 80px;
+  padding-bottom: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  p {
+    padding-top: 70px;
+    max-width: 50%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 60px;
+  }
+`;
+
+const Wrapper = styled.div`
+  padding-top: 80px;
+  padding-bottom: 100px;
+  padding-left: 15%;
+  padding-right: 15%;
 `;
 
 class ApplicantView extends Component {
@@ -164,22 +203,20 @@ class ApplicantView extends Component {
         window.localStorage.removeItem("currentApplication");
         window.localStorage.removeItem("current-tab-key");
         return (
-          <Centered style={{ maxWidth: 500, margin: "0 auto" }}>
-            <Logo size="medium" />
-            <h1>Congratulations!</h1>
-            <StyledP>{settings.interviewFinalNotesApplicantText}</StyledP>
-          </Centered>
+          <Text>
+            <Logo size="large" />
+            <p> {settings.interviewFinalNotesApplicantText} </p>
+          </Text>
         );
       } else if (!currentApplication.interview.hasOwnProperty("level")) {
         return (
-          <Centered style={{ maxWidth: 500, margin: "0 auto" }}>
-            <Logo size="medium" />
-            <h1>Welcome!</h1>
-            <StyledP>{settings.interviewWelcomeText}</StyledP>
+          <Text>
+            <Logo size="large" />
+            <p> {settings.interviewWelcomeText} </p>
             <p>
               Join the Zoom <a href={settings.zoomlink}>here</a>!
             </p>
-          </Centered>
+          </Text>
         );
       } else {
         const questionMap = {};
@@ -210,19 +247,29 @@ class ApplicantView extends Component {
           .sort((a, b) => (a.order > b.order ? 1 : -1));
 
         return (
-          <InterviewRoom
-            questions={filteredQuestions}
-            isApplicant={true}
-            saveApplication={this.setIntervieweeOn}
-          />
+          <>
+            <InterviewRoom
+              questions={filteredQuestions}
+              isApplicant={true}
+              saveApplication={this.setIntervieweeOn}
+            />
+          </>
         );
       }
     };
 
     return (
-      <Container fluid flexdirection="column">
-        <Content />
-      </Container>
+      <>
+        <BackIcon />
+        <Title>
+          <h1>Interview Room</h1>
+        </Title>
+        <Wrapper>
+          <Container fluid flexdirection="column">
+            <Content />
+          </Container>
+        </Wrapper>
+      </>
     );
   }
 }
