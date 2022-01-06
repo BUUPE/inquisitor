@@ -18,6 +18,32 @@ import Loader from "../Loader";
 import ScrollableRow from "../Timeslots/ScrollableRow";
 import { formatTime } from "../../util/helper";
 
+import { BackIcon } from "../TextDisplay";
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 0.5% 2% 0.5% 2%;
+  &:focus,
+  &:active,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
+    border: none;
+  }
+  &:hover {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
+    border: none;
+  }
+`;
+
 const TimeslotCard = styled(Card)`
   width: 18rem;
   margin: 10px;
@@ -25,7 +51,93 @@ const TimeslotCard = styled(Card)`
   background: white;
 
   &:hover {
-    border: 2px solid #87fb87;
+    border: 2px solid #fb8787;
+  }
+`;
+
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
+const Text = styled.div`
+  padding-left: 7%;
+  padding-right: 7%;
+  font-family: Georgia;
+  width: 100%;
+  padding-top: 20px;
+  padding-bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  h2 {
+    font-weight: bold;
+    font-size: 35px;
+    border-bottom: 2px solid #f21131;
+    margin-bottom: 2%;
+    margin-top: 2%;
+    font-style: italic;
+  }
+  h3 {
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 2%;
+    color: #f21131;
+    font-style: italic;
+  }
+  h4 {
+    font-weight: bold;
+    font-size: 25px;
+    padding-bottom: 1.5%;
+    font-style: italic;
+  }
+  h5 {
+    font-weight: bold;
+    font-size: 20px;
+    padding-bottom: 1.5%;
+  }
+  h5:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+  p {
+    font-weight: bold;
+    font-size: 15px;
+    padding-bottom: 1%;
+    max-width: 50%;
+  }
+`;
+
+const TimeslotDiv = styled.div`
+  font-family: Georgia;
+  padding-left: 15%;
+  padding-right: 15%;
+  width: 100%;
+  h1 {
+    font-family: Georgia;
+    font-size: 40px;
+    font-style: italic;
+    padding-bottom: 5%;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
   }
 `;
 
@@ -279,55 +391,67 @@ const ManageTimeslots = ({ firebase }) => {
 
   return (
     <AdminLayout>
-      <h1>Manage Timeslots</h1>
-      <p>
-        Click a timeslot below to edit the associated interviewers, applicant,
-        and time. Be careful as there is nothing stopping you from
-        double-booking people; make sure that the people you swap in actually
-        have availability. You can also create a new timeslot, use this for edge
-        cases where someone needs a special time/date for their interview.
-      </p>
-      <Button
-        style={{ marginBottom: 25 }}
-        onClick={() => {
-          const coeff = 1000 * 60;
-          const date = new Date();
-          const rounded = new Date(Math.round(date.getTime() / coeff) * coeff);
-          setCurrentTimeslot({
-            interviewers: {},
-            timeslotLength: settings.timeslotLength,
-            time: new Date(rounded - tzoffset),
-          });
-          setShowModal(true);
-        }}
-      >
-        Add New Timeslot
-      </Button>
-      <Button
-        style={{ marginBottom: 25, marginLeft: 10 }}
-        onClick={() => {
-          firebase
-            .interviewerTimeslotsOpen()
-            .catch((err) => console.error(err));
-        }}
-      >
-        Alert Interviewers
-      </Button>
-      <Button
-        style={{ marginBottom: 25, marginLeft: 10 }}
-        onClick={() => {
-          firebase.applicantTimeslotsOpen().catch((err) => console.error(err));
-        }}
-      >
-        Alert Interviewees
-      </Button>
-      <ScrollableRow>
-        {Object.entries(timeslots)
-          .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
-          .map(([date, timeslots]) => (
-            <TimeslotColumn key={date} date={date} timeslots={timeslots} />
-          ))}
-      </ScrollableRow>
+      <BackIcon />
+      <Title>
+        <h1> Manage Timeslots </h1>
+      </Title>
+      <Text>
+        <p>
+          Click a timeslot below to edit the associated interviewers, applicant,
+          and time. Be careful as there is nothing stopping you from
+          double-booking people; make sure that the people you swap in actually
+          have availability. You can also create a new timeslot, use this for
+          edge cases where someone needs a special time/date for their
+          interview.
+        </p>
+        <StyledButton
+          style={{ marginBottom: 25 }}
+          onClick={() => {
+            const coeff = 1000 * 60;
+            const date = new Date();
+            const rounded = new Date(
+              Math.round(date.getTime() / coeff) * coeff
+            );
+            setCurrentTimeslot({
+              interviewers: {},
+              timeslotLength: settings.timeslotLength,
+              time: new Date(rounded - tzoffset),
+            });
+            setShowModal(true);
+          }}
+        >
+          Add New Timeslot
+        </StyledButton>
+        <StyledButton
+          style={{ marginBottom: 25 }}
+          onClick={() => {
+            firebase
+              .interviewerTimeslotsOpen()
+              .catch((err) => console.error(err));
+          }}
+        >
+          Alert Interviewers
+        </StyledButton>
+        <StyledButton
+          style={{ marginBottom: 25 }}
+          onClick={() => {
+            firebase
+              .applicantTimeslotsOpen()
+              .catch((err) => console.error(err));
+          }}
+        >
+          Alert Interviewees
+        </StyledButton>
+      </Text>
+      <TimeslotDiv>
+        <ScrollableRow>
+          {Object.entries(timeslots)
+            .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
+            .map(([date, timeslots]) => (
+              <TimeslotColumn key={date} date={date} timeslots={timeslots} />
+            ))}
+        </ScrollableRow>
+      </TimeslotDiv>
 
       <Modal show={showModal} onHide={closeModal}>
         {currentTimeslot && (
@@ -423,17 +547,11 @@ const ManageTimeslots = ({ firebase }) => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={closeModal}>
-                Cancel
-              </Button>
+              <StyledButton onClick={closeModal}>Cancel</StyledButton>
               {currentTimeslot.hasOwnProperty("id") && (
-                <Button variant="danger" onClick={deleteTimeslot}>
-                  Delete
-                </Button>
+                <StyledButton onClick={deleteTimeslot}>Delete</StyledButton>
               )}
-              <Button variant="primary" onClick={saveTimeslotChanges}>
-                Save
-              </Button>
+              <StyledButton onClick={saveTimeslotChanges}>Save</StyledButton>
             </Modal.Footer>
           </>
         )}

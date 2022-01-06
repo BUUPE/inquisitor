@@ -16,9 +16,76 @@ import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 import { FlexDiv, FullWidthFormGroup } from "../../styles/global";
+import { BackIcon } from "../TextDisplay";
 
 const StyledFormRow = styled(Form.Row)`
   margin: 0;
+`;
+
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
+const Text = styled.div`
+  padding-left: 7%;
+  padding-right: 7%;
+  font-family: Georgia;
+  width: 100%;
+  padding-top: 20px;
+  padding-bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  h2 {
+    font-weight: bold;
+    font-size: 35px;
+    border-bottom: 2px solid #f21131;
+    margin-bottom: 2%;
+    margin-top: 2%;
+    font-style: italic;
+  }
+  h3 {
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 2%;
+    color: #f21131;
+    font-style: italic;
+  }
+  h4 {
+    font-weight: bold;
+    font-size: 25px;
+    padding-bottom: 1.5%;
+    font-style: italic;
+  }
+  h5 {
+    font-weight: bold;
+    font-size: 20px;
+    padding-bottom: 1.5%;
+  }
+  h5:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+  p {
+    font-weight: bold;
+    font-size: 15px;
+    padding-bottom: 1%;
+    max-width: 50%;
+  }
 `;
 
 // TODO: refactor settings to have sub sections
@@ -177,11 +244,6 @@ class GeneralSettings extends Component {
         "error"
       );
 
-    if (!settings.timeslotsOpen) {
-      settings.timeslotsOpenForApplicants = false;
-      //settings.timeslotDays = []; we don't want to do this for now
-    }
-
     let confirm = true;
     if (
       (settings.timeslotsOpenForApplicants &&
@@ -253,377 +315,388 @@ class GeneralSettings extends Component {
 
     return (
       <AdminLayout>
-        <Form onSubmit={this.saveSettings}>
-          <h2>General Settings</h2>
-          <StyledFormRow>
-            <Form.Check
-              custom
-              checked={settings.applicationsOpen}
-              type="switch"
-              label={`Applications are ${
-                settings.applicationsOpen ? "open" : "closed"
-              }`}
-              id="applicationsOpen"
-              onChange={(e) =>
-                this.setState({
-                  settings: { ...settings, applicationsOpen: e.target.checked },
-                })
-              }
-            />
-          </StyledFormRow>
-          <hr />
-          <h2>Timeslot Settings</h2>
-          <StyledFormRow>
-            <div stlye={{ display: "flex", flexDirection: "column" }}>
+        <BackIcon />
+        <Title>
+          <h1> General Settings </h1>
+        </Title>
+        <Text>
+          <Form onSubmit={this.saveSettings}>
+            <h2>General Settings</h2>
+            <StyledFormRow>
               <Form.Check
                 custom
-                checked={settings.timeslotsOpen}
+                checked={settings.applicationsOpen}
                 type="switch"
-                label={
-                  <span>
-                    Timeslot selection for <strong>interviewers</strong> is{" "}
-                    {settings.timeslotsOpen ? "open" : "closed"}
-                  </span>
-                }
-                id="timeslotsOpen"
+                label={`Applications are ${
+                  settings.applicationsOpen ? "open" : "closed"
+                }`}
+                id="applicationsOpen"
                 onChange={(e) =>
                   this.setState({
-                    settings: { ...settings, timeslotsOpen: e.target.checked },
+                    settings: {
+                      ...settings,
+                      applicationsOpen: e.target.checked,
+                    },
                   })
                 }
               />
-              {settings.timeslotsOpen && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    marginTop: 15,
-                  }}
-                >
-                  <Form.Group controlId="timeslotStart">
-                    <Form.Label>Timeslot Start Time</Form.Label>
-                    <Form.Control
-                      type="time"
-                      placeholder="Enter Start..."
-                      step="3600"
-                      value={`${settings.timeslotStart
-                        .toString()
-                        .padStart(2, "0")}:00`}
+            </StyledFormRow>
+            <h2>Timeslot Settings</h2>
+            <StyledFormRow>
+              <div stlye={{ display: "flex", flexDirection: "column" }}>
+                <Form.Check
+                  custom
+                  checked={settings.timeslotsOpen}
+                  type="switch"
+                  label={
+                    <span>
+                      Timeslot selection for <strong>interviewers</strong> is{" "}
+                      {settings.timeslotsOpen ? "open" : "closed"}
+                    </span>
+                  }
+                  id="timeslotsOpen"
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        timeslotsOpen: e.target.checked,
+                      },
+                    })
+                  }
+                />
+                {settings.timeslotsOpen && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      marginTop: 15,
+                    }}
+                  >
+                    <Form.Group controlId="timeslotStart">
+                      <Form.Label>Timeslot Start Time</Form.Label>
+                      <Form.Control
+                        type="time"
+                        placeholder="Enter Start..."
+                        step="3600"
+                        value={`${settings.timeslotStart
+                          .toString()
+                          .padStart(2, "0")}:00`}
+                        onChange={(e) =>
+                          this.setState({
+                            settings: {
+                              ...settings,
+                              timeslotStart: parseInt(
+                                e.target.value.split(":")[0]
+                              ),
+                            },
+                          })
+                        }
+                      />
+                      <Form.Text className="text-muted">
+                        Earliest time an interview can start.
+                      </Form.Text>
+                    </Form.Group>
+                    <Form.Group controlId="timeslotEnd">
+                      <Form.Label>Timeslot End Time</Form.Label>
+                      <Form.Control
+                        type="time"
+                        placeholder="Enter End..."
+                        step="3600"
+                        value={`${settings.timeslotEnd
+                          .toString()
+                          .padStart(2, "0")}:00`}
+                        onChange={(e) =>
+                          this.setState({
+                            settings: {
+                              ...settings,
+                              timeslotEnd: parseInt(
+                                e.target.value.split(":")[0]
+                              ),
+                            },
+                          })
+                        }
+                      />
+                      <Form.Text className="text-muted">
+                        Latest time an interview can end.
+                      </Form.Text>
+                    </Form.Group>
+                    <Form.Group controlId="timeslotLength">
+                      <Form.Label>Timeslot Length (minutes)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="30"
+                        step="15"
+                        max="120"
+                        placeholder="Enter length..."
+                        value={settings.timeslotLength}
+                        onChange={(e) =>
+                          this.setState({
+                            settings: {
+                              ...settings,
+                              timeslotLength: parseInt(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                      <Form.Text className="text-muted">
+                        Length of a single interview.
+                      </Form.Text>
+                    </Form.Group>
+                    <strong>Select Interview Days</strong>
+                    <DayPicker
+                      initialMonth={initialMonth}
+                      selectedDays={settings.timeslotDays}
+                      onDayClick={this.handleDayClick}
+                    />
+                    {settings.timeslotDays.length > 0 && (
+                      <Button
+                        onClick={() =>
+                          this.setState({
+                            settings: { ...settings, timeslotDays: [] },
+                          })
+                        }
+                      >
+                        Clear
+                      </Button>
+                    )}
+                    <Form.Check
+                      style={{ marginTop: 15 }}
+                      custom
+                      checked={settings.timeslotsOpenForApplicants}
+                      type="switch"
+                      label={
+                        <span>
+                          Timeslot selection for <strong>applicants</strong> is{" "}
+                          {settings.timeslotsOpenForApplicants
+                            ? "open"
+                            : "closed"}
+                        </span>
+                      }
+                      id="timeslotsOpenForApplicants"
                       onChange={(e) =>
                         this.setState({
                           settings: {
                             ...settings,
-                            timeslotStart: parseInt(
-                              e.target.value.split(":")[0]
-                            ),
+                            timeslotsOpenForApplicants: e.target.checked,
                           },
                         })
                       }
                     />
-                    <Form.Text className="text-muted">
-                      Earliest time an interview can start.
-                    </Form.Text>
-                  </Form.Group>
-                  <Form.Group controlId="timeslotEnd">
-                    <Form.Label>Timeslot End Time</Form.Label>
-                    <Form.Control
-                      type="time"
-                      placeholder="Enter End..."
-                      step="3600"
-                      value={`${settings.timeslotEnd
-                        .toString()
-                        .padStart(2, "0")}:00`}
-                      onChange={(e) =>
-                        this.setState({
-                          settings: {
-                            ...settings,
-                            timeslotEnd: parseInt(e.target.value.split(":")[0]),
-                          },
-                        })
-                      }
-                    />
-                    <Form.Text className="text-muted">
-                      Latest time an interview can end.
-                    </Form.Text>
-                  </Form.Group>
-                  <Form.Group controlId="timeslotLength">
-                    <Form.Label>Timeslot Length (minutes)</Form.Label>
-                    <Form.Control
-                      type="number"
-                      min="30"
-                      step="15"
-                      max="120"
-                      placeholder="Enter length..."
-                      value={settings.timeslotLength}
-                      onChange={(e) =>
-                        this.setState({
-                          settings: {
-                            ...settings,
-                            timeslotLength: parseInt(e.target.value),
-                          },
-                        })
-                      }
-                    />
-                    <Form.Text className="text-muted">
-                      Length of a single interview.
-                    </Form.Text>
-                  </Form.Group>
-                  <strong>Select Interview Days</strong>
-                  <DayPicker
-                    initialMonth={initialMonth}
-                    selectedDays={settings.timeslotDays}
-                    onDayClick={this.handleDayClick}
-                  />
-                  {settings.timeslotDays.length > 0 && (
-                    <Button
-                      onClick={() =>
-                        this.setState({
-                          settings: { ...settings, timeslotDays: [] },
-                        })
-                      }
-                    >
-                      Clear
-                    </Button>
-                  )}
-                  <Form.Check
-                    style={{ marginTop: 15 }}
-                    custom
-                    checked={settings.timeslotsOpenForApplicants}
-                    type="switch"
-                    label={
-                      <span>
-                        Timeslot selection for <strong>applicants</strong> is{" "}
-                        {settings.timeslotsOpenForApplicants
-                          ? "open"
-                          : "closed"}
-                      </span>
-                    }
-                    id="timeslotsOpenForApplicants"
-                    onChange={(e) =>
-                      this.setState({
-                        settings: {
-                          ...settings,
-                          timeslotsOpenForApplicants: e.target.checked,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              )}
-            </div>
-          </StyledFormRow>
-          <hr />
-          <h2>Interview Settings</h2>
-          <StyledFormRow>
-            <Form.Group controlId="zoomlink">
-              <Form.Label>Zoom Link</Form.Label>
-              <Form.Control
-                required
-                type="text"
-                placeholder="https://bostonu.zoom.us/..."
-                value={settings.zoomlink}
+                  </div>
+                )}
+              </div>
+            </StyledFormRow>
+            <h2>Interview Settings</h2>
+            <StyledFormRow>
+              <Form.Group controlId="zoomlink">
+                <Form.Label>Zoom Link</Form.Label>
+                <Form.Control
+                  required
+                  type="text"
+                  placeholder="https://bostonu.zoom.us/..."
+                  value={settings.zoomlink}
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        zoomlink: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </Form.Group>
+            </StyledFormRow>
+            <StyledFormRow>
+              <FullWidthFormGroup controlId="interviewWelcomeText">
+                <Form.Label>Welcome Text</Form.Label>
+                <Form.Control
+                  required
+                  as="textarea"
+                  rows={3}
+                  placeholder="FILL THIS OUT!"
+                  value={settings.interviewWelcomeText}
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        interviewWelcomeText: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </FullWidthFormGroup>
+            </StyledFormRow>
+            <StyledFormRow>
+              <FullWidthFormGroup controlId="interviewOverviewText">
+                <Form.Label>Overview Text</Form.Label>
+                <Form.Control
+                  required
+                  as="textarea"
+                  rows={3}
+                  placeholder="FILL THIS OUT!"
+                  value={settings.interviewOverviewText}
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        interviewOverviewText: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </FullWidthFormGroup>
+            </StyledFormRow>
+            <StyledFormRow>
+              <FullWidthFormGroup controlId="interviewInterviewerNotesText">
+                <Form.Label>Interviewer Notes</Form.Label>
+                <Form.Control
+                  required
+                  as="textarea"
+                  rows={3}
+                  placeholder="FILL THIS OUT!"
+                  value={settings.interviewInterviewerNotesText}
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        interviewInterviewerNotesText: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </FullWidthFormGroup>
+            </StyledFormRow>
+            <StyledFormRow>
+              <FullWidthFormGroup controlId="interviewResumeNotesText">
+                <Form.Label>Resume Notes</Form.Label>
+                <Form.Control
+                  required
+                  as="textarea"
+                  rows={3}
+                  placeholder="FILL THIS OUT!"
+                  value={settings.interviewResumeNotesText}
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        interviewResumeNotesText: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </FullWidthFormGroup>
+            </StyledFormRow>
+            <StyledFormRow>
+              <FullWidthFormGroup controlId="interviewFinalNotesInterviewerText">
+                <Form.Label>Final Notes Interviewer Text</Form.Label>
+                <Form.Control
+                  required
+                  as="textarea"
+                  rows={3}
+                  placeholder="FILL THIS OUT!"
+                  value={settings.interviewFinalNotesInterviewerText}
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        interviewFinalNotesInterviewerText: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </FullWidthFormGroup>
+            </StyledFormRow>
+            <StyledFormRow>
+              <FullWidthFormGroup controlId="interviewFinalNotesApplicantText">
+                <Form.Label>Final Notes Applicant Text</Form.Label>
+                <Form.Control
+                  required
+                  as="textarea"
+                  rows={3}
+                  placeholder="FILL THIS OUT!"
+                  value={settings.interviewFinalNotesApplicantText}
+                  onChange={(e) =>
+                    this.setState({
+                      settings: {
+                        ...settings,
+                        interviewFinalNotesApplicantText: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </FullWidthFormGroup>
+            </StyledFormRow>
+            {/* TODO: warning here with swal when flipping deliberations, it will reset deliberation object in applications */}
+            <Form.Row>
+              <Form.Check
+                custom
+                checked={settings.deliberationsOpen}
+                type="switch"
+                label={`Deliberations are ${
+                  settings.deliberationsOpen ? "open" : "closed"
+                }`}
+                id="deliberationsOpen"
                 onChange={(e) =>
                   this.setState({
                     settings: {
                       ...settings,
-                      zoomlink: e.target.value,
+                      deliberationsOpen: e.target.checked,
                     },
                   })
                 }
               />
-            </Form.Group>
-          </StyledFormRow>
-          <StyledFormRow>
-            <FullWidthFormGroup controlId="interviewWelcomeText">
-              <Form.Label>Welcome Text</Form.Label>
-              <Form.Control
-                required
-                as="textarea"
-                rows={3}
-                placeholder="FILL THIS OUT!"
-                value={settings.interviewWelcomeText}
+            </Form.Row>
+            <br />
+            <Form.Row>
+              <Form.Check
+                custom
+                checked={settings.useTwoRoundDeliberations}
+                type="switch"
+                label={`Two Round Deliberations is ${
+                  settings.useTwoRoundDeliberations ? "enabled" : "disabled"
+                }`}
+                id="useTwoRoundDeliberations"
                 onChange={(e) =>
                   this.setState({
                     settings: {
                       ...settings,
-                      interviewWelcomeText: e.target.value,
+                      useTwoRoundDeliberations: e.target.checked,
                     },
                   })
                 }
               />
-            </FullWidthFormGroup>
-          </StyledFormRow>
-          <StyledFormRow>
-            <FullWidthFormGroup controlId="interviewOverviewText">
-              <Form.Label>Overview Text</Form.Label>
-              <Form.Control
-                required
-                as="textarea"
-                rows={3}
-                placeholder="FILL THIS OUT!"
-                value={settings.interviewOverviewText}
-                onChange={(e) =>
-                  this.setState({
-                    settings: {
-                      ...settings,
-                      interviewOverviewText: e.target.value,
-                    },
-                  })
-                }
-              />
-            </FullWidthFormGroup>
-          </StyledFormRow>
-          <StyledFormRow>
-            <FullWidthFormGroup controlId="interviewInterviewerNotesText">
-              <Form.Label>Interviewer Notes</Form.Label>
-              <Form.Control
-                required
-                as="textarea"
-                rows={3}
-                placeholder="FILL THIS OUT!"
-                value={settings.interviewInterviewerNotesText}
-                onChange={(e) =>
-                  this.setState({
-                    settings: {
-                      ...settings,
-                      interviewInterviewerNotesText: e.target.value,
-                    },
-                  })
-                }
-              />
-            </FullWidthFormGroup>
-          </StyledFormRow>
-          <StyledFormRow>
-            <FullWidthFormGroup controlId="interviewResumeNotesText">
-              <Form.Label>Resume Notes</Form.Label>
-              <Form.Control
-                required
-                as="textarea"
-                rows={3}
-                placeholder="FILL THIS OUT!"
-                value={settings.interviewResumeNotesText}
-                onChange={(e) =>
-                  this.setState({
-                    settings: {
-                      ...settings,
-                      interviewResumeNotesText: e.target.value,
-                    },
-                  })
-                }
-              />
-            </FullWidthFormGroup>
-          </StyledFormRow>
-          <StyledFormRow>
-            <FullWidthFormGroup controlId="interviewFinalNotesInterviewerText">
-              <Form.Label>Final Notes Interviewer Text</Form.Label>
-              <Form.Control
-                required
-                as="textarea"
-                rows={3}
-                placeholder="FILL THIS OUT!"
-                value={settings.interviewFinalNotesInterviewerText}
-                onChange={(e) =>
-                  this.setState({
-                    settings: {
-                      ...settings,
-                      interviewFinalNotesInterviewerText: e.target.value,
-                    },
-                  })
-                }
-              />
-            </FullWidthFormGroup>
-          </StyledFormRow>
-          <StyledFormRow>
-            <FullWidthFormGroup controlId="interviewFinalNotesApplicantText">
-              <Form.Label>Final Notes Applicant Text</Form.Label>
-              <Form.Control
-                required
-                as="textarea"
-                rows={3}
-                placeholder="FILL THIS OUT!"
-                value={settings.interviewFinalNotesApplicantText}
-                onChange={(e) =>
-                  this.setState({
-                    settings: {
-                      ...settings,
-                      interviewFinalNotesApplicantText: e.target.value,
-                    },
-                  })
-                }
-              />
-            </FullWidthFormGroup>
-          </StyledFormRow>
-          <hr />
-          {/* TODO: warning here with swal when flipping deliberations, it will reset deliberation object in applications */}
-          <Form.Row>
-            <Form.Check
-              custom
-              checked={settings.deliberationsOpen}
-              type="switch"
-              label={`Deliberations are ${
-                settings.deliberationsOpen ? "open" : "closed"
-              }`}
-              id="deliberationsOpen"
-              onChange={(e) =>
-                this.setState({
-                  settings: {
-                    ...settings,
-                    deliberationsOpen: e.target.checked,
-                  },
-                })
-              }
-            />
-          </Form.Row>
-          <br />
-          <Form.Row>
-            <Form.Check
-              custom
-              checked={settings.useTwoRoundDeliberations}
-              type="switch"
-              label={`Two Round Deliberations is ${
-                settings.useTwoRoundDeliberations ? "enabled" : "disabled"
-              }`}
-              id="useTwoRoundDeliberations"
-              onChange={(e) =>
-                this.setState({
-                  settings: {
-                    ...settings,
-                    useTwoRoundDeliberations: e.target.checked,
-                  },
-                })
-              }
-            />
-          </Form.Row>
+            </Form.Row>
 
-          <hr />
-          <FlexDiv>
-            <FlexDiv
-              style={{
-                flexGrow: 1,
-              }}
-            >
-              <Button type="submit">Save</Button>
-              <Toast
-                onClose={() => this.setState({ showToast: false })}
-                show={showToast}
-                delay={3000}
-                autohide
+            <hr />
+            <FlexDiv>
+              <FlexDiv
                 style={{
-                  width: "fit-content",
-                  marginLeft: 25,
+                  flexGrow: 1,
                 }}
               >
-                <Toast.Header>
-                  <strong className="mr-auto">Settings Saved!</strong>
-                </Toast.Header>
-              </Toast>
+                <Button type="submit">Save</Button>
+                <Toast
+                  onClose={() => this.setState({ showToast: false })}
+                  show={showToast}
+                  delay={3000}
+                  autohide
+                  style={{
+                    width: "fit-content",
+                    marginLeft: 25,
+                  }}
+                >
+                  <Toast.Header>
+                    <strong className="mr-auto">Settings Saved!</strong>
+                  </Toast.Header>
+                </Toast>
+              </FlexDiv>
+              <Button variant="danger" onClick={this.resetSettings}>
+                Reset
+              </Button>
             </FlexDiv>
-            <Button variant="danger" onClick={this.resetSettings}>
-              Reset
-            </Button>
-          </FlexDiv>
-        </Form>
+          </Form>
+        </Text>
       </AdminLayout>
     );
   }

@@ -19,6 +19,7 @@ import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 import { FlexDiv, RequiredAsterisk } from "../../styles/global";
+import { BackIcon } from "../TextDisplay";
 
 // assumes this is run before the coming recruitment season
 const estimateSemester = () => {
@@ -96,6 +97,95 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
 const UnderlinedLabel = styled(Form.Label)`
   text-decoration: underline;
   text-decoration-color: ${(props) => props.theme.palette.mainBrand};
+`;
+
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
+const Text = styled.div`
+  padding-left: 7%;
+  padding-right: 7%;
+  font-family: Georgia;
+  width: 100%;
+  padding-top: 20px;
+  padding-bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  h2 {
+    font-weight: bold;
+    font-size: 35px;
+    border-bottom: 2px solid #f21131;
+    margin-bottom: 2%;
+    margin-top: 2%;
+    font-style: italic;
+  }
+  h3 {
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 2%;
+    color: #f21131;
+    font-style: italic;
+  }
+  h4 {
+    font-weight: bold;
+    font-size: 25px;
+    padding-bottom: 1.5%;
+    font-style: italic;
+  }
+  h5 {
+    font-weight: bold;
+    font-size: 20px;
+    padding-bottom: 1.5%;
+  }
+  h5:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+  p {
+    font-weight: bold;
+    font-size: 15px;
+    padding-bottom: 1%;
+  }
+`;
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 0.5% 2% 0.5% 2%;
+  &:focus,
+  &:active,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
+    border: none;
+  }
+  &:hover {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
+    border: none;
+  }
 `;
 
 const ConfigureApplicationForm = ({ firebase }) => {
@@ -483,86 +573,89 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const year = new Date().getFullYear();
   return (
     <AdminLayout>
-      <h1>Configure Application</h1>
+      <BackIcon />
+      <Title>
+        <h1>Configure Application</h1>
+      </Title>
+      <Text>
+        <Form onSubmit={saveApplicationFormConfig}>
+          <Row>
+            <Col md="6">
+              <p>
+                This sets the semester-year for the coming recruitment season.
+                Make sure to set this before starting the season.
+              </p>
+              <Form.Row>
+                <Form.Group controlId="semester">
+                  <Form.Label>Semester</Form.Label>
+                  <Form.Control
+                    as="select"
+                    defaultValue={applicationFormConfig.semester.split("-")[0]}
+                  >
+                    <option value="Fall">Fall</option>
+                    <option value="Spring">Spring</option>
+                  </Form.Control>
+                </Form.Group>
+              </Form.Row>
+              <Form.Row>
+                <Form.Group controlId="year">
+                  <Form.Label>Year</Form.Label>
+                  <Form.Control
+                    as="select"
+                    defaultValue={applicationFormConfig.semester.split("-")[1]}
+                  >
+                    <option value={year}>{year}</option>
+                    <option value={year + 1}>{year + 1}</option>
+                  </Form.Control>
+                </Form.Group>
+              </Form.Row>
+            </Col>
+            <Col md="6">
+              <p>
+                These are the questions that applicants will see (in this
+                order). Default questions are underlined in red and can't be
+                re-ordered. Required questions will have an asterisk.
+              </p>
+              <DndProvider backend={HTML5Backend}>
+                {applicationFormConfig.questions
+                  .sort((a, b) => (a.order > b.order ? 1 : -1))
+                  .map((question) => renderQuestion(question))}
+              </DndProvider>
 
-      <Form onSubmit={saveApplicationFormConfig}>
-        <Row>
-          <Col md="6">
-            <p>
-              This sets the semester-year for the coming recruitment season.
-              Make sure to set this before starting the season.
-            </p>
-            <Form.Row>
-              <Form.Group controlId="semester">
-                <Form.Label>Semester</Form.Label>
-                <Form.Control
-                  as="select"
-                  defaultValue={applicationFormConfig.semester.split("-")[0]}
-                >
-                  <option value="Fall">Fall</option>
-                  <option value="Spring">Spring</option>
-                </Form.Control>
-              </Form.Group>
-            </Form.Row>
-            <Form.Row>
-              <Form.Group controlId="year">
-                <Form.Label>Year</Form.Label>
-                <Form.Control
-                  as="select"
-                  defaultValue={applicationFormConfig.semester.split("-")[1]}
-                >
-                  <option value={year}>{year}</option>
-                  <option value={year + 1}>{year + 1}</option>
-                </Form.Control>
-              </Form.Group>
-            </Form.Row>
-          </Col>
-          <Col md="6">
-            <p>
-              These are the questions that applicants will see (in this order).
-              Default questions are underlined in red and can't be re-ordered.
-              Required questions will have an asterisk.
-            </p>
-            <DndProvider backend={HTML5Backend}>
-              {applicationFormConfig.questions
-                .sort((a, b) => (a.order > b.order ? 1 : -1))
-                .map((question) => renderQuestion(question))}
-            </DndProvider>
-
-            <Button onClick={openModal}>Add Question</Button>
-          </Col>
-        </Row>
-        <hr />
-        <FlexDiv>
-          <FlexDiv
-            style={{
-              flexGrow: 1,
-            }}
-          >
-            <Button type="submit" disabled={showToast}>
-              Save Config
-            </Button>
-            <Toast
-              onClose={() => setShowToast(false)}
-              show={showToast}
-              delay={3000}
-              autohide
+              <StyledButton onClick={openModal}>Add Question</StyledButton>
+            </Col>
+          </Row>
+          <hr />
+          <FlexDiv>
+            <FlexDiv
               style={{
-                width: "fit-content",
-                marginLeft: 25,
+                flexGrow: 1,
               }}
             >
-              <Toast.Header>
-                <strong className="mr-auto">Config Saved!</strong>
-              </Toast.Header>
-            </Toast>
+              <StyledButton type="submit" disabled={showToast}>
+                Save Config
+              </StyledButton>
+              <Toast
+                onClose={() => setShowToast(false)}
+                show={showToast}
+                delay={3000}
+                autohide
+                style={{
+                  width: "fit-content",
+                  marginLeft: 25,
+                }}
+              >
+                <Toast.Header>
+                  <strong className="mr-auto">Config Saved!</strong>
+                </Toast.Header>
+              </Toast>
+            </FlexDiv>
+            <StyledButton variant="danger" onClick={resetApplicationFormConfig}>
+              Reset
+            </StyledButton>
           </FlexDiv>
-          <Button variant="danger" onClick={resetApplicationFormConfig}>
-            Reset
-          </Button>
-        </FlexDiv>
-      </Form>
-
+        </Form>
+      </Text>
       <Modal show={showModal} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>Add New Question</Modal.Title>
@@ -601,10 +694,12 @@ const ConfigureApplicationForm = ({ firebase }) => {
                 justifyContent: "space-between",
               }}
             >
-              <Button variant="secondary" onClick={closeModal}>
+              <StyledButton variant="secondary" onClick={closeModal}>
                 Cancel
-              </Button>
-              <Button type="submit">Add</Button>
+              </StyledButton>
+              <StyledButton green type="submit">
+                Add
+              </StyledButton>
             </div>
           </Form>
         </Modal.Body>

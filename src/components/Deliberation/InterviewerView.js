@@ -27,7 +27,7 @@ const SidebarBase = styled.ul`
   text-align: center;
   max-width: 300px;
   padding: 15px;
-  background: ${(props) => props.theme.palette.darkShades};
+  background: #333333;
   list-style: none;
   margin-left: 1%;
   margin-right: 1%;

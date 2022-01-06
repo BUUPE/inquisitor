@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import update from "immutability-helper";
 import cloneDeep from "lodash.clonedeep";
 
@@ -11,6 +12,31 @@ import {
   FullWidthFormGroup,
   CenteredForm,
 } from "../../styles/global";
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 0.5% 2% 0.5% 2%;
+  &:focus,
+  &:active,
+  &:visited,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
+    border: none;
+  }
+  &:hover {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
+    border: none;
+  }
+`;
 
 const QuestionDisplay = ({
   id,
@@ -39,10 +65,13 @@ const QuestionDisplay = ({
         width: "100%",
       }}
     >
-      <Button type="submit">Save</Button>
-      <Button variant="danger" onClick={() => deleteQuestion(id, imageName)}>
+      <StyledButton type="submit">Save</StyledButton>
+      <StyledButton
+        variant="danger"
+        onClick={() => deleteQuestion(id, imageName)}
+      >
         Delete
-      </Button>
+      </StyledButton>
     </div>
   );
 
@@ -178,7 +207,8 @@ export const QuestionForm = ({
             accept=".png,.jpg"
             onChange={updateImage}
           />
-          <Button
+          <StyledButton
+            style={{ marginTop: "1%" }}
             onClick={() => {
               setFormData(
                 update(formData, {
@@ -191,7 +221,7 @@ export const QuestionForm = ({
             }}
           >
             Clear
-          </Button>
+          </StyledButton>
         </FullWidthFormGroup>
       </FullWidthFormRow>
 

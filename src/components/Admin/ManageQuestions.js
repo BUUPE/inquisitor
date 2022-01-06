@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import swal from "@sweetalert/with-react";
 
 import Button from "react-bootstrap/Button";
@@ -14,8 +15,99 @@ import { withFirebase } from "upe-react-components";
 
 import Loader from "../Loader";
 import Error from "../Error";
-import { Container } from "../../styles/global";
 import { objectMap } from "../../util/helper";
+import { BackIcon } from "../TextDisplay";
+
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
+  border: none;
+  font-size: 25px;
+  font-weight: bold;
+  padding: 0.5% 2% 0.5% 2%;
+  &:focus,
+  &:active,
+  &:visited,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
+    border: none;
+  }
+  &:hover {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
+    border: none;
+  }
+`;
+
+const Title = styled.div`
+  padding-left: 5%;
+  h1 {
+    font-family: Georgia;
+    font-size: 50px;
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
+const Text = styled.div`
+  padding-left: 7%;
+  padding-right: 7%;
+  font-family: Georgia;
+  width: 100%;
+  padding-top: 20px;
+  padding-bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  h2 {
+    font-weight: bold;
+    font-size: 35px;
+    border-bottom: 2px solid #f21131;
+    margin-bottom: 2%;
+    margin-top: 2%;
+    font-style: italic;
+  }
+  h3 {
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 2%;
+    color: #f21131;
+    font-style: italic;
+  }
+  h4 {
+    font-weight: bold;
+    font-size: 25px;
+    padding-bottom: 1.5%;
+    font-style: italic;
+  }
+  h5 {
+    font-weight: bold;
+    font-size: 20px;
+    padding-bottom: 1.5%;
+  }
+  h5:after {
+    content: "";
+    display: block;
+    width: 5%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+  p {
+    font-weight: bold;
+    font-size: 15px;
+    padding-bottom: 1%;
+    max-width: 50%;
+  }
+`;
 
 const ManageQuestions = ({ firebase }) => {
   const [questionList, setQuestionList] = useState([]);
@@ -179,17 +271,20 @@ const ManageQuestions = ({ firebase }) => {
 
   return (
     <AdminLayout>
-      <Container>
+      <BackIcon />
+      <Title>
+        <h1> Interview Questions </h1>
+      </Title>
+      <Text>
         <Row style={{ width: "100%" }}>
           <Col>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <h1>Interview Questions</h1>
-              <Button
+              <StyledButton
                 onClick={() => setShowModal(true)}
                 style={{ height: "fit-content" }}
               >
                 Add Question
-              </Button>
+              </StyledButton>
             </div>
             <br />
             <Row>
@@ -207,7 +302,7 @@ const ManageQuestions = ({ firebase }) => {
             </Row>
           </Col>
         </Row>
-      </Container>
+      </Text>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -224,7 +319,9 @@ const ManageQuestions = ({ firebase }) => {
               scores: {},
             }}
             submitFunction={addQuestion}
-            SubmitButton={() => <Button type="submit">Submit</Button>}
+            SubmitButton={() => (
+              <StyledButton type="submit">Submit</StyledButton>
+            )}
           />
         </Modal.Body>
       </Modal>

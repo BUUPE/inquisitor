@@ -9,10 +9,7 @@ import {
   GeneralSettings,
   ConfigureApplicationForm,
   ViewApplications,
-  ManageUsers,
-  ManageRoles,
   ManageTimeslots,
-  ImportExport,
   ManageQuestions,
   ManageLevels,
 } from "../components/Admin";
@@ -28,10 +25,7 @@ export default () => (
     <FullSizeRouter basepath={withPrefix("/admin")}>
       <ConfigureApplicationForm path="/configure-application" />
       <ViewApplications path="/view-applications" />
-      <ManageUsers path="/manage-users" />
-      <ManageRoles path="/manage-roles" />
       <ManageTimeslots path="/manage-timeslots" />
-      <ImportExport path="/import-export" />
       <ManageQuestions path="/manage-questions" />
       <ManageLevels path="/manage-levels" />
       <GeneralSettings path="/" />
