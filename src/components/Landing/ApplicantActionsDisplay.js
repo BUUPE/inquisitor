@@ -151,7 +151,7 @@ class ApplicantActionsDisplay extends Component {
                   onclick={() => this.navigateTo("/timeslots/")}
                 />
               )}
-            {!!this.context?.roles.applicant && isDay && (
+            {!!this.context?.roles.applicant && !!isDay && (
               <ActionCard
                 title={"Enter Interview"}
                 text={"Click the link below to enter your Interview Room"}

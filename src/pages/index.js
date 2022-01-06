@@ -59,6 +59,7 @@ class IndexPage extends Component {
     if (!!!this.context)
       return (
         <>
+          <SEO title="Landing" route="/" />
           <TextDisplay
             name={"Welcome to Inquisitor!"}
             text={
@@ -84,6 +85,7 @@ class IndexPage extends Component {
 
       return (
         <>
+          <SEO title="Landing" route="/" />
           <TextDisplay
             name={`Welcome ${this.context.name.split(" ")[0]}!`}
             text={text}
