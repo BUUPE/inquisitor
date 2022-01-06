@@ -164,7 +164,7 @@ const InterviewRoom = memo(
           <Nav
             style={{
               width: "100%",
-              paddingLeft: { value },
+              paddingLeft: value,
               alignItems: "center",
               justifyContent: "space-around",
             }}
@@ -179,9 +179,9 @@ const InterviewRoom = memo(
               </Fragment>
             ))}
           </Nav>
-          <hr style={{ width: "100%", marginLeft: "7%" }} />
+          <hr style={{ width: "100%", marginLeft: value }} />
         </Row>
-        <Row style={{ marginTop: "0.5%", marginLeft: { value }, padding: 25 }}>
+        <Row style={{ marginTop: "0.5%", marginLeft: value, padding: 25 }}>
           <Tab.Content style={{ width: "100%" }}>
             {questions.map((question) => (
               <QuestionDisplay
