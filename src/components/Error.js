@@ -1,5 +1,5 @@
 import React from "react";
-import { TextDisplay } from "./TextDisplay";
+import TextDisplay from "./TextDisplay";
 
 const Error = ({ error }) => (
   <div style={{ width: "100%" }}>
