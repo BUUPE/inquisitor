@@ -1,102 +1,10 @@
 import React, { Fragment, memo } from "react";
-import styled from "styled-components";
 
-import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 
 import QuestionDisplay from "./QuestionDisplay";
 import { BackIcon } from "../TextDisplay";
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:focus,
-  &:active,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
-    border: none;
-  }
-`;
-
-const Wrapper = styled.div`
-  padding-top: 3%;
-  padding-left: 7%;
-  padding-right: 7%;
-  font-family: Georgia;
-`;
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Text = styled.div`
-  font-family: Georgia;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  h2 {
-    font-weight: bold;
-    font-size: 35px;
-    border-bottom: 2px solid #f21131;
-    margin-bottom: 2%;
-    font-style: italic;
-  }
-  h3 {
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 2%;
-    color: #f21131;
-    font-style: italic;
-  }
-  h4 {
-    font-weight: bold;
-    font-size: 25px;
-    padding-bottom: 1.5%;
-    font-style: italic;
-  }
-  h5 {
-    font-weight: bold;
-    font-size: 20px;
-    padding-bottom: 1.5%;
-  }
-  h5:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-  p {
-    font-weight: bold;
-    font-size: 15px;
-    padding-bottom: 1%;
-  }
-`;
+import { Wrapper, Title, StyledButton, Text } from "../../styles/global";
 
 const ApplicationDisplay = memo(
   ({
@@ -208,7 +116,14 @@ const ApplicationDisplay = memo(
           <h1> Applicant Overview </h1>
         </Title>
         <Wrapper>
-          <Text>
+          <Text
+            paddingTop={"0px"}
+            paddingBottom={"0px"}
+            position={"left"}
+            pFontSize={"15px"}
+            pMaxWidth={"100%"}
+            pTextAlign={"left"}
+          >
             <Row>
               <h2>Application Responses</h2>
             </Row>
@@ -223,7 +138,14 @@ const ApplicationDisplay = memo(
             style={{ width: "100%", margin: "30px 0", background: "black" }}
           />
           {provisional ? (
-            <Text>
+            <Text
+              paddingTop={"0px"}
+              paddingBottom={"0px"}
+              position={"left"}
+              pFontSize={"15px"}
+              pMaxWidth={"100%"}
+              pTextAlign={"left"}
+            >
               <Row
                 style={{
                   alignItems: "center",
@@ -252,7 +174,14 @@ const ApplicationDisplay = memo(
               </Row>
             </Text>
           ) : (
-            <Text>
+            <Text
+              paddingTop={"0px"}
+              paddingBottom={"0px"}
+              position={"left"}
+              pFontSize={"15px"}
+              pMaxWidth={"100%"}
+              pTextAlign={"left"}
+            >
               <Row
                 style={{
                   alignItems: "center",
@@ -286,7 +215,14 @@ const ApplicationDisplay = memo(
           <hr
             style={{ width: "100%", margin: "30px 0", background: "black" }}
           />
-          <Text>
+          <Text
+            paddingTop={"0px"}
+            paddingBottom={"0px"}
+            position={"left"}
+            pFontSize={"15px"}
+            pMaxWidth={"100%"}
+            pTextAlign={"left"}
+          >
             <Row
               style={{
                 alignItems: "center",
@@ -308,10 +244,23 @@ const ApplicationDisplay = memo(
                 marginBottom: 30,
               }}
             >
-              <StyledButton green onClick={() => voteApplicant(true)}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                green
+                onClick={() => voteApplicant(true)}
+              >
                 Accept
               </StyledButton>
-              <StyledButton onClick={() => voteApplicant(false)}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={() => voteApplicant(false)}
+              >
                 Deny
               </StyledButton>
             </Row>

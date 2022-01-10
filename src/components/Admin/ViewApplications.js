@@ -10,74 +10,9 @@ import { withFirebase, withAuthorization } from "upe-react-components";
 import { isRecruitmentTeam, isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
-import Error from "../Error";
 import { BackIcon } from "../TextDisplay";
 
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Text = styled.div`
-  padding-left: 7%;
-  padding-right: 7%;
-  font-family: Georgia;
-  width: 100%;
-  padding-top: 20px;
-  padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  h2 {
-    font-weight: bold;
-    font-size: 35px;
-    border-bottom: 2px solid #f21131;
-    margin-bottom: 2%;
-    margin-top: 2%;
-    font-style: italic;
-  }
-  h3 {
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 2%;
-    color: #f21131;
-    font-style: italic;
-  }
-  h4 {
-    font-weight: bold;
-    font-size: 25px;
-    padding-bottom: 1.5%;
-    font-style: italic;
-  }
-  h5 {
-    font-weight: bold;
-    font-size: 20px;
-    padding-bottom: 1.5%;
-  }
-  h5:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-  p {
-    font-weight: bold;
-    font-size: 15px;
-    padding-bottom: 1%;
-    max-width: 50%;
-  }
-`;
+import { Title, Text } from "../../styles/global";
 
 const ApplicationList = styled.ul`
   font-family: Georgia;
@@ -96,7 +31,6 @@ const ViewApplications = ({ firebase }) => {
   const [applications, setApplications] = useState([]);
   const [currentApplication, setCurrentApplication] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (firebase) {
@@ -113,12 +47,10 @@ const ViewApplications = ({ firebase }) => {
         })
         .catch((error) => {
           console.error(error);
-          setError("Failed to load applications!");
         });
     }
   }, [firebase]);
 
-  if (error) return <Error error={error} />;
   if (loading) return <Loader />;
 
   const ApplicationListItem = ({ data }) => (
@@ -188,7 +120,16 @@ const ViewApplications = ({ firebase }) => {
       <Title>
         <h1> View Applications </h1>
       </Title>
-      <Text>
+      <Text
+        paddingTop={"20px"}
+        paddingLeft={"7%"}
+        paddingRight={"7%"}
+        pFontSize={"15px"}
+        pTextAlign={"left"}
+        pMaxWidth={"100%"}
+        position={"left"}
+        h2MarginTop={"2%"}
+      >
         <Row style={{ height: "100%" }}>
           <Col style={{ flexGrow: 0, flexBasis: 200 }}>
             <ApplicationList>

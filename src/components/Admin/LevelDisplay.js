@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import styled from "styled-components";
 import update from "immutability-helper";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -13,32 +12,8 @@ import {
   FullWidthFormRow,
   FullWidthFormGroup,
   CenteredForm,
+  StyledButton,
 } from "../../styles/global";
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:focus,
-  &:active,
-  &:visited,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
-    border: none;
-  }
-`;
 
 const DraggableQuestion = ({
   id,
@@ -215,6 +190,10 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
           </FullWidthFormRow>
 
           <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
             onClick={() => addQuestion(questionToAdd)}
             disabled={questionToAdd === ""}
           >

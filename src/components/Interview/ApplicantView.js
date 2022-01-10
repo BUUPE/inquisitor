@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
-import styled from "styled-components";
 import update from "immutability-helper";
 
 import {
@@ -13,57 +12,15 @@ import InterviewRoom from "./InterviewRoom";
 
 import Loader from "../Loader";
 import Logo from "../Logo";
-import Error from "../Error";
 import { BackIcon } from "../TextDisplay";
 import { isApplicant } from "../../util/conditions";
 import { Container } from "../../styles/global";
 
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Text = styled.div`
-  font-family: Georgia;
-  width: 100%;
-  padding-top: 80px;
-  padding-bottom: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  p {
-    padding-top: 70px;
-    max-width: 50%;
-    text-align: center;
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 60px;
-  }
-`;
-
-const Wrapper = styled.div`
-  padding-top: 80px;
-  padding-bottom: 100px;
-  padding-left: 15%;
-  padding-right: 15%;
-`;
+import { Wrapper, Title, Text } from "../../styles/global";
 
 class ApplicantView extends Component {
   _initFirebase = false;
   state = {
-    error: null,
     loading: true,
     questions: [],
     currentApplication: { interview: {} },
@@ -124,7 +81,7 @@ class ApplicantView extends Component {
       .get()
       .then((doc) => {
         if (!doc.exists) {
-          this.setState({ error: "LevelConfig does not exist!" });
+          console.log("LevelConfig does not exist!");
           return {};
         }
         return doc.data();
@@ -138,7 +95,7 @@ class ApplicantView extends Component {
       this.unsubSettings = this.props.firebase
         .generalSettings()
         .onSnapshot((doc) => {
-          if (!doc.exists) this.setState({ error: "Failed to load settings!" });
+          if (!doc.exists) console.log("Failed to load settings!");
           else {
             const settings = doc.data();
             this.setState({ settings });
@@ -155,8 +112,7 @@ class ApplicantView extends Component {
       this.unsubSettings = this.props.firebase
         .application(authUser.uid)
         .onSnapshot((doc) => {
-          if (!doc.exists)
-            this.setState({ error: "Failed to load currentApplication!" });
+          if (!doc.exists) console.log("Failed to load currentApplication!");
           else {
             const currentApplication = doc.data();
             this.setState({ currentApplication });
@@ -187,7 +143,6 @@ class ApplicantView extends Component {
   render() {
     const {
       settings,
-      error,
       loading,
       currentApplication,
       levelConfig,
@@ -197,8 +152,6 @@ class ApplicantView extends Component {
     if (loading) return <Loader />;
 
     const Content = () => {
-      if (error) return <Error message={error} />;
-
       if (currentApplication?.interview?.interviewed) {
         window.localStorage.removeItem("currentApplication");
         window.localStorage.removeItem("current-tab-key");
@@ -264,7 +217,12 @@ class ApplicantView extends Component {
         <Title>
           <h1>Interview Room</h1>
         </Title>
-        <Wrapper>
+        <Wrapper
+          paddingRight={"15%"}
+          paddingLeft={"15%"}
+          paddingTop={"80px"}
+          paddingBottom={"100px"}
+        >
           <Container fluid flexdirection="column">
             <Content />
           </Container>

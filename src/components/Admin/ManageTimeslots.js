@@ -5,7 +5,6 @@ import cloneDeep from "lodash.clonedeep";
 import swal from "@sweetalert/with-react";
 
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
@@ -20,29 +19,7 @@ import { formatTime } from "../../util/helper";
 
 import { BackIcon } from "../TextDisplay";
 
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:focus,
-  &:active,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
-    border: none;
-  }
-`;
+import { StyledButton, Title, Text } from "../../styles/global";
 
 const TimeslotCard = styled(Card)`
   width: 18rem;
@@ -52,72 +29,6 @@ const TimeslotCard = styled(Card)`
 
   &:hover {
     border: 2px solid #fb8787;
-  }
-`;
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Text = styled.div`
-  padding-left: 7%;
-  padding-right: 7%;
-  font-family: Georgia;
-  width: 100%;
-  padding-top: 20px;
-  padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  h2 {
-    font-weight: bold;
-    font-size: 35px;
-    border-bottom: 2px solid #f21131;
-    margin-bottom: 2%;
-    margin-top: 2%;
-    font-style: italic;
-  }
-  h3 {
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 2%;
-    color: #f21131;
-    font-style: italic;
-  }
-  h4 {
-    font-weight: bold;
-    font-size: 25px;
-    padding-bottom: 1.5%;
-    font-style: italic;
-  }
-  h5 {
-    font-weight: bold;
-    font-size: 20px;
-    padding-bottom: 1.5%;
-  }
-  h5:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-  p {
-    font-weight: bold;
-    font-size: 15px;
-    padding-bottom: 1%;
-    max-width: 50%;
   }
 `;
 
@@ -395,7 +306,16 @@ const ManageTimeslots = ({ firebase }) => {
       <Title>
         <h1> Manage Timeslots </h1>
       </Title>
-      <Text>
+      <Text
+        paddingTop={"20px"}
+        paddingLeft={"7%"}
+        paddingRight={"7%"}
+        pFontSize={"15px"}
+        pMaxWidth={"100%"}
+        pTextAlign={"left"}
+        position={"left"}
+        h2MarginTop={"2%"}
+      >
         <p>
           Click a timeslot below to edit the associated interviewers, applicant,
           and time. Be careful as there is nothing stopping you from
@@ -405,6 +325,10 @@ const ManageTimeslots = ({ firebase }) => {
           interview.
         </p>
         <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
           style={{ marginBottom: 25 }}
           onClick={() => {
             const coeff = 1000 * 60;
@@ -423,6 +347,10 @@ const ManageTimeslots = ({ firebase }) => {
           Add New Timeslot
         </StyledButton>
         <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
           style={{ marginBottom: 25 }}
           onClick={() => {
             firebase
@@ -433,6 +361,10 @@ const ManageTimeslots = ({ firebase }) => {
           Alert Interviewers
         </StyledButton>
         <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
           style={{ marginBottom: 25 }}
           onClick={() => {
             firebase
@@ -547,11 +479,36 @@ const ManageTimeslots = ({ firebase }) => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <StyledButton onClick={closeModal}>Cancel</StyledButton>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={closeModal}
+              >
+                Cancel
+              </StyledButton>
               {currentTimeslot.hasOwnProperty("id") && (
-                <StyledButton onClick={deleteTimeslot}>Delete</StyledButton>
+                <StyledButton
+                  paddingTop={"0.5%"}
+                  paddingRight={"2%"}
+                  paddingBottom={"0.5%"}
+                  paddingLeft={"2%"}
+                  onClick={deleteTimeslot}
+                >
+                  Delete
+                </StyledButton>
               )}
-              <StyledButton onClick={saveTimeslotChanges}>Save</StyledButton>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                green
+                onClick={saveTimeslotChanges}
+              >
+                Save
+              </StyledButton>
             </Modal.Footer>
           </>
         )}

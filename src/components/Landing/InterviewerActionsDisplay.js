@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 import { navigate } from "gatsby";
 
 import Row from "react-bootstrap/Row";
@@ -9,28 +8,7 @@ import Loader from "../Loader";
 
 import { AuthUserContext, withFirebase } from "upe-react-components";
 
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Cards = styled.div`
-  padding-top: 80px;
-  padding-bottom: 100px;
-  padding-left: 15%;
-  padding-right: 15%;
-`;
+import { Wrapper, Title } from "../../styles/global";
 
 class InterviewerActionsDisplay extends Component {
   _initFirebase = false;
@@ -99,7 +77,12 @@ class InterviewerActionsDisplay extends Component {
         <Title>
           <h1> Actions </h1>
         </Title>
-        <Cards>
+        <Wrapper
+          paddingRight={"15%"}
+          paddingLeft={"15%"}
+          paddingTop={"80px"}
+          paddingBottom={"100px"}
+        >
           <Row
             lg={2}
             md={2}
@@ -149,7 +132,7 @@ class InterviewerActionsDisplay extends Component {
               />
             )}
           </Row>
-        </Cards>
+        </Wrapper>
       </>
     );
   }

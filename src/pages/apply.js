@@ -1,10 +1,8 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 
 import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 
 import {
   AuthUserContext,
@@ -16,54 +14,13 @@ import { isLoggedIn } from "../util/conditions";
 import Loader from "../components/Loader";
 import TextDisplay, { BackIcon } from "../components/TextDisplay";
 import SEO from "../components/SEO";
-import { Container, RequiredAsterisk } from "../styles/global";
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const CenteredForm = styled(Form)`
-  font-family: Georgia;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 500px;
-  flex: auto;
-  margin-bottom: 25px;
-`;
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: #f21131;
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 2% 10% 2% 10%;
-  margin-top: 5%;
-  &:hover,
-  &:focus,
-  &:active,
-  &:visited,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #600613;
-    border: none;
-  }
-`;
+import {
+  Container,
+  RequiredAsterisk,
+  Title,
+  CenteredForm,
+  StyledButton,
+} from "../styles/global";
 
 const setFileValidity = (fileUpload) => {
   if (fileUpload.files.length === 0) {
@@ -446,7 +403,14 @@ class ApplicationForm extends Component {
               .sort((a, b) => (a.order > b.order ? 1 : -1))
               .map((question) => renderQuestion(question))}
 
-            <StyledButton type="submit" disabled={sending}>
+            <StyledButton
+              paddingRight={"10%"}
+              paddingLeft={"10%"}
+              paddingTop={"2%"}
+              paddingBottom={"2%"}
+              type="submit"
+              disabled={sending}
+            >
               {sending ? "Submitting..." : "Submit"}
             </StyledButton>
           </CenteredForm>

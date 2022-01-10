@@ -2,27 +2,8 @@ import React from "react";
 import styled from "styled-components";
 
 import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
 
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: #f21131;
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 3% 25% 3% 25%;
-  &:hover,
-  &:focus,
-  &:active,
-  &:visited,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #600613;
-    border: none;
-  }
-`;
+import { StyledButton } from "../../styles/global";
 
 const StyledCard = styled(Card)`
   text-align: center;
@@ -58,7 +39,7 @@ const StyledCardTitle = styled(Card.Title)`
   }
 `;
 
-const StyledText = styled.div`
+const StyledCardText = styled.div`
   font-family: Georgia;
   width: 100%;
   display: flex;
@@ -81,9 +62,9 @@ const ActionCard = ({ title, text, onclick }) => (
         <h1> {title} </h1>
       </StyledCardTitle>
 
-      <StyledText>
+      <StyledCardText>
         <p> {text} </p>
-      </StyledText>
+      </StyledCardText>
 
       <StyledButton onClick={onclick}>Go!</StyledButton>
     </Card.Body>

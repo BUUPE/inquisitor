@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from "react";
-import styled from "styled-components";
 import swal from "@sweetalert/with-react";
 import { compose } from "recompose";
 import cloneDeep from "lodash.clonedeep";
@@ -7,7 +6,6 @@ import { navigate } from "gatsby";
 import update from "immutability-helper";
 
 import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 
 import { isApplicant } from "../../util/conditions";
 import {
@@ -18,97 +16,9 @@ import {
 
 import { RequiredAsterisk } from "../../styles/global";
 import Loader from "../Loader";
-import Error from "../Error";
 import TextDisplay, { BackIcon } from "../TextDisplay";
 
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Text = styled.div`
-  font-family: Georgia;
-  width: 100%;
-  padding-top: 80px;
-  padding-bottom: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  h2 {
-    font-weight: bold;
-    font-size: 35px;
-    border-bottom: 2px solid #f21131;
-    margin-bottom: 2%;
-    font-style: italic;
-  }
-  h3 {
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 2%;
-    color: #f21131;
-    font-style: italic;
-  }
-  h4 {
-    font-weight: bold;
-    font-size: 25px;
-    padding-bottom: 1.5%;
-    font-style: italic;
-  }
-  h5 {
-    font-weight: bold;
-    font-size: 20px;
-    padding-bottom: 1.5%;
-  }
-  h5:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-  p {
-    font-weight: bold;
-    font-size: 15px;
-    padding-bottom: 1%;
-    max-width: 50%;
-  }
-`;
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:focus,
-  &:active,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
-    border: none;
-  }
-`;
+import { StyledButton, Title, Text } from "../../styles/global";
 
 const ApplicantView = ({ firebase }) => {
   const [settings, setSettings] = useState({});
@@ -116,7 +26,6 @@ const ApplicantView = ({ firebase }) => {
   const [loading, setLoading] = useState(true);
   const [loadedApplication, setLoadedApplication] = useState(false);
   const [loadedSettings, setLoadedSettings] = useState(false);
-  const [error, setError] = useState(null);
 
   const authUser = useContext(AuthUserContext);
 
@@ -126,7 +35,7 @@ const ApplicantView = ({ firebase }) => {
         .generalSettings()
         .onSnapshot((docSnapshot) => {
           if (docSnapshot.exists) setSettings(docSnapshot.data());
-          else setError("No Settings!");
+          else console.log("No Settings!");
           setLoadedSettings(true);
         });
 
@@ -135,7 +44,7 @@ const ApplicantView = ({ firebase }) => {
         .onSnapshot((docSnapshot) => {
           if (docSnapshot.exists) {
             setApplication(docSnapshot.data());
-          } else setError("No Application!");
+          } else console.log("No Application!");
           setLoadedApplication(true);
         });
 
@@ -150,7 +59,6 @@ const ApplicantView = ({ firebase }) => {
     if (loadedSettings && loadedApplication) setLoading(false);
   }, [loadedApplication, loadedSettings]);
 
-  if (error) return <Error error={error} />;
   if (loading) return <Loader />;
 
   const confirm = async () => {
@@ -204,14 +112,14 @@ const ApplicantView = ({ firebase }) => {
       .uploadProfile("Provisional", formData.profileIMG)
       .put(formData.file)
       .catch((error) => {
-        setError(error);
+        console.log(error);
       });
 
     await firebase
       .user(authUser.uid)
       .update(data)
       .catch((error) => {
-        setError(error);
+        console.log(error);
       });
 
     await swal("All set!", "We got your info!", "success");
@@ -301,9 +209,25 @@ const ApplicantView = ({ firebase }) => {
         <Title>
           <h1> Deliberation Results </h1>
         </Title>
-        <Text>
+        <Text
+          pFontSize={"15px"}
+          pTextAlign={"left"}
+          pMaxWidth={"50%"}
+          position={"left"}
+          h2MarginTop={"2%"}
+          paddingLeft={"7%"}
+          paddingRight={"7%"}
+        >
           <ResultText />
-          <StyledButton onClick={confirm}>Confirm</StyledButton>
+          <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
+            onClick={confirm}
+          >
+            Confirm
+          </StyledButton>
         </Text>
       </>
     );
@@ -325,7 +249,15 @@ const ApplicantView = ({ firebase }) => {
       <Title>
         <h1> Deliberation Results </h1>
       </Title>
-      <Text>
+      <Text
+        pFontSize={"15px"}
+        pTextAlign={"left"}
+        pMaxWidth={"50%"}
+        position={"left"}
+        h2MarginTop={"2%"}
+        paddingLeft={"7%"}
+        paddingRight={"7%"}
+      >
         <h2>Next Steps</h2>
         <p>
           Now that you've accepted to join UPE, you will continue on with the
@@ -509,7 +441,15 @@ const DataForm = ({ submitFunction, firstName }) => {
           </Form.Group>
         </Form.Row>
 
-        <StyledButton type="submit">Submit</StyledButton>
+        <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
+          type="submit"
+        >
+          Submit
+        </StyledButton>
       </Form>
     </Text>
   );

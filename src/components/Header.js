@@ -11,24 +11,9 @@ const MastHead = styled.div`
   position: relative;
   background-size: cover;
   background-image: url(${Background});
+  padding: 325px 0 325px;
 `;
 
-const SiteHeading = styled.div`
-  padding: 200px 0 150px;
-  height: 650px;
-  color: #fff;
-  text-align: center;
-  justify-content: center;
-  & h1 {
-    font-size: 50px;
-    margin-top: 0;
-  }
-`;
-
-const Header = () => (
-  <MastHead>
-    <SiteHeading></SiteHeading>
-  </MastHead>
-);
+const Header = () => <MastHead />;
 
 export default Header;

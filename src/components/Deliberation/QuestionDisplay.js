@@ -98,6 +98,8 @@ const QuestionDisplay = ({
         </Row>
 
         <StyledButton
+          paddingTop={"0.5%"}
+          paddingBottom={"0.5%"}
           style={{ marginBottom: 20 }}
           onClick={() => setShowDetails(!showDetails)}
         >

@@ -15,77 +15,17 @@ import { withFirebase, withAuthorization } from "upe-react-components";
 import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
-import { FlexDiv, FullWidthFormGroup } from "../../styles/global";
+import {
+  FlexDiv,
+  FullWidthFormGroup,
+  Title,
+  Text,
+  StyledButton,
+} from "../../styles/global";
 import { BackIcon } from "../TextDisplay";
 
 const StyledFormRow = styled(Form.Row)`
   margin: 0;
-`;
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Text = styled.div`
-  padding-left: 7%;
-  padding-right: 7%;
-  font-family: Georgia;
-  width: 100%;
-  padding-top: 20px;
-  padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  h2 {
-    font-weight: bold;
-    font-size: 35px;
-    border-bottom: 2px solid #f21131;
-    margin-bottom: 2%;
-    margin-top: 2%;
-    font-style: italic;
-  }
-  h3 {
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 2%;
-    color: #f21131;
-    font-style: italic;
-  }
-  h4 {
-    font-weight: bold;
-    font-size: 25px;
-    padding-bottom: 1.5%;
-    font-style: italic;
-  }
-  h5 {
-    font-weight: bold;
-    font-size: 20px;
-    padding-bottom: 1.5%;
-  }
-  h5:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-  p {
-    font-weight: bold;
-    font-size: 15px;
-    padding-bottom: 1%;
-    max-width: 50%;
-  }
 `;
 
 // TODO: refactor settings to have sub sections
@@ -319,7 +259,16 @@ class GeneralSettings extends Component {
         <Title>
           <h1> General Settings </h1>
         </Title>
-        <Text>
+        <Text
+          paddingTop={"20px"}
+          paddingLeft={"7%"}
+          paddingRight={"7%"}
+          pFontSize={"15px"}
+          pMaxWidth={"100%"}
+          pTextAlign={"left"}
+          position={"left"}
+          h2MarginTop={"2%"}
+        >
           <Form onSubmit={this.saveSettings}>
             <h2>General Settings</h2>
             <StyledFormRow>
@@ -675,7 +624,16 @@ class GeneralSettings extends Component {
                   flexGrow: 1,
                 }}
               >
-                <Button type="submit">Save</Button>
+                <StyledButton
+                  paddingTop={"0.5%"}
+                  paddingRight={"2%"}
+                  paddingBottom={"0.5%"}
+                  paddingLeft={"2%"}
+                  green
+                  type="submit"
+                >
+                  Save
+                </StyledButton>
                 <Toast
                   onClose={() => this.setState({ showToast: false })}
                   show={showToast}
@@ -691,9 +649,15 @@ class GeneralSettings extends Component {
                   </Toast.Header>
                 </Toast>
               </FlexDiv>
-              <Button variant="danger" onClick={this.resetSettings}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={this.resetSettings}
+              >
                 Reset
-              </Button>
+              </StyledButton>
             </FlexDiv>
           </Form>
         </Text>

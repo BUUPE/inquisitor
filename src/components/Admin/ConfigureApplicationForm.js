@@ -8,7 +8,6 @@ import { compose } from "recompose";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Toast from "react-bootstrap/Toast";
 
@@ -18,7 +17,13 @@ import { withFirebase } from "upe-react-components";
 import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
-import { FlexDiv, RequiredAsterisk } from "../../styles/global";
+import {
+  FlexDiv,
+  RequiredAsterisk,
+  Title,
+  StyledButton,
+  Text,
+} from "../../styles/global";
 import { BackIcon } from "../TextDisplay";
 
 // assumes this is run before the coming recruitment season
@@ -97,95 +102,6 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
 const UnderlinedLabel = styled(Form.Label)`
   text-decoration: underline;
   text-decoration-color: ${(props) => props.theme.palette.mainBrand};
-`;
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
-const Text = styled.div`
-  padding-left: 7%;
-  padding-right: 7%;
-  font-family: Georgia;
-  width: 100%;
-  padding-top: 20px;
-  padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  h2 {
-    font-weight: bold;
-    font-size: 35px;
-    border-bottom: 2px solid #f21131;
-    margin-bottom: 2%;
-    margin-top: 2%;
-    font-style: italic;
-  }
-  h3 {
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 2%;
-    color: #f21131;
-    font-style: italic;
-  }
-  h4 {
-    font-weight: bold;
-    font-size: 25px;
-    padding-bottom: 1.5%;
-    font-style: italic;
-  }
-  h5 {
-    font-weight: bold;
-    font-size: 20px;
-    padding-bottom: 1.5%;
-  }
-  h5:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-  p {
-    font-weight: bold;
-    font-size: 15px;
-    padding-bottom: 1%;
-  }
-`;
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:focus,
-  &:active,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
-    border: none;
-  }
 `;
 
 const ConfigureApplicationForm = ({ firebase }) => {
@@ -577,7 +493,14 @@ const ConfigureApplicationForm = ({ firebase }) => {
       <Title>
         <h1>Configure Application</h1>
       </Title>
-      <Text>
+      <Text
+        paddingTop={"20px"}
+        paddingLeft={"7%"}
+        paddingRight={"10%"}
+        pFontSize={"15px"}
+        pMaxWidth={"100%"}
+        pTextAlign={"left"}
+      >
         <Form onSubmit={saveApplicationFormConfig}>
           <Row>
             <Col md="6">
@@ -622,7 +545,15 @@ const ConfigureApplicationForm = ({ firebase }) => {
                   .map((question) => renderQuestion(question))}
               </DndProvider>
 
-              <StyledButton onClick={openModal}>Add Question</StyledButton>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={openModal}
+              >
+                Add Question
+              </StyledButton>
             </Col>
           </Row>
           <hr />
@@ -632,7 +563,14 @@ const ConfigureApplicationForm = ({ firebase }) => {
                 flexGrow: 1,
               }}
             >
-              <StyledButton type="submit" disabled={showToast}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                type="submit"
+                disabled={showToast}
+              >
                 Save Config
               </StyledButton>
               <Toast
@@ -650,7 +588,14 @@ const ConfigureApplicationForm = ({ firebase }) => {
                 </Toast.Header>
               </Toast>
             </FlexDiv>
-            <StyledButton variant="danger" onClick={resetApplicationFormConfig}>
+            <StyledButton
+              paddingTop={"0.5%"}
+              paddingRight={"2%"}
+              paddingBottom={"0.5%"}
+              paddingLeft={"2%"}
+              variant="danger"
+              onClick={resetApplicationFormConfig}
+            >
               Reset
             </StyledButton>
           </FlexDiv>
@@ -694,10 +639,24 @@ const ConfigureApplicationForm = ({ firebase }) => {
                 justifyContent: "space-between",
               }}
             >
-              <StyledButton variant="secondary" onClick={closeModal}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                variant="secondary"
+                onClick={closeModal}
+              >
                 Cancel
               </StyledButton>
-              <StyledButton green type="submit">
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                green
+                type="submit"
+              >
                 Add
               </StyledButton>
             </div>

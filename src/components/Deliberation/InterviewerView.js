@@ -19,7 +19,7 @@ import Error from "../Error";
 import SecondRound from "./SecondRound";
 import FeedbackPage from "./FeedbackPage";
 import ApplicationDisplay from "./ApplicationDisplay";
-import { FullSizeContainer } from "../../styles/global";
+import { FullSizeContainer, Title, Text } from "../../styles/global";
 import TextDisplay, { BackIcon } from "../TextDisplay";
 
 const SidebarBase = styled.ul`
@@ -48,46 +48,6 @@ const SidebarBase = styled.ul`
   }
 `;
 
-const Text = styled.div`
-  padding-left: 7%;
-  font-family: Georgia;
-  width: 100%;
-  padding-top: 80px;
-  padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  h3 {
-    max-width: 50%;
-    font-weight: bold;
-    font-size: 30px;
-    padding-bottom: 2%;
-    color: #f21131;
-    font-style: italic;
-  }
-  p {
-    max-width: 50%;
-    font-weight: bold;
-    font-size: 15px;
-    padding-bottom: 1%;
-  }
-`;
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
-
 const SidebarItem = styled.li`
   color: ${(props) => (props.selected ? "#f21131" : "white")};
   font-weight: bold;
@@ -107,7 +67,14 @@ const DetailsDisplay = () => (
     <Title>
       <h1> Welcome to Deliberations! </h1>
     </Title>
-    <Text>
+    <Text
+      paddingLeft={"7%"}
+      paddingRight={"7%"}
+      pFontSize={"15px"}
+      pTextAlign={"left"}
+      pMaxWidth={"50%"}
+      position={"left"}
+    >
       <p>
         {" "}
         Please read the instructions bellow carefully before proceeding to

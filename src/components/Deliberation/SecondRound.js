@@ -1,7 +1,5 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 
-import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
@@ -10,51 +8,7 @@ import { withAuthorization } from "upe-react-components";
 
 import { isAdmin } from "../../util/conditions";
 import { BackIcon } from "../TextDisplay";
-
-const Wrapper = styled.div`
-  padding-top: 3%;
-  padding-left: 7%;
-  padding-right: 7%;
-  font-family: Georgia;
-`;
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: #f21131;
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #f88898;
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #600613;
-    border: none;
-  }
-`;
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
-  }
-`;
+import { Wrapper, Title, StyledButton } from "../../styles/global";
 
 class SecondRound extends Component {
   state = {
@@ -148,7 +102,13 @@ class SecondRound extends Component {
           </Table>
 
           {!settings.deliberationsOpen && (
-            <StyledButton onClick={this.props.readyRoundTwo}>
+            <StyledButton
+              paddingTop={"0.5%"}
+              paddingRight={"2%"}
+              paddingBottom={"0.5%"}
+              paddingLeft={"2%"}
+              onClick={this.props.readyRoundTwo}
+            >
               Open Round Two
             </StyledButton>
           )}
@@ -209,10 +169,20 @@ class SecondRound extends Component {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <StyledButton onClick={() => this.setState({ showModal: false })}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={() => this.setState({ showModal: false })}
+              >
                 Cancel
               </StyledButton>
               <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
                 onClick={() =>
                   this.props.saveSecondRoundStatus(
                     currentApplicationId,

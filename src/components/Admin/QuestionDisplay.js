@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import update from "immutability-helper";
 import cloneDeep from "lodash.clonedeep";
 
-import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 
@@ -11,32 +9,8 @@ import {
   FullWidthFormRow,
   FullWidthFormGroup,
   CenteredForm,
+  StyledButton,
 } from "../../styles/global";
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
-  border: none;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:focus,
-  &:active,
-  &:visited,
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
-    border: none;
-  }
-`;
 
 const QuestionDisplay = ({
   id,
@@ -65,8 +39,20 @@ const QuestionDisplay = ({
         width: "100%",
       }}
     >
-      <StyledButton type="submit">Save</StyledButton>
       <StyledButton
+        paddingTop={"0.5%"}
+        paddingRight={"2%"}
+        paddingBottom={"0.5%"}
+        paddingLeft={"2%"}
+        type="submit"
+      >
+        Save
+      </StyledButton>
+      <StyledButton
+        paddingTop={"0.5%"}
+        paddingRight={"2%"}
+        paddingBottom={"0.5%"}
+        paddingLeft={"2%"}
         variant="danger"
         onClick={() => deleteQuestion(id, imageName)}
       >
@@ -208,6 +194,10 @@ export const QuestionForm = ({
             onChange={updateImage}
           />
           <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
             style={{ marginTop: "1%" }}
             onClick={() => {
               setFormData(

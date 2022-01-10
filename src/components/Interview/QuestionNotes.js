@@ -2,39 +2,15 @@ import React, { useState } from "react";
 import styled from "styled-components";
 
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Toast from "react-bootstrap/Toast";
 import RangeSlider from "react-bootstrap-range-slider";
 
+import { StyledButton } from "../../styles/global";
+
 const StyledP = styled.p`
   white-space: pre-wrap;
   font-family: Georgia;
-`;
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: #f21131;
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #f88898;
-    border: none;
-  }
-  &:hover,
-  &:focus,
-  &:active,
-  &:visited {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #600613;
-    border: none;
-  }
 `;
 
 const QuestionNotes = ({
@@ -103,6 +79,10 @@ const QuestionNotes = ({
 
         {submitApplication && (
           <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
             style={{ marginTop: "2%", marginBottom: "2%" }}
             type="submit"
           >

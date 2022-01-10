@@ -31,21 +31,5 @@ module.exports = {
         icon: `${__dirname}/src/images/logo.png`, // This path is relative to the root of the site.
       },
     },
-    {
-      resolve: `gatsby-plugin-google-fonts`,
-      options: {
-        fonts: [
-          `Libre Baskerville`
-        ],
-        display: 'swap'
-      }
-    },
-    {
-      resolve: `gatsby-styled-components-dark-mode`,
-      options: {
-        light: require(`${__dirname}/src/styles/theme.js`).lightTheme,
-        dark: require(`${__dirname}/src/styles/theme.js`).darkTheme,
-      },
-    },
   ],
 };

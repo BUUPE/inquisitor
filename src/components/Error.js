@@ -1,11 +1,14 @@
 import React from "react";
-import { Container } from "../styles/global";
+import { TextDisplay } from "./TextDisplay";
 
-// TODO: use this
-const Error = ({ message }) => (
-  <Container flexdirection="column">
-    <h1>{message}</h1>
-  </Container>
+const Error = ({ error }) => (
+  <div style={{ width: "100%" }}>
+    <TextDisplay
+      name={"Error Occured"}
+      text={error.toString()}
+      displayBack={true}
+    />
+  </div>
 );
 
 export default Error;

@@ -19,7 +19,7 @@ import Stopwatch from "./Stopwatch";
 import Loader from "../Loader";
 import { isRecruitmentTeam } from "../../util/conditions";
 import { formatTime } from "../../util/helper";
-import { FullSizeContainer } from "../../styles/global";
+import { FullSizeContainer, Title } from "../../styles/global";
 import TextDisplay, { BackIcon } from "../TextDisplay";
 
 const Sidebar = styled.ul`
@@ -50,22 +50,6 @@ const StyledLi = styled.li`
   &:hover {
     color: #f21131;
     text-decoration: underline;
-  }
-`;
-
-const Title = styled.div`
-  padding-left: 5%;
-  h1 {
-    font-family: Georgia;
-    font-size: 50px;
-    font-style: italic;
-  }
-  h1:after {
-    content: "";
-    display: block;
-    width: 4%;
-    padding-top: 3px;
-    border-bottom: 2px solid #f21131;
   }
 `;
 

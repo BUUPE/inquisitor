@@ -1,6 +1,120 @@
 import styled, { createGlobalStyle } from "styled-components";
 import BootstrapContainer from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+
+export const Wrapper = styled.div`
+  padding-right: ${(props) =>
+    !!props.paddingRight ? props.paddingRight : "7%"};
+  padding-left: ${(props) => (!!props.paddingLeft ? props.paddingLeft : "7%")};
+  padding-top: ${(props) => (!!props.paddingTop ? props.paddingTop : "3%")};
+  padding-bottom: ${(props) =>
+    !!props.paddingBottom ? props.paddingBottom : "3%"};
+  font-family: Georgia;
+`;
+
+export const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: ${(props) => (props.green ? "#008000" : "#f21131")};
+  border: none;
+  font-size: ${(props) => (!!props.fontSize ? props.fontSize : "25px")};
+  font-weight: bold;
+  padding-right: ${(props) =>
+    !!props.paddingRight ? props.paddingRight : "25%"};
+  padding-left: ${(props) => (!!props.paddingLeft ? props.paddingLeft : "25%")};
+  padding-top: ${(props) => (!!props.paddingTop ? props.paddingTop : "3%")};
+  padding-bottom: ${(props) =>
+    !!props.paddingBottom ? props.paddingBottom : "3%"};
+  &:focus,
+  &:active,
+  &:visited,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#7FBF7F" : "#f88898")};
+    border: none;
+  }
+  &:hover {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: ${(props) => (props.green ? "#004C00" : "#600613")};
+    border: none;
+  }
+`;
+
+export const Title = styled.div`
+  padding-left: ${(props) => (!!props.paddingLeft ? props.paddingLeft : "5%")};
+  h1 {
+    font-family: Georgia;
+    font-size: ${(props) => (!!props.fontSize ? props.fontSize : "50px")};
+    font-style: italic;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: ${(props) => (!!props.lineWidth ? props.lineWidth : "4%")};
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+`;
+
+export const Text = styled.div`
+  font-family: Georgia;
+  width: ${(props) => (!!props.contentWidth ? props.contentWidth : "100%")};
+  padding-top: ${(props) => (!!props.paddingTop ? props.paddingTop : "80px")};
+  padding-bottom: ${(props) =>
+    !!props.paddingBottom ? props.paddingBottom : "100px"};
+  padding-left: ${(props) => (!!props.paddingLeft ? props.paddingLeft : "0")};
+  padding-right: ${(props) =>
+    !!props.paddingRight ? props.paddingRight : "0"};
+  display: flex;
+  justify-content: ${(props) => (!!props.position ? props.position : "center")};
+  align-items: ${(props) => (!!props.position ? props.position : "center")};
+  flex-direction: column;
+  h2 {
+    font-weight: bold;
+    font-size: 35px;
+    border-bottom: 2px solid #f21131;
+    margin-bottom: ${(props) =>
+      !!props.h2MarginBottom ? props.h2MarginBottom : "2%"};
+    margin-top: ${(props) => (!!props.h2MarginTop ? props.h2MarginTop : "0%")};
+    font-style: italic;
+  }
+  h3 {
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 2%;
+    color: #f21131;
+    font-style: italic;
+  }
+  h4 {
+    font-weight: bold;
+    font-size: 25px;
+    padding-bottom: 1.5%;
+    font-style: italic;
+  }
+  h5 {
+    font-weight: bold;
+    font-size: 20px;
+    padding-bottom: 1.5%;
+  }
+  h5:after {
+    content: "";
+    display: block;
+    width: ${(props) => (!!props.h5LineWidth ? props.h5LineWidth : "4%")};
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
+  }
+  p {
+    font-weight: bold;
+    font-size: ${(props) => (!!props.pFontSize ? props.pFontSize : "35px")};
+    padding-bottom: 1%;
+    max-width: ${(props) => (!!props.pMaxWidth ? props.pMaxWidth : "50%")};
+    text-align: ${(props) =>
+      !!props.pTextAlign ? props.pTextAlign : "center"};
+  }
+`;
 
 export const RequiredAsterisk = styled.span`
   color: red;
@@ -25,6 +139,7 @@ export const FullSizeContainer = styled(Container)`
 `;
 
 export const CenteredForm = styled(Form)`
+  font-family: Georgia;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,17 +176,17 @@ export default createGlobalStyle`
   }
 
   .modal-content {
-    background-color: ${(props) => props.theme.global.bg};
+    background-color: #ffffff;
 
     button.close {
-      color: ${(props) => props.theme.global.color};
+      color: #201e20;
     }
   }
 
   /*
   .btn.btn-primary {
-    background-color: ${(props) => props.theme.palette.mainBrand};
-    border-color: ${(props) => props.theme.palette.mainBrand};
+    background-color: #f21131;
+    border-color: #f21131;
   }
   */
 
@@ -87,22 +202,22 @@ export default createGlobalStyle`
   }
 
   body {
-    background-color: ${(props) => props.theme.global.bg};
-    color: ${(props) => props.theme.global.color};
+    background-color: #ffffff;
+    color: #201e20;
     transition: background 0.2s ease-out;
   }
 
   .text-muted {
-    color: ${(props) => props.theme.global.muted} !important;
+    color: #6c757d !important;
   }
 
   /*
   a {
-    color: ${(props) => props.theme.global.link};
+    color: #f21131;
   }
 
   a:hover {
-    color: ${(props) => props.theme.global.linkHover};
+    color: #600613;
   }
   */
 

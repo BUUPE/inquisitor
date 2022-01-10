@@ -2,9 +2,10 @@ import React from "react";
 import styled from "styled-components";
 
 import Tab from "react-bootstrap/Tab";
-import Button from "react-bootstrap/Button";
 
 import QuestionNotes from "./QuestionNotes";
+
+import { StyledButton } from "../../styles/global";
 
 const StyledP = styled.p`
   white-space: pre-wrap;
@@ -15,28 +16,6 @@ const StyledH3 = styled.h3`
   font-family: Georgia;
   padding-bottom: 1%;
   font-weight: bold;
-`;
-
-const StyledButton = styled(Button)`
-  text-decoration: none;
-  color: #ffffff;
-  background-color: #f21131;
-  border: none;
-  font-size: 25px;
-  font-weight: bold;
-  padding: 0.5% 2% 0.5% 2%;
-  &:disabled {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #f88898;
-    border: none;
-  }
-  &:hover {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #600613;
-    border: none;
-  }
 `;
 
 const OverviewDisplay = ({ question, isInterviewer }) => (
@@ -182,12 +161,20 @@ const QuestionDisplay = ({
       <Content />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
           disabled={tabKey === -1}
           onClick={() => setTabKey(`${tabKey - 1}`)}
         >
           Previous
         </StyledButton>
         <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
           disabled={tabKey === finalQuestionId}
           onClick={() => setTabKey(`${tabKey + 1}`)}
         >
