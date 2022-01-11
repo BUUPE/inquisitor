@@ -53,7 +53,7 @@ const LevelSelector = ({ levels, saveLevel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    saveLevel(level);
+    saveLevel(level).then(() => window.location.reload(false));
   };
 
   const handleChange = (e) => setLevel(e.target.value);

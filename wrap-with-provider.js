@@ -9,7 +9,7 @@ import {
   WithAuthorizationClass,
 } from "upe-react-components";
 
-import Firebase from "./src/components/Firebase";
+import Firebase from "./src/components/API/Firebase";
 import Header from "./src/components/Header";
 import Footer from "./src/components/Footer";
 import Logo from "./src/components/Logo";

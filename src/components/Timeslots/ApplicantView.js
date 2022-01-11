@@ -13,6 +13,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import ScrollableRow from "./ScrollableRow";
 import Loader from "../Loader";
@@ -59,7 +60,6 @@ class ApplicantView extends Component {
     this.state = {
       loading: true,
       error: null,
-      settings: null,
       timeslots: {},
       selectedTimeslot: {},
       selecting: false,
@@ -86,12 +86,6 @@ class ApplicantView extends Component {
   loadData = async () => {
     this._initFirebase = true;
     const authUser = this.context;
-    const doc = await this.props.firebase.generalSettings().get();
-
-    let settings;
-    if (!doc.exists)
-      return this.setState({ error: "Failed to load settings!" });
-    else settings = doc.data();
 
     const timeslots = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
@@ -156,7 +150,7 @@ class ApplicantView extends Component {
         }, reject);
     });
 
-    this.setState({ settings, timeslots, loading: false });
+    this.setState({ timeslots, loading: false });
   };
 
   selectTimeslot = async (timeslot) => {
@@ -273,7 +267,6 @@ class ApplicantView extends Component {
     const {
       error,
       loading,
-      settings,
       timeslots,
       selectedTimeslot,
       selecting,
@@ -288,7 +281,7 @@ class ApplicantView extends Component {
 
     if (loading) return <Loader />;
 
-    if (!settings.timeslotsOpenForApplicants)
+    if (!this.props.settings.timeslotsOpenForApplicants)
       return (
         <TextDisplay
           name={"Timeslot Selection"}
@@ -298,7 +291,7 @@ class ApplicantView extends Component {
       );
 
     const TimeslotColumn = ({ date, slots }) => (
-      <Col style={{ width: "100%", flex: "none" }}>
+      <Col>
         <h1> {date} </h1>
         {slots
           .sort((a, b) => {
@@ -365,6 +358,7 @@ class ApplicantView extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isApplicant),
   withFirebase
 )(ApplicantView);

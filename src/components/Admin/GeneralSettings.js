@@ -35,11 +35,15 @@ const DEFAULT_GENERAL_SETTINGS = {
   applicationsOpen: false,
   timeslotsOpen: false,
   timeslotsOpenForApplicants: false,
+  remoteInterview: false,
   timeslotLength: 45,
   timeslotDays: [],
   timeslotStart: 8,
   timeslotEnd: 22,
   zoomlink: "https://bostonu.zoom.us/s/96821681891",
+};
+
+const DEFAULT_TEXT_SETTINGS = {
   interviewWelcomeText: "",
   interviewOverviewText: "",
   interviewInterviewerNotesText: "",
@@ -62,12 +66,17 @@ class GeneralSettings extends Component {
   state = {
     preSaveSettings: null,
     settings: null,
+    preSaveTextSettings: null,
+    textSettings: null,
     loading: true,
     showToast: false,
   };
 
   interceptor = async (e) => {
-    if (!isEqual(this.state.settings, this.state.preSaveSettings)) {
+    if (
+      !isEqual(this.state.settings, this.state.preSaveSettings) ||
+      !isEqual(this.state.textSettings, this.state.preSaveTextSettings)
+    ) {
       e.preventDefault();
       swal({
         title: "You have unsaved settings!",
@@ -111,23 +120,45 @@ class GeneralSettings extends Component {
 
   loadSettings = async () => {
     this._initFirebase = true;
+    let loadedOne = false;
     const doc = await this.props.firebase.generalSettings().get();
+    const docTwo = await this.props.firebase.textSettings().get();
 
     if (!doc.exists) {
       await this.props.firebase.generalSettings().set(DEFAULT_GENERAL_SETTINGS);
       this.setState({
         settings: DEFAULT_GENERAL_SETTINGS,
         preSaveSettings: DEFAULT_GENERAL_SETTINGS,
-        loading: false,
+        loading: !loadedOne,
       });
+      loadedOne = true;
     } else {
       const settings = doc.data();
       settings.timeslotDays = settings.timeslotDays.map((day) => day.toDate());
       this.setState({
         settings,
         preSaveSettings: settings,
-        loading: false,
+        loading: !loadedOne,
       });
+      loadedOne = true;
+    }
+
+    if (!docTwo.exists) {
+      await this.props.firebase.textSettings().set(DEFAULT_TEXT_SETTINGS);
+      this.setState({
+        textSettings: DEFAULT_TEXT_SETTINGS,
+        preSaveTextSettings: DEFAULT_TEXT_SETTINGS,
+        loading: !loadedOne,
+      });
+      loadedOne = true;
+    } else {
+      const textSettings = docTwo.data();
+      this.setState({
+        textSettings,
+        preSaveTextSettings: textSettings,
+        loading: !loadedOne,
+      });
+      loadedOne = true;
     }
   };
 
@@ -153,9 +184,12 @@ class GeneralSettings extends Component {
         await this.props.firebase
           .generalSettings()
           .set(DEFAULT_GENERAL_SETTINGS);
+        await this.props.firebase.textSettings().set(DEFAULT_TEXT_SETTINGS);
         this.setState({
           settings: DEFAULT_GENERAL_SETTINGS,
           preSaveSettings: DEFAULT_GENERAL_SETTINGS,
+          textSettings: DEFAULT_TEXT_SETTINGS,
+          preSaveTextSettings: DEFAULT_TEXT_SETTINGS,
           showToast: true,
         });
       }
@@ -164,7 +198,7 @@ class GeneralSettings extends Component {
 
   saveSettings = async (e) => {
     e.preventDefault();
-    const { settings, preSaveSettings } = this.state;
+    const { settings, preSaveSettings, textSettings } = this.state;
 
     if (
       (settings.timeslotsOpen || settings.timeslotsOpenForApplicants) &&
@@ -224,7 +258,12 @@ class GeneralSettings extends Component {
     if (confirm) {
       // TODO actually send an email for this
       await this.props.firebase.generalSettings().set(settings);
-      this.setState({ showToast: true, preSaveSettings: settings });
+      await this.props.firebase.textSettings().set(textSettings);
+      this.setState({
+        showToast: true,
+        preSaveSettings: settings,
+        preSaveTextSettings: textSettings,
+      });
     } else {
       this.setState({ settings: preSaveSettings });
     }
@@ -244,7 +283,7 @@ class GeneralSettings extends Component {
   };
 
   render() {
-    const { loading, settings, showToast } = this.state;
+    const { loading, settings, textSettings, showToast } = this.state;
 
     if (loading) return <Loader />;
 
@@ -464,11 +503,11 @@ class GeneralSettings extends Component {
                   as="textarea"
                   rows={3}
                   placeholder="FILL THIS OUT!"
-                  value={settings.interviewWelcomeText}
+                  value={textSettings.interviewWelcomeText}
                   onChange={(e) =>
                     this.setState({
-                      settings: {
-                        ...settings,
+                      textSettings: {
+                        ...textSettings,
                         interviewWelcomeText: e.target.value,
                       },
                     })
@@ -484,11 +523,11 @@ class GeneralSettings extends Component {
                   as="textarea"
                   rows={3}
                   placeholder="FILL THIS OUT!"
-                  value={settings.interviewOverviewText}
+                  value={textSettings.interviewOverviewText}
                   onChange={(e) =>
                     this.setState({
-                      settings: {
-                        ...settings,
+                      textSettings: {
+                        ...textSettings,
                         interviewOverviewText: e.target.value,
                       },
                     })
@@ -504,11 +543,11 @@ class GeneralSettings extends Component {
                   as="textarea"
                   rows={3}
                   placeholder="FILL THIS OUT!"
-                  value={settings.interviewInterviewerNotesText}
+                  value={textSettings.interviewInterviewerNotesText}
                   onChange={(e) =>
                     this.setState({
-                      settings: {
-                        ...settings,
+                      textSettings: {
+                        ...textSettings,
                         interviewInterviewerNotesText: e.target.value,
                       },
                     })
@@ -524,11 +563,11 @@ class GeneralSettings extends Component {
                   as="textarea"
                   rows={3}
                   placeholder="FILL THIS OUT!"
-                  value={settings.interviewResumeNotesText}
+                  value={textSettings.interviewResumeNotesText}
                   onChange={(e) =>
                     this.setState({
-                      settings: {
-                        ...settings,
+                      textSettings: {
+                        ...textSettings,
                         interviewResumeNotesText: e.target.value,
                       },
                     })
@@ -544,11 +583,11 @@ class GeneralSettings extends Component {
                   as="textarea"
                   rows={3}
                   placeholder="FILL THIS OUT!"
-                  value={settings.interviewFinalNotesInterviewerText}
+                  value={textSettings.interviewFinalNotesInterviewerText}
                   onChange={(e) =>
                     this.setState({
-                      settings: {
-                        ...settings,
+                      textSettings: {
+                        ...textSettings,
                         interviewFinalNotesInterviewerText: e.target.value,
                       },
                     })
@@ -564,11 +603,11 @@ class GeneralSettings extends Component {
                   as="textarea"
                   rows={3}
                   placeholder="FILL THIS OUT!"
-                  value={settings.interviewFinalNotesApplicantText}
+                  value={textSettings.interviewFinalNotesApplicantText}
                   onChange={(e) =>
                     this.setState({
-                      settings: {
-                        ...settings,
+                      textSettings: {
+                        ...textSettings,
                         interviewFinalNotesApplicantText: e.target.value,
                       },
                     })
@@ -611,6 +650,26 @@ class GeneralSettings extends Component {
                     settings: {
                       ...settings,
                       useTwoRoundDeliberations: e.target.checked,
+                    },
+                  })
+                }
+              />
+            </Form.Row>
+            <br />
+            <Form.Row>
+              <Form.Check
+                custom
+                checked={settings.remoteInterview}
+                type="switch"
+                label={`Remote Interviews are ${
+                  settings.remoteInterview ? "enabled" : "disabled"
+                }`}
+                id="remoteInterview"
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      remoteInterview: e.target.checked,
                     },
                   })
                 }

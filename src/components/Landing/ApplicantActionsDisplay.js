@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { navigate } from "gatsby";
+import { compose } from "recompose";
 
 import Row from "react-bootstrap/Row";
 
@@ -7,6 +8,7 @@ import ActionCard from "../Landing/ActionCard";
 import Loader from "../Loader";
 
 import { AuthUserContext, withFirebase } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import { Wrapper, Title } from "../../styles/global";
 
@@ -14,7 +16,6 @@ class ApplicantActionsDisplay extends Component {
   _initFirebase = false;
   state = {
     loading: true,
-    generalSettings: null,
     application: null,
   };
   static contextType = AuthUserContext;
@@ -34,29 +35,16 @@ class ApplicantActionsDisplay extends Component {
 
   loadData = async () => {
     this._initFirebase = true;
-    const loadGeneralSettings = this.props.firebase
-      .generalSettings()
-      .get()
-      .then((snapshot) => snapshot.data())
-      .catch(() =>
-        this.setState({
-          loading: false,
-        })
-      );
 
-    const loadApplication = this.props.firebase
+    this.props.firebase
       .application(!!this.context ? this.context.uid : "1")
       .get()
-      .then((snapshot) => (snapshot.exists ? snapshot.data() : null))
-      .catch(() => console.log("No application"));
-
-    Promise.all([loadGeneralSettings, loadApplication]).then((values) =>
-      this.setState({
-        loading: false,
-        generalSettings: values[0],
-        application: values[1],
+      .then((snapshot) => {
+        if (!snapshot.exists)
+          this.setState({ application: null, loading: false });
+        else this.setState({ application: snapshot.data(), loading: false });
       })
-    );
+      .catch(() => console.log("No application"));
   };
 
   navigateTo = (page) => {
@@ -64,7 +52,7 @@ class ApplicantActionsDisplay extends Component {
   };
 
   render() {
-    const { loading, generalSettings, application } = this.state;
+    const { loading, application } = this.state;
 
     // Data Loading
     if (loading) return <Loader />;
@@ -72,7 +60,7 @@ class ApplicantActionsDisplay extends Component {
     // Check if it's interview Day
     const date = new Date();
     let isDay = false;
-    generalSettings.timeslotDays.forEach((day) => {
+    this.props.settings.timeslotDays.forEach((day) => {
       const transformedDay = day.toDate();
       isDay |=
         transformedDay.getDay() === date.getDay() &&
@@ -107,7 +95,7 @@ class ApplicantActionsDisplay extends Component {
               />
             )}
             {!!!this.context?.roles.applicant &&
-              generalSettings.applicationsOpen && (
+              this.props.settings.applicationsOpen && (
                 <ActionCard
                   title={"New Application"}
                   text={
@@ -117,7 +105,7 @@ class ApplicantActionsDisplay extends Component {
                 />
               )}
             {!!this.context?.roles.applicant &&
-              generalSettings.applicationsOpen && (
+              this.props.settings.applicationsOpen && (
                 <ActionCard
                   title={"Edit Application"}
                   text={"Click the link below to edit your Application to UPE!"}
@@ -125,7 +113,7 @@ class ApplicantActionsDisplay extends Component {
                 />
               )}
             {!!this.context?.roles.applicant &&
-              generalSettings.timeslotsOpenForApplicants && (
+              this.props.settings.timeslotsOpenForApplicants && (
                 <ActionCard
                   title={"Select Timeslots"}
                   text={
@@ -154,7 +142,7 @@ class ApplicantActionsDisplay extends Component {
               )}
             {!!this.context &&
               !!!this.context.roles.applicant &&
-              !generalSettings.applicationsOpen && (
+              !this.props.settings.applicationsOpen && (
                 <ActionCard
                   title={"Interest Form"}
                   text={"Click the link below to sign up for our Newsletter!"}
@@ -182,4 +170,4 @@ class ApplicantActionsDisplay extends Component {
     );
   }
 }
-export default withFirebase(ApplicantActionsDisplay);
+export default compose(withSettings, withFirebase)(ApplicantActionsDisplay);

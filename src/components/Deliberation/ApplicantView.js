@@ -13,6 +13,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import { RequiredAsterisk } from "../../styles/global";
 import Loader from "../Loader";
@@ -20,46 +21,30 @@ import TextDisplay, { BackIcon } from "../TextDisplay";
 
 import { StyledButton, Title, Text } from "../../styles/global";
 
-const ApplicantView = ({ firebase }) => {
-  const [settings, setSettings] = useState({});
+const ApplicantView = ({ firebase, settings }) => {
   const [application, setApplication] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [loadedApplication, setLoadedApplication] = useState(false);
-  const [loadedSettings, setLoadedSettings] = useState(false);
+  const [loadedApplication, setLoadedApplication] = useState(true);
 
   const authUser = useContext(AuthUserContext);
 
   useEffect(() => {
     if (firebase && !!authUser) {
-      const settingsUnsub = firebase
-        .generalSettings()
-        .onSnapshot((docSnapshot) => {
-          if (docSnapshot.exists) setSettings(docSnapshot.data());
-          else console.log("No Settings!");
-          setLoadedSettings(true);
-        });
-
       const applicationUnsub = firebase
         .application(authUser.uid)
         .onSnapshot((docSnapshot) => {
           if (docSnapshot.exists) {
             setApplication(docSnapshot.data());
           } else console.log("No Application!");
-          setLoadedApplication(true);
+          setLoadedApplication(false);
         });
 
       return () => {
-        settingsUnsub();
         applicationUnsub();
       };
     }
   }, [firebase, authUser]);
 
-  useEffect(() => {
-    if (loadedSettings && loadedApplication) setLoading(false);
-  }, [loadedApplication, loadedSettings]);
-
-  if (loading) return <Loader />;
+  if (loadedApplication) return <Loader />;
 
   const confirm = async () => {
     const roles = cloneDeep(authUser.roles);
@@ -456,6 +441,7 @@ const DataForm = ({ submitFunction, firstName }) => {
 };
 
 export default compose(
+  withSettings,
   withAuthorization(isApplicant),
   withFirebase
 )(ApplicantView);

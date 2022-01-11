@@ -14,6 +14,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import { isRecruitmentTeam } from "../../util/conditions";
 import { formatTime, setStateAsync } from "../../util/helper";
@@ -63,30 +64,26 @@ class InterviewerView extends Component {
 
   loadData = async () => {
     this._initFirebase = true;
-    const doc = await this.props.firebase.generalSettings().get();
 
-    if (!doc.exists) return console.log("No Doc");
-    else {
-      const now = moment();
-      const localOffset = now.utcOffset();
-      now.tz("America/New_York"); // BU timezone, normalize to this
-      const centralOffset = now.utcOffset();
-      const diffInMinutes = localOffset - centralOffset;
-      const offsetHours = diffInMinutes / 60;
+    const now = moment();
+    const localOffset = now.utcOffset();
+    now.tz("America/New_York"); // BU timezone, normalize to this
+    const centralOffset = now.utcOffset();
+    const diffInMinutes = localOffset - centralOffset;
+    const offsetHours = diffInMinutes / 60;
 
-      const settings = doc.data();
-      const timeslots = {};
-      settings.timeslotStart = (settings.timeslotStart + offsetHours) % 24;
-      settings.timeslotEnd = (settings.timeslotEnd + offsetHours) % 24;
-      settings.timeslotDays = settings.timeslotDays.map((day) => {
-        const date = day.toDate();
-        timeslots[date.toDateString()] = [];
-        return date;
-      });
-      await this.setStateAsync({ settings, timeslots, offsetHours });
-    }
+    const settings = this.props.settings;
+    const timeslots = {};
+    settings.timeslotStart = (settings.timeslotStart + offsetHours) % 24;
+    settings.timeslotEnd = (settings.timeslotEnd + offsetHours) % 24;
+    settings.timeslotDays = settings.timeslotDays.map((day) => {
+      const date = day.toDate();
+      timeslots[date.toDateString()] = [];
+      return date;
+    });
+    await this.setStateAsync({ settings, timeslots, offsetHours });
 
-    const timeslots = await new Promise((resolve, reject) => {
+    const timeslotsOne = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
@@ -140,7 +137,7 @@ class InterviewerView extends Component {
         }, reject);
     });
 
-    this.setState({ timeslots, loading: false });
+    this.setState({ timeslots: timeslotsOne, loading: false });
   };
 
   // selects a timeslot by its id. if someone else fills the slot first, shows an error
@@ -419,6 +416,7 @@ class InterviewerView extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isRecruitmentTeam),
   withFirebase
 )(InterviewerView);

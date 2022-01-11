@@ -72,6 +72,7 @@ class Firebase extends FirebaseSuper {
   applicationFormConfig = () =>
     this.firestore.doc("inquisitor/applicationFormConfig");
   generalSettings = () => this.firestore.doc("inquisitor/generalSettings");
+  textSettings = () => this.firestore.doc("inquisitor/textSettings");
   levelConfig = () => this.firestore.doc("inquisitor/levelConfig");
 
   allRoles = () => this.firestore.doc("config/roles");

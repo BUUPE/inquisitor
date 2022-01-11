@@ -9,6 +9,7 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 
+import { withSettings } from "../API/SettingsContext";
 import { withFirebase, withAuthorization } from "upe-react-components";
 
 import { isAdmin } from "../../util/conditions";
@@ -53,9 +54,8 @@ const TimeslotDiv = styled.div`
 `;
 
 // TODO: this needs refactoring into a class to remove the multiple loadings
-const ManageTimeslots = ({ firebase }) => {
+const ManageTimeslots = ({ firebase, settings }) => {
   const [timeslots, setTimeslots] = useState({});
-  const [settings, setSettings] = useState({});
   const [currentTimeslot, setCurrentTimeslot] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [interviewers, setInterviewers] = useState([]);
@@ -63,18 +63,12 @@ const ManageTimeslots = ({ firebase }) => {
   const [loadingTimeslots, setLoadingTimeslots] = useState(true);
   const [loadingApplicants, setLoadingApplicants] = useState(true);
   const [loadingInterviewers, setLoadingInterviewers] = useState(true);
-  const [loadingSettings, setLoadingSettings] = useState(true);
   const [loading, setLoading] = useState(true);
   const tzoffset = new Date().getTimezoneOffset() * 60000;
 
   useEffect(
     () => {
       if (firebase) {
-        const unsubSettings = firebase.generalSettings().onSnapshot((doc) => {
-          setSettings(doc.data());
-          setLoadingSettings(false);
-        }, console.error);
-
         const unsubTimeslots = firebase
           .timeslots()
           .onSnapshot((querySnapshot) => {
@@ -154,7 +148,6 @@ const ManageTimeslots = ({ firebase }) => {
           unsubTimeslots();
           unsubApplicants();
           unsubInterviewers();
-          unsubSettings();
         };
       }
     },
@@ -163,19 +156,9 @@ const ManageTimeslots = ({ firebase }) => {
   );
 
   useEffect(() => {
-    if (
-      !loadingTimeslots &&
-      !loadingInterviewers &&
-      !loadingApplicants &&
-      !loadingSettings
-    )
+    if (!loadingTimeslots && !loadingInterviewers && !loadingApplicants)
       setLoading(false);
-  }, [
-    loadingInterviewers,
-    loadingApplicants,
-    loadingTimeslots,
-    loadingSettings,
-  ]);
+  }, [loadingInterviewers, loadingApplicants, loadingTimeslots]);
 
   if (loading) return <Loader />;
 
@@ -518,6 +501,7 @@ const ManageTimeslots = ({ firebase }) => {
 };
 
 export default compose(
+  withSettings,
   withAuthorization(isAdmin),
   withFirebase
 )(ManageTimeslots);

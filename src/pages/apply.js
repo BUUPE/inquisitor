@@ -10,6 +10,8 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
+import { withSettings } from "../components/API/SettingsContext";
+
 import { isLoggedIn } from "../util/conditions";
 import Loader from "../components/Loader";
 import TextDisplay, { BackIcon } from "../components/TextDisplay";
@@ -43,7 +45,6 @@ class ApplicationForm extends Component {
   state = {
     applicationFormConfig: null,
     initialApplicationData: null,
-    generalSettings: null,
     loading: true,
     validated: false,
     sending: false,
@@ -81,11 +82,6 @@ class ApplicationForm extends Component {
       .user(this.context.uid)
       .get()
       .then((snapshot) => snapshot.data())
-      .catch(console.error);
-    const loadGeneralSettings = this.props.firebase
-      .generalSettings()
-      .get()
-      .then((snapshot) => snapshot.data())
       .catch(() =>
         this.setState({
           loading: false,
@@ -95,12 +91,15 @@ class ApplicationForm extends Component {
       .application(this.context.uid)
       .get()
       .then((snapshot) => (snapshot.exists ? snapshot.data() : null))
-      .catch(console.error);
+      .catch(() =>
+        this.setState({
+          loading: false,
+        })
+      );
 
     Promise.all([
       loadApplicationFormConfig,
       loadUserData,
-      loadGeneralSettings,
       loadUserApplication,
     ]).then((values) =>
       this.setState({
@@ -116,8 +115,7 @@ class ApplicationForm extends Component {
             values[1].roles.upemember) ||
           (values[1].roles.hasOwnProperty("provisionalMember") &&
             values[1].roles.provisionalMember),
-        generalSettings: values[2],
-        initialApplicationData: values[3],
+        initialApplicationData: values[2],
       })
     );
   };
@@ -131,7 +129,6 @@ class ApplicationForm extends Component {
       sending,
       alreadyApplied,
       denyListed,
-      generalSettings,
     } = this.state;
 
     if (loading) return <Loader />;
@@ -149,7 +146,7 @@ class ApplicationForm extends Component {
         </>
       );
 
-    if (!generalSettings.applicationsOpen)
+    if (!this.props.settings.applicationsOpen)
       return (
         <TextDisplay
           name={"Your Application"}
@@ -160,7 +157,7 @@ class ApplicationForm extends Component {
 
     const onSubmit = async (event) => {
       event.preventDefault();
-      if (!generalSettings.applicationsOpen) {
+      if (!this.props.settings.applicationsOpen) {
         swal(
           "Uh oh!",
           "Applications are closed! Not sure how you got here, but unfortunately we can't submit this for you as applications have closed.",
@@ -421,6 +418,7 @@ class ApplicationForm extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isLoggedIn),
   withFirebase
 )(ApplicationForm);

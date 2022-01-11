@@ -7,6 +7,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import InterviewRoom from "./InterviewRoom";
 
@@ -25,8 +26,9 @@ class ApplicantView extends Component {
     questions: [],
     currentApplication: { interview: {} },
     levelConfig: {},
+    textSettings: {},
   };
-  unsubSettings = null;
+  unsubTextSettings = null;
   unsubCurrentApplication = null;
 
   static contextType = AuthUserContext;
@@ -40,7 +42,7 @@ class ApplicantView extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.unsubSettings === "function") this.unsubSettings();
+    if (typeof this.unsubTextSettings === "function") this.unsubTextSettings();
     if (typeof this.unsubCurrentApplication === "function")
       this.unsubCurrentApplication();
   }
@@ -87,19 +89,19 @@ class ApplicantView extends Component {
         return doc.data();
       });
 
-    const settings = await new Promise((resolve, reject) => {
+    const textSettings = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
       };
-      this.unsubSettings = this.props.firebase
-        .generalSettings()
+      this.unsubTextSettings = this.props.firebase
+        .textSettings()
         .onSnapshot((doc) => {
-          if (!doc.exists) console.log("Failed to load settings!");
+          if (!doc.exists) console.log("Failed to load textSettings!");
           else {
-            const settings = doc.data();
-            this.setState({ settings });
-            resolveOnce(settings);
+            const textSettings = doc.data();
+            this.setState({ textSettings });
+            resolveOnce(textSettings);
           }
         }, reject);
     });
@@ -109,7 +111,7 @@ class ApplicantView extends Component {
         resolveOnce = () => null;
         resolve(doc);
       };
-      this.unsubSettings = this.props.firebase
+      this.unsubCurrentApplication = this.props.firebase
         .application(authUser.uid)
         .onSnapshot((doc) => {
           if (!doc.exists) console.log("Failed to load currentApplication!");
@@ -120,10 +122,11 @@ class ApplicantView extends Component {
           }
         }, reject);
     });
+
     this.setState({
       questions,
       levelConfig,
-      settings,
+      textSettings,
       currentApplication,
       loading: false,
     });
@@ -142,7 +145,7 @@ class ApplicantView extends Component {
 
   render() {
     const {
-      settings,
+      textSettings,
       loading,
       currentApplication,
       levelConfig,
@@ -158,17 +161,25 @@ class ApplicantView extends Component {
         return (
           <Text>
             <Logo size="large" />
-            <p> {settings.interviewFinalNotesApplicantText} </p>
+            <p> {textSettings.interviewFinalNotesApplicantText} </p>
           </Text>
         );
       } else if (!currentApplication.interview.hasOwnProperty("level")) {
         return (
           <Text>
             <Logo size="large" />
-            <p> {settings.interviewWelcomeText} </p>
-            <p>
-              Join the Zoom <a href={settings.zoomlink}>here</a>!
+            <p style={{ marginTop: "5%" }}>
+              {" "}
+              {textSettings.interviewWelcomeText}{" "}
             </p>
+            {this.props.settings.remoteInterview && (
+              <p>
+                {" "}
+                Join the Zoom <a href={this.props.settings.zoomlink}>
+                  here
+                </a>!{" "}
+              </p>
+            )}
           </Text>
         );
       } else {
@@ -187,14 +198,14 @@ class ApplicantView extends Component {
             {
               id: "overview",
               order: -1,
-              overview: settings.interviewOverviewText,
-              interviewerNotes: settings.interviewInterviewerNotesText,
+              overview: textSettings.interviewOverviewText,
+              interviewerNotes: textSettings.interviewInterviewerNotesText,
             },
             {
               id: "resume",
               order: 0,
               url: currentApplication.responses.find((r) => r.id === 6).value,
-              notes: settings.interviewResumeNotesText,
+              notes: textSettings.interviewResumeNotesText,
             },
           ])
           .sort((a, b) => (a.order > b.order ? 1 : -1));
@@ -233,6 +244,7 @@ class ApplicantView extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isApplicant),
   withFirebase
 )(ApplicantView);

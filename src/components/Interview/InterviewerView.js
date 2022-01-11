@@ -11,6 +11,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import LevelSelector from "./LevelSelector";
 import InterviewRoom from "./InterviewRoom";
@@ -61,8 +62,9 @@ class InterviewerView extends Component {
     questions: [],
     currentApplication: null,
     levelConfig: {},
+    textSettings: {},
   };
-  unsubSettings = null;
+  unsubTextSettings = null;
   unsubTimeslots = null;
   unsubCurrentApplication = null;
 
@@ -77,7 +79,7 @@ class InterviewerView extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.unsubSettings === "function") this.unsubSettings();
+    if (typeof this.unsubTextSettings === "function") this.unsubTextSettings();
     if (typeof this.unsubTimeslots === "function") this.unsubTimeslots();
     if (typeof this.unsubCurrentApplication === "function")
       this.unsubCurrentApplication();
@@ -114,19 +116,19 @@ class InterviewerView extends Component {
         return doc.data();
       });
 
-    const settings = await new Promise((resolve, reject) => {
+    const textSettings = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
       };
-      this.unsubSettings = this.props.firebase
-        .generalSettings()
+      this.unsubTextSettings = this.props.firebase
+        .textSettings()
         .onSnapshot((doc) => {
-          if (!doc.exists) console.log("Failed to load settings!");
+          if (!doc.exists) console.log("Failed to load textSettings!");
           else {
-            const settings = doc.data();
-            this.setState({ settings });
-            resolveOnce(settings);
+            const textSettings = doc.data();
+            this.setState({ textSettings });
+            resolveOnce(textSettings);
           }
         }, reject);
     });
@@ -157,7 +159,7 @@ class InterviewerView extends Component {
     this.setState({
       questions,
       levelConfig,
-      settings,
+      textSettings,
       timeslots,
       loading: false,
     });
@@ -278,7 +280,7 @@ class InterviewerView extends Component {
 
   render() {
     const {
-      settings,
+      textSettings,
       timeslots,
       loading,
       currentApplication,
@@ -303,7 +305,6 @@ class InterviewerView extends Component {
           questionMap[question.id] = question.order;
         });
         const lastOrder = Math.max(...Object.values(questionMap));
-        console.log(lastOrder);
 
         const filteredQuestions = questions
           .filter((question) => questionMap.hasOwnProperty(question.id))
@@ -315,20 +316,20 @@ class InterviewerView extends Component {
             {
               id: "overview",
               order: -1,
-              overview: settings.interviewOverviewText,
-              interviewerNotes: settings.interviewInterviewerNotesText,
+              overview: textSettings.interviewOverviewText,
+              interviewerNotes: textSettings.interviewInterviewerNotesText,
             },
             {
               id: "resume",
               order: 0,
               url: currentApplication.responses.find((r) => r.id === 6).value,
-              notes: settings.interviewResumeNotesText,
+              notes: textSettings.interviewResumeNotesText,
             },
             {
               id: "finalNotes",
               order: lastOrder + 2,
               title: "Submit Interview",
-              text: settings.interviewFinalNotesInterviewerText,
+              text: textSettings.interviewFinalNotesInterviewerText,
             }, // TODO: explain why + 2 in comment
           ])
           .sort((a, b) => (a.order > b.order ? 1 : -1));
@@ -404,7 +405,11 @@ class InterviewerView extends Component {
             })}
         </Sidebar>
         <Col style={{ padding: 25 }}>
-          <Content questions={questions} settings={settings} />
+          <Content
+            questions={questions}
+            settings={this.props.settings}
+            textSettings={textSettings}
+          />
         </Col>
       </FullSizeContainer>
     );
@@ -412,6 +417,7 @@ class InterviewerView extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isRecruitmentTeam),
   withFirebase
 )(InterviewerView);

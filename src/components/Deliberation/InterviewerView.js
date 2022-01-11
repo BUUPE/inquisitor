@@ -12,6 +12,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import { isMember, isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
@@ -111,13 +112,11 @@ class InterviewerView extends Component {
     applications: [],
     currentApplicationID: "details",
     currentApplication: null,
-    settings: null,
     loading: true,
     error: null,
     display: null,
   };
   static contextType = AuthUserContext;
-  unsubSettings = null;
   unsubApplications = null;
 
   componentDidMount() {
@@ -129,7 +128,6 @@ class InterviewerView extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.unsubSettings === "function") this.unsubSettings();
     if (typeof this.unsubApplications === "function") this.unsubApplications();
   }
 
@@ -163,23 +161,6 @@ class InterviewerView extends Component {
         }
         return doc.data();
       });
-
-    const settings = await new Promise((resolve, reject) => {
-      let resolveOnce = (doc) => {
-        resolveOnce = () => null;
-        resolve(doc);
-      };
-      this.unsubSettings = this.props.firebase
-        .generalSettings()
-        .onSnapshot((doc) => {
-          if (!doc.exists) this.setState({ error: "Failed to load settings!" });
-          else {
-            const settings = doc.data();
-            this.setState({ settings });
-            resolveOnce(settings);
-          }
-        }, reject);
-    });
 
     const applications = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
@@ -218,7 +199,6 @@ class InterviewerView extends Component {
     });
 
     this.setState({
-      settings,
       applications,
       questions,
       levelConfig,
@@ -353,7 +333,7 @@ class InterviewerView extends Component {
                 "deliberation.votes": {},
               };
 
-              if (this.state.settings.useTwoRoundDeliberations) {
+              if (this.props.settings.useTwoRoundDeliberations) {
                 updateData.provisional = {
                   meetings: false,
                   contribution: false,
@@ -397,7 +377,6 @@ class InterviewerView extends Component {
     const {
       loading,
       error,
-      settings,
       applications,
       currentApplication,
       currentApplicationID,
@@ -408,7 +387,7 @@ class InterviewerView extends Component {
     if (error) return <Error message={error} />;
     if (loading) return <Loader />;
 
-    const { deliberationsOpen } = this.state.settings;
+    const { deliberationsOpen } = this.props.settings;
 
     const authUser = this.context;
 
@@ -426,7 +405,7 @@ class InterviewerView extends Component {
     else if (currentApplicationID === "admin") {
       Content = () => (
         <FeedbackPage
-          settings={settings}
+          settings={this.props.settings}
           applications={applications}
           saveFeedback={this.saveFeedback}
           sendResults={this.sendResults}
@@ -435,7 +414,7 @@ class InterviewerView extends Component {
     } else if (currentApplicationID === "secondRound") {
       Content = () => (
         <SecondRound
-          settings={settings}
+          settings={this.props.settings}
           applications={applications}
           saveSecondRoundStatus={this.saveSecondRoundStatus}
           readyRoundTwo={this.readyRoundTwo}
@@ -505,6 +484,7 @@ class InterviewerView extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isMember),
   withFirebase
 )(InterviewerView);
