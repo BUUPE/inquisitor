@@ -49,8 +49,6 @@ class ApplicationForm extends Component {
     validated: false,
     sending: false,
     submitted: false,
-    alreadyApplied: false,
-    denyListed: false,
   };
   static contextType = AuthUserContext;
 
@@ -78,15 +76,6 @@ class ApplicationForm extends Component {
           loading: false,
         })
       );
-    const loadUserData = this.props.firebase
-      .user(this.context.uid)
-      .get()
-      .then((snapshot) => snapshot.data())
-      .catch(() =>
-        this.setState({
-          loading: false,
-        })
-      );
     const loadUserApplication = this.props.firebase
       .application(this.context.uid)
       .get()
@@ -97,26 +86,13 @@ class ApplicationForm extends Component {
         })
       );
 
-    Promise.all([
-      loadApplicationFormConfig,
-      loadUserData,
-      loadUserApplication,
-    ]).then((values) =>
-      this.setState({
-        loading: false,
-        applicationFormConfig: values[0],
-        alreadyApplied:
-          values[1].roles.hasOwnProperty("applicant") &&
-          values[1].roles.applicant,
-        denyListed:
-          (values[1].roles.hasOwnProperty("denyListed") &&
-            values[1].roles.denyListed) ||
-          (values[1].roles.hasOwnProperty("upemember") &&
-            values[1].roles.upemember) ||
-          (values[1].roles.hasOwnProperty("provisionalMember") &&
-            values[1].roles.provisionalMember),
-        initialApplicationData: values[2],
-      })
+    Promise.all([loadApplicationFormConfig, loadUserApplication]).then(
+      ([applicationFormConfig, initialApplicationData]) =>
+        this.setState({
+          loading: false,
+          applicationFormConfig,
+          initialApplicationData,
+        })
     );
   };
 
@@ -127,13 +103,18 @@ class ApplicationForm extends Component {
       validated,
       applicationFormConfig,
       sending,
-      alreadyApplied,
-      denyListed,
     } = this.state;
 
     if (loading) return <Loader />;
 
-    if (denyListed)
+    if (
+      (this.context.roles.hasOwnProperty("denyListed") &&
+        this.context.roles.denyListed) ||
+      (this.context.roles.hasOwnProperty("upemember") &&
+        this.context.roles.upemember) ||
+      (this.context.roles.hasOwnProperty("provisionalMember") &&
+        this.context.roles.provisionalMember)
+    )
       return (
         <>
           <TextDisplay
@@ -382,19 +363,20 @@ class ApplicationForm extends Component {
         </Title>
         <Container flexdirection="row" style={{ justifyContent: "center" }}>
           <CenteredForm noValidate validated={validated} onSubmit={onSubmit}>
-            {alreadyApplied && (
-              <p
-                style={{
-                  color: "red",
-                  paddingTop: "10px",
-                  paddingBottom: "10px",
-                }}
-              >
-                Look's like you've already applied! Feel free to reapply
-                however, just note that it will overwrite your previous
-                submission.
-              </p>
-            )}
+            {this.context.roles.hasOwnProperty("applicant") &&
+              this.context.roles.applicant && (
+                <p
+                  style={{
+                    color: "red",
+                    paddingTop: "10px",
+                    paddingBottom: "10px",
+                  }}
+                >
+                  Look's like you've already applied! Feel free to reapply
+                  however, just note that it will overwrite your previous
+                  submission.
+                </p>
+              )}
 
             {applicationFormConfig.questions
               .sort((a, b) => (a.order > b.order ? 1 : -1))
