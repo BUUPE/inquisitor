@@ -12,6 +12,7 @@ import {
   ManageTimeslots,
   ManageQuestions,
   ManageLevels,
+  ManageInterviews,
 } from "../components/Admin";
 
 const FullSizeRouter = styled(Router)`
@@ -28,6 +29,7 @@ export default () => (
       <ManageTimeslots path="/manage-timeslots" />
       <ManageQuestions path="/manage-questions" />
       <ManageLevels path="/manage-levels" />
+      <ManageInterviews path="/manage-interviews" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
   </>
