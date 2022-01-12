@@ -64,7 +64,7 @@ const ApplicantView = ({ firebase, settings }) => {
       delete roles.applicant;
       roles.upemember = true;
 
-      const gradYear = application.responses.find((r) => r.id === 5).value;
+      const gradYear = application.responses.find((r) => r.id === "year").value;
 
       await firebase.user(authUser.uid).update({ roles, gradYear });
       await firebase.application(authUser.uid).delete();

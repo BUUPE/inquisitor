@@ -46,10 +46,11 @@ const estimateSemester = () => {
 };
 
 const DEFAULT_APPLICATION_FORM_CONFIG = {
+  maxId: 10,
   semester: estimateSemester(),
   questions: [
     {
-      id: 1,
+      id: "name",
       order: 1,
       name: "Full Name",
       type: "text",
@@ -57,7 +58,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 2,
+      id: "email",
       order: 2,
       name: "Email",
       type: "email",
@@ -65,7 +66,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 3,
+      id: "major",
       order: 3,
       name: "Major",
       type: "text",
@@ -73,7 +74,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 4,
+      id: "minor",
       order: 4,
       name: "Minor",
       type: "text",
@@ -81,7 +82,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 5,
+      id: "year",
       order: 5,
       name: "Class Year",
       type: "number",
@@ -89,7 +90,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 6,
+      id: "resume",
       order: 6,
       name: "Resume",
       type: "file",
@@ -101,7 +102,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
 
 const UnderlinedLabel = styled(Form.Label)`
   text-decoration: underline;
-  text-decoration-color: ${(props) => props.theme.palette.mainBrand};
+  text-decoration-color: #f21131;
 `;
 
 const ConfigureApplicationForm = ({ firebase }) => {
@@ -225,8 +226,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
       event.stopPropagation();
     } else {
       const questions = [...applicationFormConfig.questions];
-      const nextId =
-        Math.max(...applicationFormConfig.questions.map((q) => q.id)) + 1;
+      const nextId = applicationFormConfig + 1;
       const nextOrder =
         Math.max(...applicationFormConfig.questions.map((q) => q.order)) + 1;
 

@@ -20,7 +20,7 @@ const ApplicationDisplay = memo(
     provisional,
   }) => {
     const { level } = interview;
-    const classYear = responses.find((r) => r.id === 5).value;
+    const classYear = responses.find((r) => r.id === "year").value;
     const levelQuestions = levelConfig[level];
     let augmentedQuestions = [
       {

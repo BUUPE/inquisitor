@@ -204,7 +204,8 @@ class ApplicantView extends Component {
             {
               id: "resume",
               order: 0,
-              url: currentApplication.responses.find((r) => r.id === 6).value,
+              url: currentApplication.responses.find((r) => r.id === "resume")
+                .value,
               notes: textSettings.interviewResumeNotesText,
             },
           ])

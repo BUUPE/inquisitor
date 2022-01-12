@@ -167,12 +167,12 @@ class ApplicationForm extends Component {
 
         let firstName, email, newName;
         let responses = inputs.map(({ id: inputId, value }) => {
-          const id = parseInt(inputId);
+          const id = inputId;
 
-          if (id === 1) {
+          if (id === "name") {
             firstName = value.split(" ")[0];
             newName = value;
-          } else if (id === 2) email = value;
+          } else if (id === "email") email = value;
 
           const { name, order, type } = questions.find((q) => q.id === id);
           return {
@@ -186,7 +186,7 @@ class ApplicationForm extends Component {
 
         const radioResponses = radios.map(
           ({ name: inputId, value: inputValue }) => {
-            const id = parseInt(inputId);
+            const id = inputId;
             // eslint-disable-next-line eqeqeq
             const value = inputValue == "true";
             const { name, order, type } = questions.find((q) => q.id === id);
@@ -203,7 +203,7 @@ class ApplicationForm extends Component {
         const uploadFiles = fileUploads.map(
           (fileUpload) =>
             new Promise((resolve, reject) => {
-              const id = parseInt(fileUpload.id.split("-").pop());
+              const id = fileUpload.id.split("-").pop();
               this.props.firebase
                 .file(uid, id)
                 .put(fileUpload.files[0])
@@ -277,8 +277,8 @@ class ApplicationForm extends Component {
         defaultValue = initialApplicationData.responses.find(
           (r) => r.id === question.id
         ).value;
-      } else if (question.id === 1) defaultValue = this.context.name;
-      else if (question.id === 2) defaultValue = this.context.email;
+      } else if (question.id === "name") defaultValue = this.context.name;
+      else if (question.id === "email") defaultValue = this.context.email;
 
       let questionComponent;
       switch (question.type) {

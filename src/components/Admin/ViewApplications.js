@@ -55,7 +55,7 @@ const ViewApplications = ({ firebase }) => {
 
   const ApplicationListItem = ({ data }) => (
     <StyledLi onClick={() => setCurrentApplication(data)}>
-      {data.responses.find((r) => r.id === 1).value}
+      {data.responses.find((r) => r.id === "name").value}
     </StyledLi>
   );
 
@@ -112,7 +112,7 @@ const ViewApplications = ({ firebase }) => {
   };
 
   const getApplicantName = (application) =>
-    application.responses.find((r) => r.id === 1).value;
+    application.responses.find((r) => r.id === "name").value;
 
   return (
     <AdminLayout>

@@ -175,7 +175,7 @@ class InterviewerView extends Component {
             return {
               id: doc.id,
               ...application,
-              name: application.responses.find((r) => r.id === 1).value,
+              name: application.responses.find((r) => r.id === "name").value,
             };
           });
           this.setState({ applications });
