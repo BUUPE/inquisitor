@@ -13,6 +13,7 @@ import {
   ManageQuestions,
   ManageLevels,
   ManageInterviews,
+  ManageEvents,
 } from "../components/Admin";
 
 const FullSizeRouter = styled(Router)`
@@ -30,6 +31,7 @@ export default () => (
       <ManageQuestions path="/manage-questions" />
       <ManageLevels path="/manage-levels" />
       <ManageInterviews path="/manage-interviews" />
+      <ManageEvents path="/manage-events" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
   </>

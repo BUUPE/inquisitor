@@ -43,6 +43,7 @@ const Sidebar = () => (
     <Link to="/admin/manage-questions">Manage Questions</Link>
     <Link to="/admin/manage-levels">Manage Levels</Link>
     <Link to="/admin/manage-interviews">Manage Interviews</Link>
+    <Link to="/admin/manage-events">Manage Events</Link>
   </StyledNav>
 );
 

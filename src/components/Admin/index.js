@@ -5,6 +5,7 @@ import ViewApplications from "./ViewApplications";
 import ManageQuestions from "./ManageQuestions";
 import ManageLevels from "./ManageLevels";
 import ManageInterviews from "./ManageInterviews";
+import ManageEvents from "./ManageEvents";
 
 export {
   GeneralSettings,
@@ -14,4 +15,5 @@ export {
   ManageQuestions,
   ManageLevels,
   ManageInterviews,
+  ManageEvents,
 };

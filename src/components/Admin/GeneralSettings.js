@@ -30,6 +30,7 @@ const StyledFormRow = styled(Form.Row)`
 
 // TODO: refactor settings to have sub sections
 const DEFAULT_GENERAL_SETTINGS = {
+  eventSeason: false,
   deliberationsOpen: false,
   useTwoRoundDeliberations: false,
   applicationsOpen: false,
@@ -80,8 +81,7 @@ class GeneralSettings extends Component {
       e.preventDefault();
       swal({
         title: "You have unsaved settings!",
-        text:
-          "Changes to settings will be lost! Are you sure you want to leave this page?",
+        text: "Changes to settings will be lost! Are you sure you want to leave this page?",
         icon: "warning",
         buttons: {
           cancel: {
@@ -324,6 +324,24 @@ class GeneralSettings extends Component {
                     settings: {
                       ...settings,
                       applicationsOpen: e.target.checked,
+                    },
+                  })
+                }
+              />
+            </StyledFormRow>
+            <br />
+            <StyledFormRow>
+              <Form.Check
+                custom
+                checked={settings.eventSeason}
+                type="switch"
+                label={`Event Season is ${settings.eventSeason ? "on" : "off"}`}
+                id="eventSeason"
+                onChange={(e) =>
+                  this.setState({
+                    settings: {
+                      ...settings,
+                      eventSeason: e.target.checked,
                     },
                   })
                 }
