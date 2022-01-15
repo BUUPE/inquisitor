@@ -74,6 +74,7 @@ class Firebase extends FirebaseSuper {
   event = (uid) =>
     this.firestore.collection("website/events/eventData").doc(uid);
   events = () => this.firestore.collection("website/events/eventData");
+  getIndex = () => this.firestore.collection("website").doc("eventIndex").get();
 
   applicationFormConfig = () =>
     this.firestore.doc("inquisitor/applicationFormConfig");
