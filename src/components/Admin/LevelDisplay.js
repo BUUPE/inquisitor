@@ -16,7 +16,7 @@ import {
 } from "../../styles/global";
 
 const DraggableQuestion = ({
-  id,
+  uid,
   text,
   index,
   reorderQuestion,
@@ -62,7 +62,7 @@ const DraggableQuestion = ({
   const opacity = isDragging ? 0 : 1;
   drag(drop(ref));
 
-  const displayText = id === undefined ? `Question #${index}  Deleted!` : text;
+  const displayText = uid === undefined ? `Question #${index}  Deleted!` : text;
 
   return (
     <Card
@@ -83,7 +83,7 @@ const DraggableQuestion = ({
       <Button
         style={{ padding: "0 5px" }}
         variant="danger"
-        onClick={() => removeQuestion(id)}
+        onClick={() => removeQuestion(uid)}
       >
         X
       </Button>
@@ -118,7 +118,7 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
   const removeQuestion = (questionId) => {
     setLocalQuestions(
       localQuestions
-        .filter((q) => q.id !== questionId)
+        .filter((q) => q.uid !== questionId)
         .map((question, i) => ({
           ...question,
           order: i,
@@ -129,7 +129,7 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
   const addQuestion = (questionId) => {
     if (questionId === "") return;
     const newQuestion = otherQuestions.find(
-      (question) => question.id === questionId
+      (question) => question.uid === questionId
     );
 
     setLocalQuestions(
@@ -142,9 +142,9 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
     );
   };
 
-  const questionIds = localQuestions.map((question) => question.id);
+  const questionIds = localQuestions.map((question) => question.uid);
   const filteredQuestions = otherQuestions.filter(
-    (question) => !questionIds.includes(question.id)
+    (question) => !questionIds.includes(question.uid)
   );
 
   return (
@@ -181,7 +181,7 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
               >
                 <option value=""> - </option>
                 {filteredQuestions.map((question) => (
-                  <option key={question.id} value={question.id}>
+                  <option key={question.uid} value={question.uid}>
                     {question.name}
                   </option>
                 ))}
@@ -213,8 +213,8 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
               .sort((a, b) => (a.order > b.order ? 1 : -1))
               .map((question) => (
                 <DraggableQuestion
-                  key={question.id}
-                  id={question.id}
+                  key={question.uid}
+                  uid={question.uid}
                   index={question.order}
                   text={question.name}
                   reorderQuestion={reorderQuestion}

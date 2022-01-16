@@ -96,7 +96,7 @@ class InterviewerView extends Component {
             return {
               ...doc.data(),
               time: new Date(doc.data().time), // make sure to convert timestamp objects to date objects
-              id: doc.id,
+              uid: doc.id,
             };
           });
           // add new data from listener
@@ -112,7 +112,7 @@ class InterviewerView extends Component {
               // if data for day exists, add to it, otherwise create new field
               if (timeslots.hasOwnProperty(day)) {
                 const index = timeslots[day].findIndex(
-                  (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                  (timeslot) => timeslot.uid === ts.uid // check if existing timeslot matches the update (ts)
                 );
 
                 // if timeslot exists, update the value, otherwise push it
@@ -127,10 +127,10 @@ class InterviewerView extends Component {
             });
 
           // remove timeslots that no longer exist
-          const validIds = listenerData.map((ts) => ts.id);
+          const validIds = listenerData.map((ts) => ts.uid);
           for (const day in timeslots)
             timeslots[day] = timeslots[day].filter((ts) =>
-              validIds.includes(ts.id)
+              validIds.includes(ts.uid)
             );
           this.setState({ timeslots });
           resolveOnce(timeslots);
@@ -140,18 +140,18 @@ class InterviewerView extends Component {
     this.setState({ timeslots: timeslotsOne, loading: false });
   };
 
-  // selects a timeslot by its id. if someone else fills the slot first, shows an error
+  // selects a timeslot by its uid. if someone else fills the slot first, shows an error
   selectTimeslot = async (ts) => {
     const authUser = this.context;
     const { firebase } = this.props;
 
     try {
       await firebase.firestore.runTransaction(async (transaction) => {
-        const doc = await transaction.get(firebase.timeslot(ts.id));
+        const doc = await transaction.get(firebase.timeslot(ts.uid));
         const timeslot = { ...doc.data() };
         if (Object.keys(timeslot.interviewers).length < 2) {
           timeslot.interviewers[authUser.uid] = authUser.name;
-          transaction.update(firebase.timeslot(ts.id), timeslot);
+          transaction.update(firebase.timeslot(ts.uid), timeslot);
         } else {
           swal(
             "Uh oh!",
@@ -218,15 +218,15 @@ class InterviewerView extends Component {
           ts.time.getTime() === date.getTime()
       )
     );
-    const { id, interviewers } = timeslot;
+    const { uid, interviewers } = timeslot;
     delete interviewers[authUser.uid];
     if (
       Object.keys(interviewers).length === 0 &&
       !timeslot.hasOwnProperty("applicant")
     )
-      await this.props.firebase.timeslot(id).delete();
+      await this.props.firebase.timeslot(uid).delete();
     // TODO: notify admins if an timeslot with an applicant loses interviewers
-    else await this.props.firebase.timeslot(id).update({ interviewers });
+    else await this.props.firebase.timeslot(uid).update({ interviewers });
   };
 
   timeslotsToSlots = (timeslots) => {
@@ -357,7 +357,7 @@ class InterviewerView extends Component {
               <ScrollableRow>
                 {timeslotOptions.map((ts) => (
                   <Card
-                    key={ts.id}
+                    key={ts.uid}
                     style={{
                       minWidth: "15rem",
                       margin: "0 10px",

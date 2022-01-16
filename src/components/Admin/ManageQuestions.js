@@ -30,7 +30,7 @@ const ManageQuestions = ({ firebase }) => {
       const unsub = firebase.questions().onSnapshot(
         (querySnapshot) => {
           const questionList = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
+            uid: doc.id,
             ...doc.data(),
           }));
 
@@ -77,11 +77,11 @@ const ManageQuestions = ({ firebase }) => {
   };
 
   const updateQuestion = async (question) => {
-    const uid = question.id;
-    delete question.id;
+    const uid = question.uid;
+    delete question.uid;
     delete question.imagePreview;
 
-    const originalQuestion = questionList.find((q) => q.id === uid);
+    const originalQuestion = questionList.find((q) => q.uid === uid);
     let imageURL = originalQuestion.image;
     let filename = originalQuestion.imageName;
 
@@ -126,8 +126,7 @@ const ManageQuestions = ({ firebase }) => {
   const deleteQuestion = (uid, filename) =>
     swal({
       title: "Are you sure?",
-      text:
-        "Once you delete a question, you can't undo! Make sure you really want this!",
+      text: "Once you delete a question, you can't undo! Make sure you really want this!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -160,7 +159,7 @@ const ManageQuestions = ({ firebase }) => {
         const updatedLevelConfig = objectMap(levelConfig, (questions) => {
           let order = 0;
           const updatedQuestions = questions
-            .filter((question) => question.id !== uid)
+            .filter((question) => question.uid !== uid)
             .map((question) => {
               question.order = order++;
               return question;
@@ -215,7 +214,7 @@ const ManageQuestions = ({ firebase }) => {
                 .sort((a, b) => (a.name > b.name ? 1 : -1))
                 .map((question) => (
                   <QuestionDisplay
-                    key={question.id}
+                    key={question.uid}
                     updateQuestion={updateQuestion}
                     removeQuestionImage={removeQuestionImage}
                     deleteQuestion={deleteQuestion}

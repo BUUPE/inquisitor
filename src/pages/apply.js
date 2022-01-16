@@ -97,13 +97,8 @@ class ApplicationForm extends Component {
   };
 
   render() {
-    const {
-      loading,
-      submitted,
-      validated,
-      applicationFormConfig,
-      sending,
-    } = this.state;
+    const { loading, submitted, validated, applicationFormConfig, sending } =
+      this.state;
 
     if (loading) return <Loader />;
 
@@ -167,16 +162,16 @@ class ApplicationForm extends Component {
 
         let firstName, email, newName;
         let responses = inputs.map(({ id: inputId, value }) => {
-          const id = inputId;
+          const qUID = inputId;
 
-          if (id === "name") {
+          if (qUID === "name") {
             firstName = value.split(" ")[0];
             newName = value;
-          } else if (id === "email") email = value;
+          } else if (qUID === "email") email = value;
 
-          const { name, order, type } = questions.find((q) => q.id === id);
+          const { name, order, type } = questions.find((q) => q.uid === qUID);
           return {
-            id,
+            uid: qUID,
             value,
             name,
             order,
@@ -186,12 +181,12 @@ class ApplicationForm extends Component {
 
         const radioResponses = radios.map(
           ({ name: inputId, value: inputValue }) => {
-            const id = inputId;
+            const qUID = inputId;
             // eslint-disable-next-line eqeqeq
             const value = inputValue == "true";
-            const { name, order, type } = questions.find((q) => q.id === id);
+            const { name, order, type } = questions.find((q) => q.uid === qUID);
             return {
-              id,
+              uid: qUID,
               value,
               name,
               order,
@@ -203,17 +198,17 @@ class ApplicationForm extends Component {
         const uploadFiles = fileUploads.map(
           (fileUpload) =>
             new Promise((resolve, reject) => {
-              const id = fileUpload.id.split("-").pop();
+              const qUID = fileUpload.id.split("-").pop();
               this.props.firebase
-                .file(uid, id)
+                .file(uid, qUID)
                 .put(fileUpload.files[0])
                 .then((snapshot) => snapshot.ref.getDownloadURL())
                 .then((value) => {
                   const { name, order, type } = questions.find(
-                    (q) => q.id === id
+                    (q) => q.uid === qUID
                   );
                   return resolve({
-                    id,
+                    uid: qUID,
                     value,
                     name,
                     order,
@@ -275,10 +270,10 @@ class ApplicationForm extends Component {
       let defaultValue = "";
       if (initialApplicationData !== null) {
         defaultValue = initialApplicationData.responses.find(
-          (r) => r.id === question.id
+          (r) => r.uid === question.uid
         ).value;
-      } else if (question.id === "name") defaultValue = this.context.name;
-      else if (question.id === "email") defaultValue = this.context.email;
+      } else if (question.uid === "name") defaultValue = this.context.name;
+      else if (question.uid === "email") defaultValue = this.context.email;
 
       let questionComponent;
       switch (question.type) {
@@ -295,7 +290,7 @@ class ApplicationForm extends Component {
         case "file":
           questionComponent = (
             <Form.File
-              id={`custom-file-${question.id}`}
+              id={`custom-file-${question.uid}`}
               label="Upload file"
               custom
               accept=".pdf"
@@ -314,8 +309,8 @@ class ApplicationForm extends Component {
                 value="true"
                 label="Yes"
                 type="radio"
-                name={question.id}
-                id={`${question.id}-1`}
+                name={question.uid}
+                id={`${question.uid}-1`}
               />
               <Form.Check
                 custom
@@ -325,8 +320,8 @@ class ApplicationForm extends Component {
                 value="false"
                 label="No"
                 type="radio"
-                name={question.id}
-                id={`${question.id}-2`}
+                name={question.uid}
+                id={`${question.uid}-2`}
               />
             </div>
           );
@@ -343,8 +338,8 @@ class ApplicationForm extends Component {
       }
 
       return (
-        <Form.Row style={{ width: "100%" }} key={question.id}>
-          <Form.Group controlId={question.id} style={{ width: "100%" }}>
+        <Form.Row style={{ width: "100%" }} key={question.uid}>
+          <Form.Group controlId={question.uid} style={{ width: "100%" }}>
             <Form.Label>
               {question.name} {question.required && <RequiredAsterisk />}
             </Form.Label>

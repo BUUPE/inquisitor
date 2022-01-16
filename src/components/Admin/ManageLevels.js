@@ -42,7 +42,7 @@ const ManageLevels = ({ firebase }) => {
         .questions()
         .onSnapshot((querySnapshot) => {
           const allQuestions = querySnapshot.docs.map((doc) => {
-            return { id: doc.id, ...doc.data() };
+            return { uid: doc.id, ...doc.data() };
           });
 
           setAllQuestions(allQuestions);
@@ -64,8 +64,8 @@ const ManageLevels = ({ firebase }) => {
     const newLevelConfig = cloneDeep(levelConfig);
 
     if (oldName !== newName) delete newLevelConfig[oldName];
-    newLevelConfig[newName] = newQuestions.map(({ id, order }) => ({
-      id,
+    newLevelConfig[newName] = newQuestions.map(({ uid, order }) => ({
+      uid,
       order,
     }));
 
@@ -84,8 +84,7 @@ const ManageLevels = ({ firebase }) => {
   const deleteLevel = (levelName) =>
     swal({
       title: "Are you sure?",
-      text:
-        "Once you delete a level, you can't undo! Make sure you really want this!",
+      text: "Once you delete a level, you can't undo! Make sure you really want this!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -194,7 +193,7 @@ const ManageLevels = ({ firebase }) => {
             .map(([name, questions]) => {
               const populatedQuestions = questions.map((question) => {
                 const fullQuestion = allQuestions.find(
-                  (q) => q.id === question.id
+                  (q) => q.uid === question.uid
                 );
                 return {
                   ...fullQuestion,

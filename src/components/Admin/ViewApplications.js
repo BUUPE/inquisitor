@@ -40,7 +40,7 @@ const ViewApplications = ({ firebase }) => {
         .then((snapshot) => {
           setApplications(
             snapshot.docs.map((doc) => {
-              return { id: doc.id, ...doc.data() };
+              return { uid: doc.uid, ...doc.data() };
             })
           );
           setLoading(false);
@@ -55,7 +55,7 @@ const ViewApplications = ({ firebase }) => {
 
   const ApplicationListItem = ({ data }) => (
     <StyledLi onClick={() => setCurrentApplication(data)}>
-      {data.responses.find((r) => r.id === "name").value}
+      {data.responses.find((r) => r.uid === "name").value}
     </StyledLi>
   );
 
@@ -95,7 +95,7 @@ const ViewApplications = ({ firebase }) => {
       }
 
       return (
-        <div key={response.id} style={style}>
+        <div key={response.uid} style={style}>
           <h3>{response.name}</h3>
           <Content />
         </div>
@@ -112,7 +112,7 @@ const ViewApplications = ({ firebase }) => {
   };
 
   const getApplicantName = (application) =>
-    application.responses.find((r) => r.id === "name").value;
+    application.responses.find((r) => r.uid === "name").value;
 
   return (
     <AdminLayout>
@@ -139,7 +139,7 @@ const ViewApplications = ({ firebase }) => {
                 )
                 .map((application) => (
                   <ApplicationListItem
-                    key={application.id}
+                    key={application.uid}
                     data={application}
                   />
                 ))}

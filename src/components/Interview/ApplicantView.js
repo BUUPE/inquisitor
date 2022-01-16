@@ -73,7 +73,7 @@ class ApplicantView extends Component {
             name,
             image,
             description,
-            id: doc.id,
+            uid: doc.id,
           };
         })
       );
@@ -185,26 +185,26 @@ class ApplicantView extends Component {
       } else {
         const questionMap = {};
         levelConfig[currentApplication.interview.level].forEach((question) => {
-          questionMap[question.id] = question.order;
+          questionMap[question.uid] = question.order;
         });
 
         const filteredQuestions = questions
-          .filter((question) => questionMap.hasOwnProperty(question.id))
+          .filter((question) => questionMap.hasOwnProperty(question.uid))
           .map((question) => ({
             ...question,
-            order: questionMap[question.id] + 1,
+            order: questionMap[question.uid] + 1,
           }))
           .concat([
             {
-              id: "overview",
+              uid: "overview",
               order: -1,
               overview: textSettings.interviewOverviewText,
               interviewerNotes: textSettings.interviewInterviewerNotesText,
             },
             {
-              id: "resume",
+              uid: "resume",
               order: 0,
-              url: currentApplication.responses.find((r) => r.id === "resume")
+              url: currentApplication.responses.find((r) => r.uid === "resume")
                 .value,
               notes: textSettings.interviewResumeNotesText,
             },

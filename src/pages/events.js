@@ -29,7 +29,7 @@ const IndexPage = ({ firebase }) => {
         .get()
         .then((doc) => {
           if (doc.exists) {
-            setEvent({ ...doc.data(), id: doc.id });
+            setEvent({ ...doc.data(), uid: doc.id });
             setCode(codeTwo);
           } else {
             setCode(codeTwo);
@@ -47,7 +47,7 @@ const IndexPage = ({ firebase }) => {
     if (firebase && !!event && authUser) {
       try {
         firebase.firestore.runTransaction(async (transaction) => {
-          const ref = firebase.recruitmentEvent(event.id);
+          const ref = firebase.recruitmentEvent(event.uid);
           const doc = await transaction.get(ref);
           if (doc.exists) {
             // eslint-disable-next-line no-unused-vars

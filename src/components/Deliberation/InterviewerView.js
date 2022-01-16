@@ -147,7 +147,7 @@ class InterviewerView extends Component {
       .then((querySnapshot) =>
         querySnapshot.docs.map((doc) => ({
           ...doc.data(),
-          id: doc.id,
+          uid: doc.id,
         }))
       );
 
@@ -173,9 +173,9 @@ class InterviewerView extends Component {
           const applications = querySnapshot.docs.map((doc) => {
             const application = doc.data();
             return {
-              id: doc.id,
+              uid: doc.id,
               ...application,
-              name: application.responses.find((r) => r.id === "name").value,
+              name: application.responses.find((r) => r.uid === "name").value,
             };
           });
           this.setState({ applications });
@@ -191,7 +191,7 @@ class InterviewerView extends Component {
                 ? currentApplicationID
                 : "details";
             this.setCurrentApplication(
-              applications.find((a) => a.id === currentApplicationID) ||
+              applications.find((a) => a.uid === currentApplicationID) ||
                 fallBack
             );
           }
@@ -210,7 +210,7 @@ class InterviewerView extends Component {
   setCurrentApplication = (currentApplication) => {
     const currentApplicationID =
       typeof currentApplication === "object" && currentApplication !== null
-        ? currentApplication.id
+        ? currentApplication.uid
         : currentApplication;
     window.localStorage.setItem(
       "currentApplicationDeliberation",
@@ -222,11 +222,11 @@ class InterviewerView extends Component {
   voteApplicant = (decision) => {
     const { currentApplication } = this.state;
     const updatedApplication = cloneDeep(currentApplication);
-    delete updatedApplication.id;
+    delete updatedApplication.uid;
     updatedApplication.deliberation.votes[this.context.uid] = decision;
 
     this.props.firebase
-      .application(currentApplication.id)
+      .application(currentApplication.uid)
       .update(updatedApplication)
       .then(() =>
         swal(
@@ -256,8 +256,7 @@ class InterviewerView extends Component {
   readyRoundTwo = () =>
     swal({
       title: "Hold up!",
-      text:
-        "If you press Yes, you're going to open the second round of deliberation, which will commit significant changes to the database! Are you sure?",
+      text: "If you press Yes, you're going to open the second round of deliberation, which will commit significant changes to the database! Are you sure?",
       icon: "warning",
       buttons: {
         cancel: {
@@ -275,7 +274,7 @@ class InterviewerView extends Component {
       if (confirm) {
         const batch = this.props.firebase.firestore.batch();
         this.state.applications.forEach((application) => {
-          const ref = this.props.firebase.application(application.id);
+          const ref = this.props.firebase.application(application.uid);
           batch.update(ref, {
             "deliberation.accepted": false,
             "deliberation.confirmed": false,
@@ -289,8 +288,7 @@ class InterviewerView extends Component {
   sendResults = () =>
     swal({
       title: "Hold up!",
-      text:
-        "If you press Yes, you're going to send emails to all the applicants with their results. If you haven't filled out feedback for everyone, this will be bad!",
+      text: "If you press Yes, you're going to send emails to all the applicants with their results. If you haven't filled out feedback for everyone, this will be bad!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -321,7 +319,7 @@ class InterviewerView extends Component {
           const batch = this.props.firebase.firestore.batch();
           const appsWithResult = this.state.applications.map((application) => {
             const {
-              id,
+              uid,
               deliberation: { votes },
             } = application;
             const allVotes = Object.values(votes);
@@ -340,7 +338,7 @@ class InterviewerView extends Component {
                 };
               }
 
-              const ref = this.props.firebase.application(id);
+              const ref = this.props.firebase.application(uid);
               batch.update(ref, updateData);
             }
 
@@ -462,8 +460,8 @@ class InterviewerView extends Component {
           .sort((a, b) => (a.name > b.name ? 1 : -1))
           .map((application) => (
             <SidebarItem
-              selected={currentApplication.id === application.id}
-              key={application.id}
+              selected={currentApplication.uid === application.uid}
+              key={application.uid}
               onClick={() => this.setCurrentApplication(application)}
             >
               {application.name}

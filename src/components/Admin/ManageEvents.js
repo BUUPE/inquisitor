@@ -53,7 +53,7 @@ const ResponseDiv = styled.div`
 `;
 
 const DEFAULT_EVENT = {
-  id: "default",
+  uid: "default",
   title: "Default Event",
   open: false,
   websiteReference: "default",
@@ -62,7 +62,7 @@ const DEFAULT_EVENT = {
 };
 
 const DEFAULT_WEBSITE_EVENT = {
-  id: "default",
+  uid: "default",
   allDay: false,
   startDay: "1",
   startMonth: "1",
@@ -310,7 +310,7 @@ class ManageEvents extends Component {
           const events = querySnapshot.docs.map((doc) => {
             return {
               ...doc.data(),
-              id: doc.id,
+              uid: doc.id,
             };
           });
 
@@ -325,16 +325,16 @@ class ManageEvents extends Component {
     });
   };
 
-  fetchEvent = (id) => {
-    if (!id) return;
+  fetchEvent = (uid) => {
+    if (!uid) return;
 
     if (typeof this.unsubCurrentEventWebsite === "function")
       this.unsubCurrentEventWebsite();
     this.unsubCurrentEventWebsite = this.props.firebase
-      .event(id)
+      .event(uid)
       .onSnapshot((doc) => {
         if (!doc.exists) return console.log("Event not found!");
-        const fetchedEvent = { ...doc.data(), id: doc.id };
+        const fetchedEvent = { ...doc.data(), uid: doc.id };
         this.setState({ currentEventWebsite: fetchedEvent });
       });
   };
@@ -346,15 +346,15 @@ class ManageEvents extends Component {
     const updatedEvent = cloneDeep(currentEvent);
     updatedEvent.open = !updatedEvent.open;
 
-    delete updatedEvent.id;
+    delete updatedEvent.uid;
 
     await this.props.firebase
-      .recruitmentEvent(currentEvent.id)
+      .recruitmentEvent(currentEvent.uid)
       .set(updatedEvent)
       .then(() => {
-        updatedEvent.id = currentEvent.id;
+        updatedEvent.uid = currentEvent.uid;
         this.setState({ currentEvent: updatedEvent });
-        this.fetchEvent(updatedEvent.id);
+        this.fetchEvent(updatedEvent.uid);
       })
       .catch((error) => console.log("Failed to save event"));
   };
@@ -365,11 +365,11 @@ class ManageEvents extends Component {
     this.setState({ loading: true });
 
     const deleteEvent = this.props.firebase
-      .event(currentEventWebsite.id)
+      .event(currentEventWebsite.uid)
       .delete()
       .catch((error) => console.log("Failed to delete Website Event"));
     const deleteWebsiteEvent = this.props.firebase
-      .recruitmentEvent(currentEvent.id)
+      .recruitmentEvent(currentEvent.uid)
       .delete()
       .catch((error) => console.log("Failed to delete Event"));
 
@@ -411,21 +411,21 @@ class ManageEvents extends Component {
 
     websiteEvent.title = eventToSave.title;
     websiteEvent.index = this.state.maxIndex;
-    delete websiteEvent.id;
+    delete websiteEvent.uid;
     if (edit) {
       await this.props.firebase
         .events()
-        .doc(currentEventWebsite.id)
+        .doc(currentEventWebsite.uid)
         .set(websiteEvent)
         .then(async () => {
-          delete eventToSave.id;
+          delete eventToSave.uid;
           await this.props.firebase
             .recruitmentEvents()
-            .doc(currentEvent.id)
+            .doc(currentEvent.uid)
             .set(eventToSave)
             .then(() => {
-              eventToSave.id = currentEvent.id;
-              websiteEvent.id = currentEventWebsite.id;
+              eventToSave.uid = currentEvent.uid;
+              websiteEvent.uid = currentEventWebsite.uid;
               this.setState({
                 showModal: false,
                 modalWebsiteEvent: DEFAULT_WEBSITE_EVENT,
@@ -442,7 +442,7 @@ class ManageEvents extends Component {
         .events()
         .add(websiteEvent)
         .then(async (docRef) => {
-          delete eventToSave.id;
+          delete eventToSave.uid;
           eventToSave.websiteReference = docRef.id;
 
           await this.props.firebase
@@ -450,8 +450,8 @@ class ManageEvents extends Component {
             .doc(docRef.id)
             .set(eventToSave)
             .then(() => {
-              eventToSave.id = docRef.id;
-              websiteEvent.id = docRef.id;
+              eventToSave.uid = docRef.id;
+              websiteEvent.uid = docRef.id;
               this.setState({
                 showModal: false,
                 modalWebsiteEvent: DEFAULT_WEBSITE_EVENT,
@@ -467,10 +467,10 @@ class ManageEvents extends Component {
   };
 
   toggleQRModal = () => {
-    const { currentEvent } = this.state;
+    const { currentEvent, showQRModal } = this.state;
     if (!currentEvent) return;
 
-    this.setState({ showQRModal: true });
+    this.setState({ showQRModal: !showQRModal });
   };
 
   render() {
@@ -687,7 +687,7 @@ class ManageEvents extends Component {
                   {events
                     .sort((a, b) => (a.title > b.title ? 1 : -1))
                     .map((event) => (
-                      <EventListItem key={event.id} data={event} />
+                      <EventListItem key={event.uid} data={event} />
                     ))}
                 </EventList>
               )}

@@ -33,7 +33,7 @@ const StyledButton = styled(Button)`
 `;
 
 const QuestionDisplay = ({
-  id,
+  uid,
   name,
   description,
   answer,
@@ -79,7 +79,7 @@ const QuestionDisplay = ({
   };
 
   let Content = () => null;
-  if (id !== "resume" && id !== "finalNotes") {
+  if (uid !== "resume" && uid !== "finalNotes") {
     Content = () => (
       <>
         <Row>

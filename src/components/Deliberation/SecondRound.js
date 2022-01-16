@@ -37,7 +37,7 @@ class SecondRound extends Component {
     const ApplicantStatus = ({
       provisional: { contribution, meetings },
       name,
-      id,
+      uid,
     }) => (
       <tr>
         <td>{name}</td>
@@ -64,7 +64,7 @@ class SecondRound extends Component {
             onClick={() =>
               this.setState({
                 showModal: true,
-                currentApplicationId: id,
+                currentApplicationId: uid,
                 currentContributionStatus: contribution,
                 currentMeetingStatus: meetings,
                 currentName: name,
@@ -96,7 +96,7 @@ class SecondRound extends Component {
             </thead>
             <tbody>
               {provisionalMemberApplications.map((application) => (
-                <ApplicantStatus key={application.id} {...application} />
+                <ApplicantStatus key={application.uid} {...application} />
               ))}
             </tbody>
           </Table>

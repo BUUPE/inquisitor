@@ -21,17 +21,13 @@ class FeedbackPage extends Component {
 
   render() {
     const { applications, settings } = this.props;
-    const {
-      showModal,
-      currentApplicationId,
-      currentFeedback,
-      currentName,
-    } = this.state;
+    const { showModal, currentApplicationId, currentFeedback, currentName } =
+      this.state;
 
     const ApplicantStatus = ({
       deliberation: { votes, feedback },
       name,
-      id,
+      uid,
     }) => {
       const allVotes = Object.values(votes);
       const positiveVotes = allVotes.filter((vote) => !!vote).length;
@@ -63,7 +59,7 @@ class FeedbackPage extends Component {
                   onClick={() =>
                     this.setState({
                       showModal: true,
-                      currentApplicationId: id,
+                      currentApplicationId: uid,
                       currentFeedback: feedback,
                       currentName: name,
                     })
@@ -101,7 +97,7 @@ class FeedbackPage extends Component {
             </thead>
             <tbody>
               {applications.map((application) => (
-                <ApplicantStatus key={application.id} {...application} />
+                <ApplicantStatus key={application.uid} {...application} />
               ))}
             </tbody>
           </Table>

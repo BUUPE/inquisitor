@@ -29,7 +29,7 @@ const QuestionNotes = ({
     await saveApplication({
       note,
       score,
-      id: question.id,
+      uid: question.uid,
     });
     await submitApplication();
   };
@@ -38,7 +38,7 @@ const QuestionNotes = ({
     saveApplication({
       note,
       score,
-      id: question.id,
+      uid: question.uid,
     });
 
   return (

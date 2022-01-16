@@ -101,7 +101,7 @@ class ManageInterviews extends Component {
             return {
               ...doc.data(),
               time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
-              id: doc.id,
+              uid: doc.id,
             };
           });
 
@@ -124,7 +124,7 @@ class ManageInterviews extends Component {
     this.setState({ loading: true });
 
     await this.props.firebase
-      .timeslot(currentInterview.id)
+      .timeslot(currentInterview.uid)
       .delete()
       .then(() => {
         this.setState({
@@ -184,10 +184,10 @@ class ManageInterviews extends Component {
 
       level.forEach((question) => {
         updatedApplication.interview.notes[`${interviewer.uid}`][
-          `${question.id}`
+          `${question.uid}`
         ] = "NA";
         updatedApplication.interview.scores[`${interviewer.uid}`][
-          `${question.id}`
+          `${question.uid}`
         ] = 0;
       });
 
@@ -219,10 +219,10 @@ class ManageInterviews extends Component {
 
         level[1].forEach((question) => {
           updatedApplication.interview.notes[`${interviewer.uid}`][
-            `${question.id}`
+            `${question.uid}`
           ] = "NA";
           updatedApplication.interview.scores[`${interviewer.uid}`][
-            `${question.id}`
+            `${question.uid}`
           ] = 0;
         });
       });
@@ -238,27 +238,27 @@ class ManageInterviews extends Component {
       ] = "Linsy Wang";
     }
 
-    delete updatedApplication.id;
+    delete updatedApplication.uid;
 
     await this.props.firebase
-      .application(currentApplication.id)
+      .application(currentApplication.uid)
       .set(updatedApplication)
       .then(() => {
-        this.fetchApplication(currentApplication.id);
+        this.fetchApplication(currentApplication.uid);
       })
       .catch((error) => console.log("Failed to save Application"));
   };
 
-  fetchApplication = (id) => {
-    if (!id) return;
+  fetchApplication = (uid) => {
+    if (!uid) return;
 
     if (typeof this.unsubCurrentApplication === "function")
       this.unsubCurrentApplication();
     this.unsubCurrentApplication = this.props.firebase
-      .application(id)
+      .application(uid)
       .onSnapshot((doc) => {
         if (!doc.exists) return console.log("Application not found!");
-        const fetchedApplication = { ...doc.data(), id: doc.id };
+        const fetchedApplication = { ...doc.data(), uid: doc.id };
         this.setState({ currentApplication: fetchedApplication });
       });
   };
@@ -395,7 +395,7 @@ class ManageInterviews extends Component {
                       a.applicant.name > b.applicant.name ? 1 : -1
                     )
                     .map((interview) => (
-                      <InterviewListItem key={interview.id} data={interview} />
+                      <InterviewListItem key={interview.uid} data={interview} />
                     ))}
                 </InterviewList>
               </Col>

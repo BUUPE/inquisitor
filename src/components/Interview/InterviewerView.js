@@ -93,7 +93,7 @@ class InterviewerView extends Component {
       localStorage.getItem("currentApplication")
     );
     if (currentApplication !== null)
-      this.fetchApplication(currentApplication.id);
+      this.fetchApplication(currentApplication.uid);
 
     const questions = await this.props.firebase
       .questions()
@@ -101,7 +101,7 @@ class InterviewerView extends Component {
       .then((querySnapshot) =>
         querySnapshot.docs.map((doc) => ({
           ...doc.data(),
-          id: doc.id,
+          uid: doc.id,
         }))
       );
 
@@ -146,7 +146,7 @@ class InterviewerView extends Component {
               return {
                 ...doc.data(),
                 time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
-                id: doc.id,
+                uid: doc.id,
               };
             })
             .filter((ts) => ts.interviewers.hasOwnProperty(authUser.uid));
@@ -165,20 +165,20 @@ class InterviewerView extends Component {
     });
   };
 
-  fetchApplication = (id) => {
-    if (!id) return;
+  fetchApplication = (uid) => {
+    if (!uid) return;
 
     if (typeof this.unsubCurrentApplication === "function")
       this.unsubCurrentApplication();
     this.unsubCurrentApplication = this.props.firebase
-      .application(id)
+      .application(uid)
       .onSnapshot((doc) => {
         if (!doc.exists) return console.log("Application not found!");
-        const fetchedApplication = { ...doc.data(), id: doc.id };
+        const fetchedApplication = { ...doc.data(), uid: doc.id };
 
         if (
           !this.state.currentApplication ||
-          this.state.currentApplication.id !== fetchedApplication.id ||
+          this.state.currentApplication.uid !== fetchedApplication.uid ||
           !isEqual(
             this.state.currentApplication?.interview?.notes?.[this.context.uid],
             fetchedApplication?.interview?.notes?.[this.context.uid]
@@ -202,7 +202,7 @@ class InterviewerView extends Component {
 
   saveLevel = async (level) => {
     await this.props.firebase
-      .application(this.state.currentApplication.id)
+      .application(this.state.currentApplication.uid)
       .update({
         interview: {
           ...this.state.currentApplication.interview,
@@ -217,7 +217,7 @@ class InterviewerView extends Component {
       await this.props.firebase.firestore.runTransaction(
         async (transaction) => {
           const ref = this.props.firebase.application(
-            this.state.currentApplication.id
+            this.state.currentApplication.uid
           );
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
@@ -240,7 +240,7 @@ class InterviewerView extends Component {
       await this.props.firebase.firestore.runTransaction(
         async (transaction) => {
           const ref = this.props.firebase.application(
-            this.state.currentApplication.id
+            this.state.currentApplication.uid
           );
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
@@ -302,32 +302,32 @@ class InterviewerView extends Component {
 
         const questionMap = {};
         levelConfig[currentApplication.interview.level].forEach((question) => {
-          questionMap[question.id] = question.order;
+          questionMap[question.uid] = question.order;
         });
         const lastOrder = Math.max(...Object.values(questionMap));
 
         const filteredQuestions = questions
-          .filter((question) => questionMap.hasOwnProperty(question.id))
+          .filter((question) => questionMap.hasOwnProperty(question.uid))
           .map((question) => ({
             ...question,
-            order: questionMap[question.id] + 1,
+            order: questionMap[question.uid] + 1,
           }))
           .concat([
             {
-              id: "overview",
+              uid: "overview",
               order: -1,
               overview: textSettings.interviewOverviewText,
               interviewerNotes: textSettings.interviewInterviewerNotesText,
             },
             {
-              id: "resume",
+              uid: "resume",
               order: 0,
-              url: currentApplication.responses.find((r) => r.id === "resume")
+              url: currentApplication.responses.find((r) => r.uid === "resume")
                 .value,
               notes: textSettings.interviewResumeNotesText,
             },
             {
-              id: "finalNotes",
+              uid: "finalNotes",
               order: lastOrder + 2,
               title: "Submit Interview",
               text: textSettings.interviewFinalNotesInterviewerText,
@@ -346,9 +346,7 @@ class InterviewerView extends Component {
                 startTime={currentApplication.interview.startedAt}
                 limit={
                   timeslots.find(
-                    (ts) =>
-                      ts.applicant?.uid === currentApplication?.id ||
-                      ts.applicant?.id === currentApplication?.id
+                    (ts) => ts.applicant?.uid === currentApplication?.uid
                   ).timeslotLength
                 }
               />
@@ -387,16 +385,9 @@ class InterviewerView extends Component {
             .map((timeslot) => {
               return (
                 <StyledLi
-                  key={timeslot.id}
-                  selected={
-                    timeslot.applicant?.id === currentApplication?.id ||
-                    timeslot.applicant?.uid === currentApplication?.id
-                  }
-                  onClick={() =>
-                    this.fetchApplication(
-                      timeslot.applicant?.id || timeslot.applicant?.uid
-                    )
-                  }
+                  key={timeslot.uid}
+                  selected={timeslot.applicant?.uid === currentApplication?.uid}
+                  onClick={() => this.fetchApplication(timeslot.applicant?.uid)}
                 >
                   <strong>{timeslot.applicant?.name || "No applicant"}</strong>
                   <br />

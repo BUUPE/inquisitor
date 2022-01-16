@@ -13,7 +13,7 @@ import {
 } from "../../styles/global";
 
 const QuestionDisplay = ({
-  id,
+  uid,
   name,
   answer,
   description,
@@ -54,7 +54,7 @@ const QuestionDisplay = ({
         paddingBottom={"0.5%"}
         paddingLeft={"2%"}
         variant="danger"
-        onClick={() => deleteQuestion(id, imageName)}
+        onClick={() => deleteQuestion(uid, imageName)}
       >
         Delete
       </StyledButton>
@@ -71,10 +71,10 @@ const QuestionDisplay = ({
             description,
             image: "",
             imagePreview: image,
-            id,
+            uid,
           }}
           submitFunction={updateQuestion}
-          imageClearFunc={() => removeQuestionImage(id, imageName)}
+          imageClearFunc={() => removeQuestionImage(uid, imageName)}
           SubmitButton={FormSubmit}
         />
       </Card.Body>

@@ -8,7 +8,7 @@ import { Wrapper, Title, StyledButton, Text } from "../../styles/global";
 
 const ApplicationDisplay = memo(
   ({
-    id,
+    uid,
     vote,
     interview,
     responses,
@@ -20,29 +20,29 @@ const ApplicationDisplay = memo(
     provisional,
   }) => {
     const { level } = interview;
-    const classYear = responses.find((r) => r.id === "year").value;
+    const classYear = responses.find((r) => r.uid === "year").value;
     const levelQuestions = levelConfig[level];
     let augmentedQuestions = [
       {
-        id: "resume",
+        uid: "resume",
         name: "Resume",
         order: 0,
       },
       {
-        id: "finalNotes",
+        uid: "finalNotes",
         name: "Final Notes",
         order: levelQuestions.length + 1,
       },
     ];
 
-    levelQuestions.forEach(({ id, order }) => {
-      const question = questions.find((q) => q.id === id);
+    levelQuestions.forEach(({ uid, order }) => {
+      const question = questions.find((q) => q.uid === uid);
       augmentedQuestions.push({ ...question, order: order + 1 });
     });
 
-    const interviewers = Object.entries(
-      interview.interviewers
-    ).map(([uid, name]) => ({ uid, name }));
+    const interviewers = Object.entries(interview.interviewers).map(
+      ([uid, name]) => ({ uid, name })
+    );
 
     augmentedQuestions = augmentedQuestions.map((question) => {
       const [interviewerA, interviewerB] = interviewers;
@@ -50,12 +50,12 @@ const ApplicationDisplay = memo(
         ...question,
         interviewers: {
           [interviewerA.uid]: {
-            score: interview.scores[interviewerA.uid][question.id],
-            note: interview.notes[interviewerA.uid][question.id],
+            score: interview.scores[interviewerA.uid][question.uid],
+            note: interview.notes[interviewerA.uid][question.uid],
           },
           [interviewerB.uid]: {
-            score: interview.scores[interviewerB.uid][question.id],
-            note: interview.notes[interviewerB.uid][question.id],
+            score: interview.scores[interviewerB.uid][question.uid],
+            note: interview.notes[interviewerB.uid][question.uid],
           },
         },
       };
@@ -129,7 +129,7 @@ const ApplicationDisplay = memo(
             </Row>
             <Row>
               {responses.map((response) => (
-                <Response key={response.id} {...response} />
+                <Response key={response.uid} {...response} />
               ))}
             </Row>
           </Text>
@@ -197,7 +197,7 @@ const ApplicationDisplay = memo(
                 {augmentedQuestions
                   .sort((a, b) => (a.order > b.order ? 1 : -1))
                   .map((question, i) => (
-                    <Fragment key={question.id}>
+                    <Fragment key={question.uid}>
                       <QuestionDisplay
                         level={level}
                         classYear={classYear}

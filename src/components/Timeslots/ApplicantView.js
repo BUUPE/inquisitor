@@ -101,7 +101,7 @@ class ApplicantView extends Component {
               return {
                 ...doc.data(),
                 time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
-                id: doc.id,
+                uid: doc.id,
               };
             })
             .filter(
@@ -123,7 +123,7 @@ class ApplicantView extends Component {
             // if data for day exists, add to it, otherwise create new field
             if (timeslots.hasOwnProperty(day)) {
               const index = timeslots[day].findIndex(
-                (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                (timeslot) => timeslot.uid === ts.uid // check if existing timeslot matches the update (ts)
               );
 
               // if timeslot exists, update the value, otherwise push it
@@ -138,10 +138,10 @@ class ApplicantView extends Component {
           });
 
           // remove timeslots that no longer exist
-          const validIds = listenerData.map((ts) => ts.id);
+          const validIds = listenerData.map((ts) => ts.uid);
           for (const day in timeslots)
             timeslots[day] = timeslots[day].filter((ts) =>
-              validIds.includes(ts.id)
+              validIds.includes(ts.uid)
             );
 
           const clonedTimeslots = cloneDeep(timeslots);
@@ -158,7 +158,7 @@ class ApplicantView extends Component {
     const { selectedTimeslot } = this.state;
     const { firebase } = this.props;
     const authUser = this.context;
-    const timeslotId = timeslot.id;
+    const timeslotId = timeslot.uid;
     let action = "schedule";
 
     // TODO: add firebase rules to ensure that applicants dont change other peoples data
@@ -178,9 +178,9 @@ class ApplicantView extends Component {
             uid: authUser.uid,
           };
           transaction.update(ref, timeslot);
-          this.setState({ selectedTimeslot: { ...timeslot, id: doc.id } });
+          this.setState({ selectedTimeslot: { ...timeslot, uid: doc.id } });
         } else {
-          if (timeslotId === selectedTimeslot.id) {
+          if (timeslotId === selectedTimeslot.uid) {
             const ref = firebase.timeslot(timeslotId);
             const doc = await transaction.get(ref);
             const timeslot = { ...doc.data() };
@@ -191,7 +191,7 @@ class ApplicantView extends Component {
             this.setState({ selectedTimeslot: {} });
             action = "unschedule";
           } else {
-            const oldRef = firebase.timeslot(selectedTimeslot.id);
+            const oldRef = firebase.timeslot(selectedTimeslot.uid);
             const oldDoc = await transaction.get(oldRef);
             const oldTimeslot = { ...oldDoc.data() };
             if (oldTimeslot.applicant?.uid !== authUser.uid)
@@ -211,7 +211,7 @@ class ApplicantView extends Component {
             transaction.set(oldRef, oldTimeslot);
             transaction.update(newRef, newTimeslot);
             this.setState({
-              selectedTimeslot: { ...newTimeslot, id: newDoc.id },
+              selectedTimeslot: { ...newTimeslot, uid: newDoc.id },
             });
           }
         }
@@ -264,13 +264,8 @@ class ApplicantView extends Component {
   };
 
   render() {
-    const {
-      error,
-      loading,
-      timeslots,
-      selectedTimeslot,
-      selecting,
-    } = this.state;
+    const { error, loading, timeslots, selectedTimeslot, selecting } =
+      this.state;
 
     if (error)
       return (
@@ -296,14 +291,14 @@ class ApplicantView extends Component {
         {slots
           .sort((a, b) => {
             if (a.time.getTime() === b.time.getTime())
-              return a.id > b.id ? 1 : -1;
+              return a.uid > b.uid ? 1 : -1;
             else return a.time > b.time ? 1 : -1;
           })
           .map((slot) => (
             <TimeslotCard
-              key={slot.id}
+              key={slot.uid}
               onClick={() => this.selectTimeslot(slot)}
-              selected={slot.id === selectedTimeslot.id}
+              selected={slot.uid === selectedTimeslot.uid}
             >
               <Card.Body>
                 <Card.Title>{formatTime(slot.time)}</Card.Title>

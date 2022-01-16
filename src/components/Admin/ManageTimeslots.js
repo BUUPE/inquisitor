@@ -76,7 +76,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
               return {
                 ...doc.data(),
                 time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
-                id: doc.id,
+                uid: doc.id,
               };
             });
 
@@ -87,7 +87,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
               // if data for day exists, add to it, otherwise create new field
               if (timeslots.hasOwnProperty(day)) {
                 const index = timeslots[day].findIndex(
-                  (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                  (timeslot) => timeslot.uid === ts.uid // check if existing timeslot matches the update (ts)
                 );
 
                 // if timeslot exists, update the value, otherwise push it
@@ -102,10 +102,10 @@ const ManageTimeslots = ({ firebase, settings }) => {
             });
 
             // remove timeslots that no longer exist
-            const validIds = listenerData.map((ts) => ts.id);
+            const validIds = listenerData.map((ts) => ts.uid);
             for (const day in timeslots) {
               timeslots[day] = timeslots[day].filter((ts) =>
-                validIds.includes(ts.id)
+                validIds.includes(ts.uid)
               );
               if (timeslots[day].length === 0) delete timeslots[day];
             }
@@ -121,7 +121,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
             const listenerData = querySnapshot.docs.map((doc) => {
               return {
                 ...doc.data(),
-                id: doc.id,
+                uid: doc.id,
               };
             });
 
@@ -136,7 +136,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
             const listenerData = querySnapshot.docs.map((doc) => {
               return {
                 ...doc.data(),
-                id: doc.id,
+                uid: doc.id,
               };
             });
 
@@ -170,14 +170,14 @@ const ManageTimeslots = ({ firebase, settings }) => {
   const saveTimeslotChanges = async () => {
     const newTimeslot = cloneDeep(currentTimeslot);
     newTimeslot.time = newTimeslot.time.getTime() + tzoffset;
-    if (newTimeslot.hasOwnProperty("id")) {
+    if (newTimeslot.hasOwnProperty("uid")) {
       try {
         await firebase.firestore.runTransaction(async (transaction) => {
-          const ref = firebase.timeslot(newTimeslot.id);
+          const ref = firebase.timeslot(newTimeslot.uid);
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
           const timeslot = { ...doc.data() };
-          delete newTimeslot.id;
+          delete newTimeslot.uid;
           transaction.set(ref, newTimeslot);
         });
       } catch (e) {
@@ -214,7 +214,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
       },
     }).then(async (confirm) => {
       if (confirm) {
-        await firebase.timeslot(currentTimeslot.id).delete();
+        await firebase.timeslot(currentTimeslot.uid).delete();
         closeModal();
       }
     });
@@ -225,7 +225,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
     delete updatedTimeslot.interviewers[oldId];
     if (newId !== "")
       updatedTimeslot.interviewers[newId] = interviewers.find(
-        (interviewer) => interviewer.id === newId
+        (interviewer) => interviewer.uid === newId
       ).name;
     setCurrentTimeslot(updatedTimeslot);
   };
@@ -236,7 +236,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
     if (newId !== "") {
       updatedTimeslot.applicant = {
         uid: newId,
-        name: applicants.find((applicant) => applicant.id === newId).name,
+        name: applicants.find((applicant) => applicant.uid === newId).name,
       };
     }
     setCurrentTimeslot(updatedTimeslot);
@@ -249,14 +249,14 @@ const ManageTimeslots = ({ firebase, settings }) => {
       {timeslots
         .sort((a, b) => {
           if (a.time.getTime() === b.time.getTime())
-            return a.id > b.id ? 1 : -1;
+            return a.uid > b.uid ? 1 : -1;
           else return a.time > b.time ? 1 : -1;
         })
         .map((timeslot) => {
           const interviewers = Object.values(timeslot.interviewers);
           return (
             <TimeslotCard
-              key={timeslot.id}
+              key={timeslot.uid}
               onClick={() => {
                 setCurrentTimeslot(timeslot);
                 setShowModal(true);
@@ -373,7 +373,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
           <>
             <Modal.Header closeButton>
               <Modal.Title>
-                {currentTimeslot.hasOwnProperty("id") ? "Edit" : "Add new"}{" "}
+                {currentTimeslot.hasOwnProperty("uid") ? "Edit" : "Add new"}{" "}
                 timeslot
               </Modal.Title>
             </Modal.Header>
@@ -396,7 +396,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
                     {interviewers
                       .sort((a, b) => (a.name > b.name ? 1 : -1))
                       .map((interviewer) => (
-                        <option value={interviewer.id} key={interviewer.id}>
+                        <option value={interviewer.uid} key={interviewer.uid}>
                           {interviewer.name}
                         </option>
                       ))}
@@ -420,7 +420,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
                     {interviewers
                       .sort((a, b) => (a.name > b.name ? 1 : -1))
                       .map((interviewer) => (
-                        <option value={interviewer.id} key={interviewer.id}>
+                        <option value={interviewer.uid} key={interviewer.uid}>
                           {interviewer.name}
                         </option>
                       ))}
@@ -431,7 +431,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
                   <Form.Label>Applicant</Form.Label>
                   <Form.Control
                     as="select"
-                    value={currentTimeslot.applicant?.id}
+                    value={currentTimeslot.applicant?.uid}
                     onChange={(e) => updateApplicant(e.target.value)}
                     custom
                   >
@@ -439,7 +439,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
                     {applicants
                       .sort((a, b) => (a.name > b.name ? 1 : -1))
                       .map((applicant) => (
-                        <option value={applicant.id} key={applicant.id}>
+                        <option value={applicant.uid} key={applicant.uid}>
                           {applicant.name}
                         </option>
                       ))}
@@ -471,7 +471,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
               >
                 Cancel
               </StyledButton>
-              {currentTimeslot.hasOwnProperty("id") && (
+              {currentTimeslot.hasOwnProperty("uid") && (
                 <StyledButton
                   paddingTop={"0.5%"}
                   paddingRight={"2%"}

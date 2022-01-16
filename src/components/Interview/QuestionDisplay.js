@@ -106,7 +106,7 @@ const QuestionDisplay = ({
 }) => {
   let Content = null;
   // TODO: Add code style rule in wiki to use switch when conditions > 2
-  switch (question.id) {
+  switch (question.uid) {
     case "overview":
       Content = () => (
         <OverviewDisplay question={question} isInterviewer={isInterviewer} />

@@ -50,7 +50,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
   semester: estimateSemester(),
   questions: [
     {
-      id: "name",
+      uid: "name",
       order: 1,
       name: "Full Name",
       type: "text",
@@ -58,7 +58,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: "email",
+      uid: "email",
       order: 2,
       name: "Email",
       type: "email",
@@ -66,7 +66,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: "major",
+      uid: "major",
       order: 3,
       name: "Major",
       type: "text",
@@ -74,7 +74,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: "minor",
+      uid: "minor",
       order: 4,
       name: "Minor",
       type: "text",
@@ -82,7 +82,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: "year",
+      uid: "year",
       order: 5,
       name: "Class Year",
       type: "number",
@@ -90,7 +90,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: "resume",
+      uid: "resume",
       order: 6,
       name: "Resume",
       type: "file",
@@ -143,9 +143,11 @@ const ConfigureApplicationForm = ({ firebase }) => {
       const doUpdate = () => {
         const semester = form.querySelector("#semester").value;
         const year = form.querySelector("#year").value;
+        const maxId = applicationFormConfig.maxId;
         const newApplicationFormConfig = {
           ...applicationFormConfig,
           semester: `${semester}-${year}`,
+          maxId,
         };
 
         firebase
@@ -164,8 +166,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
           if (snapshot.size > 0) {
             swal({
               title: "Applications already exist!",
-              text:
-                "If you edit the application form configuration now, some applications will have different questions than others! Are you sure you want to do this?",
+              text: "If you edit the application form configuration now, some applications will have different questions than others! Are you sure you want to do this?",
               icon: "warning",
               buttons: {
                 cancel: {
@@ -190,8 +191,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const resetApplicationFormConfig = () => {
     swal({
       title: "Are you sure?",
-      text:
-        "This will reset the application form configuration to its default state! If applications have already been sent, new applications will have different questions!",
+      text: "This will reset the application form configuration to its default state! If applications have already been sent, new applications will have different questions!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -226,12 +226,12 @@ const ConfigureApplicationForm = ({ firebase }) => {
       event.stopPropagation();
     } else {
       const questions = [...applicationFormConfig.questions];
-      const nextId = applicationFormConfig + 1;
+      const nextId = applicationFormConfig.maxId + 1;
       const nextOrder =
         Math.max(...applicationFormConfig.questions.map((q) => q.order)) + 1;
 
       questions.push({
-        id: nextId,
+        uid: nextId,
         order: nextOrder,
         name: form.querySelector("#newQuestionName").value,
         type: form.querySelector("#newQuestionType").value,
@@ -241,6 +241,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
       setApplicationFormConfig({
         ...applicationFormConfig,
         questions,
+        maxId: nextId,
       });
       closeModal();
     }
@@ -248,7 +249,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
   const removeQuestion = (questionId) => {
     const questions = applicationFormConfig.questions.filter(
-      (q) => q.id !== questionId
+      (q) => q.uid !== questionId
     );
     setApplicationFormConfig({
       ...applicationFormConfig,
@@ -293,7 +294,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
   const updateQuestionRequired = (e, questionId) => {
     const questions = [...applicationFormConfig.questions].map((q) => {
-      if (q.id === questionId) {
+      if (q.uid === questionId) {
         return {
           ...q,
           required: e.target.checked,
@@ -312,7 +313,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const QuestionSlot = ({ isdefault, order, children }) => {
     const [{ isOver }, drop] = useDrop({
       accept: "question",
-      drop: (item) => updateQuestionOrder(item.id, item.order, order),
+      drop: (item) => updateQuestionOrder(item.uid, item.order, order),
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),
       }),
@@ -345,7 +346,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
     const [, dragRef] = useDrag({
       item: {
         type: "question",
-        id: questionId,
+        uid: questionId,
         order,
       },
     });
@@ -394,7 +395,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
       case "file":
         questionComponent = (
           <Form.File
-            id={`custom-file-${question.id}`}
+            id={`custom-file-${question.uid}`}
             label="Upload file"
             custom
             disabled
@@ -411,8 +412,8 @@ const ConfigureApplicationForm = ({ firebase }) => {
               value="true"
               label="Yes"
               type="radio"
-              name={question.id}
-              id={`${question.id}-1`}
+              name={question.uid}
+              id={`${question.uid}-1`}
             />
             <Form.Check
               custom
@@ -421,8 +422,8 @@ const ConfigureApplicationForm = ({ firebase }) => {
               value="false"
               label="No"
               type="radio"
-              name={question.id}
-              id={`${question.id}-2`}
+              name={question.uid}
+              id={`${question.uid}-2`}
             />
           </div>
         );
@@ -440,12 +441,12 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
     return (
       <QuestionSlot
-        key={question.id}
+        key={question.uid}
         isdefault={question.default}
         order={question.order}
       >
         <QuestionWrapper
-          questionId={question.id}
+          questionId={question.uid}
           isdefault={question.default}
           order={question.order}
         >
@@ -460,8 +461,8 @@ const ConfigureApplicationForm = ({ firebase }) => {
               checked={question.required}
               type="switch"
               label="Required?"
-              id={`${question.id}-required`}
-              onChange={(e) => updateQuestionRequired(e, question.id)}
+              id={`${question.uid}-required`}
+              onChange={(e) => updateQuestionRequired(e, question.uid)}
             />
             <div
               style={{
@@ -474,7 +475,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
               <button
                 type="button"
                 className="close ml-2 mb-1"
-                onClick={() => removeQuestion(question.id)}
+                onClick={() => removeQuestion(question.uid)}
               >
                 <span aria-hidden="true">×</span>
                 <span className="sr-only">Close</span>
