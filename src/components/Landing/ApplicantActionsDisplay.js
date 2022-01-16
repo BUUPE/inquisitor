@@ -44,7 +44,10 @@ class ApplicantActionsDisplay extends Component {
           this.setState({ application: null, loading: false });
         else this.setState({ application: snapshot.data(), loading: false });
       })
-      .catch(() => console.log("No application"));
+      .catch(() => {
+        this.setState({ application: null, loading: false });
+        console.log("No application");
+      });
   };
 
   navigateTo = (page) => {
@@ -94,7 +97,8 @@ class ApplicantActionsDisplay extends Component {
                 onclick={() => this.navigateTo("/login/")}
               />
             )}
-            {!!!this.context?.roles.applicant &&
+            {!!this.context &&
+              !!!this.context?.roles.applicant &&
               this.props.settings.applicationsOpen && (
                 <ActionCard
                   title={"New Application"}

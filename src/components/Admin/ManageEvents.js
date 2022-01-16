@@ -1,6 +1,7 @@
 import React, { Fragment, Component, useState } from "react";
 import styled from "styled-components";
 import { compose } from "recompose";
+import QRCode from "qrcode.react";
 
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -29,6 +30,7 @@ import {
   FullWidthFormRow,
   FullWidthFormGroup,
   CenteredForm,
+  Centered,
 } from "../../styles/global";
 
 const EventList = styled.ul`
@@ -54,7 +56,6 @@ const DEFAULT_EVENT = {
   id: "default",
   title: "Default Event",
   open: false,
-  password: "12345",
   websiteReference: "default",
   attendance: {},
   upeAttendance: {},
@@ -111,26 +112,6 @@ const EventForm = ({ initialFormData, submitFunction, SubmitButton }) => {
             onChange={(e) => {
               const cloned = cloneDeep(formData);
               cloned.event.title = e.target.value;
-              setFormData(cloned);
-            }}
-            required
-          />
-        </FullWidthFormGroup>
-      </FullWidthFormRow>
-
-      <FullWidthFormRow>
-        <FullWidthFormGroup controlId="password">
-          <Form.Label>
-            <h5>Password</h5>
-          </Form.Label>
-          <Form.Control
-            name="event.password"
-            type="text"
-            placeholder="Enter event password..."
-            value={formData.event.password}
-            onChange={(e) => {
-              const cloned = cloneDeep(formData);
-              cloned.event.password = e.target.value;
               setFormData(cloned);
             }}
             required
@@ -288,6 +269,7 @@ class ManageEvents extends Component {
     currentEvent: null,
     currentEventWebsite: null,
     showModal: false,
+    showQRModal: false,
     modalEvent: DEFAULT_EVENT,
     modalWebsiteEvent: DEFAULT_WEBSITE_EVENT,
   };
@@ -484,6 +466,13 @@ class ManageEvents extends Component {
     }
   };
 
+  toggleQRModal = () => {
+    const { currentEvent } = this.state;
+    if (!currentEvent) return;
+
+    this.setState({ showQRModal: true });
+  };
+
   render() {
     const {
       loading,
@@ -491,12 +480,18 @@ class ManageEvents extends Component {
       events,
       currentEventWebsite,
       showModal,
+      showQRModal,
       modalWebsiteEvent,
       modalEvent,
     } = this.state;
     const hasEvents = events.length !== 0;
 
     if (loading) return <Loader />;
+
+    const combinedData = {
+      event: modalEvent,
+      website: modalWebsiteEvent,
+    };
 
     const EventListItem = ({ data }) => (
       <StyledLi
@@ -542,11 +537,11 @@ class ManageEvents extends Component {
           <ResponseDiv width={"100%"}>
             <h2> Details </h2>
           </ResponseDiv>
-          <ResponseDiv width={"50%"}>
+          <ResponseDiv width={"33%"}>
             <h3> Title </h3>
             <p> {currentEvent.title} </p>
           </ResponseDiv>
-          <ResponseDiv width={"50%"}>
+          <ResponseDiv width={"33%"}>
             <h3> Time </h3>
             {currentEventWebsite.allDay && (
               <p>
@@ -565,11 +560,7 @@ class ManageEvents extends Component {
               </p>
             )}
           </ResponseDiv>
-          <ResponseDiv width={"50%"}>
-            <h3> Password </h3>
-            <p> {currentEvent.password} </p>
-          </ResponseDiv>
-          <ResponseDiv width={"50%"}>
+          <ResponseDiv width={"33%"}>
             <h3> Status </h3>
             <p> {currentEvent.open ? "Open" : "Closed"} </p>
           </ResponseDiv>
@@ -592,7 +583,7 @@ class ManageEvents extends Component {
             <h2> Actions </h2>
           </ResponseDiv>
           <br />
-          <ResponseDiv width={"33%"}>
+          <ResponseDiv width={"25%"}>
             <StyledButton
               paddingTop={"0.5%"}
               paddingRight={"3%"}
@@ -603,7 +594,7 @@ class ManageEvents extends Component {
               {currentEvent.open ? "Close" : "Open"}
             </StyledButton>
           </ResponseDiv>
-          <ResponseDiv width={"33%"}>
+          <ResponseDiv width={"25%"}>
             <StyledButton
               paddingTop={"0.5%"}
               paddingRight={"3%"}
@@ -614,7 +605,18 @@ class ManageEvents extends Component {
               Edit
             </StyledButton>
           </ResponseDiv>
-          <ResponseDiv width={"33%"}>
+          <ResponseDiv width={"25%"}>
+            <StyledButton
+              paddingTop={"0.5%"}
+              paddingRight={"3%"}
+              paddingBottom={"0.5%"}
+              paddingLeft={"3%"}
+              onClick={() => this.toggleQRModal()}
+            >
+              Get QR Code
+            </StyledButton>
+          </ResponseDiv>
+          <ResponseDiv width={"25%"}>
             <StyledButton
               paddingTop={"0.5%"}
               paddingRight={"3%"}
@@ -641,9 +643,15 @@ class ManageEvents extends Component {
       </StyledButton>
     );
 
-    const combinedData = {
-      event: modalEvent,
-      website: modalWebsiteEvent,
+    const QRCodeWrapper = () => {
+      if (!currentEvent) return <h1> No event selected! </h1>;
+
+      return (
+        <QRCode
+          size={"400"}
+          value={`https://upe.bu.edu/inquisitor/events?code=${currentEvent.id}`}
+        />
+      );
     };
 
     return (
@@ -691,6 +699,17 @@ class ManageEvents extends Component {
             </Col>
           </Row>
         </Text>
+
+        <Modal show={showQRModal} onHide={() => this.toggleQRModal()}>
+          <Modal.Header closeButton>
+            <Modal.Title> Event QR </Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{}}>
+            <Centered>
+              <QRCodeWrapper />
+            </Centered>
+          </Modal.Body>
+        </Modal>
 
         <Modal show={showModal} onHide={() => this.toggleAddEvent()}>
           <Modal.Header closeButton>
