@@ -84,7 +84,7 @@ const IndexPage = ({ firebase }) => {
     );
 
   const Content = () => {
-    if (!!!code) {
+    if (!code) {
       return (
         <TextDisplay
           name={"Events"}

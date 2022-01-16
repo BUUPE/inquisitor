@@ -90,7 +90,7 @@ class ApplicantActionsDisplay extends Component {
             xs={1}
             style={{ alignItems: "center", justifyContent: "center" }}
           >
-            {!!!this.context && (
+            {!this.context && (
               <ActionCard
                 title={"Log In"}
                 text={"Click the link below to Login and get started!"}
@@ -98,7 +98,7 @@ class ApplicantActionsDisplay extends Component {
               />
             )}
             {!!this.context &&
-              !!!this.context?.roles.applicant &&
+              !this.context.roles.applicant &&
               this.props.settings.applicationsOpen && (
                 <ActionCard
                   title={"New Application"}
@@ -145,7 +145,7 @@ class ApplicantActionsDisplay extends Component {
                 />
               )}
             {!!this.context &&
-              !!!this.context.roles.applicant &&
+              !this.context.roles.applicant &&
               !this.props.settings.applicationsOpen && (
                 <ActionCard
                   title={"Interest Form"}
