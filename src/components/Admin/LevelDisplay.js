@@ -92,7 +92,7 @@ const DraggableQuestion = ({
 };
 
 const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
-  const [questionToAdd, setQuestionToAdd] = useState("");
+  const [questionToAdd, setQuestionToAdd] = useState([]);
   const [localQuestions, setLocalQuestions] = useState([]);
   const [localName, setLocalName] = useState("");
 
@@ -126,15 +126,17 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
     );
   };
 
-  const addQuestion = (questionId) => {
-    if (questionId === "") return;
-    const newQuestion = otherQuestions.find(
-      (question) => question.uid === questionId
-    );
+  const addQuestion = (questions) => {
+    if (questions.length === 0) return;
+
+    const newQuestions = questions.map((questionId) => {
+      console.log(questionId);
+      return otherQuestions.find((question) => question.uid === questionId);
+    });
 
     setLocalQuestions(
       update(localQuestions, {
-        $push: [newQuestion],
+        $push: newQuestions,
       }).map((question, i) => ({
         ...question,
         order: i,
@@ -177,9 +179,13 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
                 required
                 name="newQuestionSelector"
                 as="select"
-                onChange={(e) => setQuestionToAdd(e.target.value)}
+                multiple
+                onChange={(e) => {
+                  const selected = [].slice.call(e.target.selectedOptions);
+                  const formatted = selected.map((item) => item.value);
+                  setQuestionToAdd(formatted);
+                }}
               >
-                <option value=""> - </option>
                 {filteredQuestions.map((question) => (
                   <option key={question.uid} value={question.uid}>
                     {question.name}
