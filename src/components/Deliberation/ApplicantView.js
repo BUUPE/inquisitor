@@ -126,13 +126,17 @@ const ApplicantView = ({ firebase, settings }) => {
   // Hasn't interviewed yet
   if (!application.interview.interviewed)
     return (
-      <TextDisplay
-        name={"Deliberation Results"}
-        text={
-          "You must complete your interview before getting any deliberation results."
-        }
-        displayBack={true}
-      />
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={
+            "You must complete your interview before getting any deliberation results."
+          }
+          displayBack={true}
+        />
+        <br />
+        <br />
+      </>
     );
 
   // Deliberations are incomplete or feedback hasn't been given
@@ -143,11 +147,17 @@ const ApplicantView = ({ firebase, settings }) => {
   )
     // TODO: make this centered, prettier
     return (
-      <TextDisplay
-        name={"Deliberation Results"}
-        text={"Deliberations are still underway."}
-        displayBack={true}
-      />
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={"Deliberations are still underway."}
+          displayBack={true}
+        />
+        <br />
+        <br />
+        <br />
+        <br />
+      </>
     );
 
   // Denied but waiting for emails to go out
@@ -156,11 +166,17 @@ const ApplicantView = ({ firebase, settings }) => {
     application.deliberation.feedback !== ""
   )
     return (
-      <TextDisplay
-        name={"Deliberation Results"}
-        text={"Keep an eye on your inbox for an update on your deliberation!"}
-        displayBack={true}
-      />
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={"Keep an eye on your inbox for an update on your deliberation!"}
+          displayBack={true}
+        />
+        <br />
+        <br />
+        <br />
+        <br />
+      </>
     );
 
   // Theyre accepted and need to confirm
@@ -223,11 +239,17 @@ const ApplicantView = ({ firebase, settings }) => {
   // make this pretty
   if (authUser.profileIMG !== "")
     return (
-      <TextDisplay
-        name={"Deliberation Results"}
-        text={"You're all set!"}
-        displayBack={true}
-      />
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={"You're all set!"}
+          displayBack={true}
+        />
+        <br />
+        <br />
+        <br />
+        <br />
+      </>
     );
 
   return (

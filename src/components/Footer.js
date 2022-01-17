@@ -12,8 +12,10 @@ const FooterContainer = styled.footer`
   justify-content: center;
   color: white;
   padding: 40px;
-  margin-top:60px;
+  margin-top: 60px;
   font-size: 25px;
+  position: relative;
+  bottom: 0;
 `;
 
 const Link = styled.a`
