@@ -7,7 +7,7 @@ import Col from "react-bootstrap/Col";
 
 import { withFirebase, withAuthorization } from "upe-react-components";
 
-import { isRecruitmentTeam, isAdmin } from "../../util/conditions";
+import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 import { BackIcon } from "../TextDisplay";
@@ -157,8 +157,6 @@ const ViewApplications = ({ firebase }) => {
 };
 
 export default compose(
-  withAuthorization(
-    (authUser) => isRecruitmentTeam(authUser) || isAdmin(authUser)
-  ),
+  withAuthorization((authUser) => isAdmin(authUser)),
   withFirebase
 )(ViewApplications);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 import cloneDeep from "lodash.clonedeep";
 
@@ -7,8 +8,9 @@ import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
 import Toast from "react-bootstrap/Toast";
 
-import { withFirebase } from "upe-react-components";
+import { withFirebase, withAuthorization } from "upe-react-components";
 
+import { isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
 import AdminLayout from "./AdminLayout";
@@ -250,4 +252,4 @@ const ManageLevels = ({ firebase }) => {
   );
 };
 
-export default withFirebase(ManageLevels);
+export default compose(withAuthorization(isAdmin), withFirebase)(ManageLevels);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 
 import Col from "react-bootstrap/Col";
@@ -9,8 +10,9 @@ import Toast from "react-bootstrap/Toast";
 import AdminLayout from "./AdminLayout";
 import QuestionDisplay, { QuestionForm } from "./QuestionDisplay";
 
-import { withFirebase } from "upe-react-components";
+import { withFirebase, withAuthorization } from "upe-react-components";
 
+import { isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
 import { objectMap } from "../../util/helper";
@@ -273,4 +275,7 @@ const ManageQuestions = ({ firebase }) => {
   );
 };
 
-export default withFirebase(ManageQuestions);
+export default compose(
+  withAuthorization(isAdmin),
+  withFirebase
+)(ManageQuestions);

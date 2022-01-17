@@ -12,7 +12,7 @@ import {
 } from "upe-react-components";
 import cloneDeep from "lodash.clonedeep";
 
-import { isRecruitmentTeam, isAdmin } from "../../util/conditions";
+import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
 import { BackIcon } from "../TextDisplay";
@@ -413,8 +413,6 @@ class ManageInterviews extends Component {
 }
 
 export default compose(
-  withAuthorization(
-    (authUser) => isRecruitmentTeam(authUser) || isAdmin(authUser)
-  ),
+  withAuthorization((authUser) => isAdmin(authUser)),
   withFirebase
 )(ManageInterviews);
