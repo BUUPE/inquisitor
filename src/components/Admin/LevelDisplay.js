@@ -92,7 +92,7 @@ const DraggableQuestion = ({
 };
 
 const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
-  const [questionToAdd, setQuestionToAdd] = useState([]);
+  const [questionsToAdd, setQuestionsToAdd] = useState([]);
   const [localQuestions, setLocalQuestions] = useState([]);
   const [localName, setLocalName] = useState("");
 
@@ -130,7 +130,6 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
     if (questions.length === 0) return;
 
     const newQuestions = questions.map((questionId) => {
-      console.log(questionId);
       return otherQuestions.find((question) => question.uid === questionId);
     });
 
@@ -183,7 +182,7 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
                 onChange={(e) => {
                   const selected = [].slice.call(e.target.selectedOptions);
                   const formatted = selected.map((item) => item.value);
-                  setQuestionToAdd(formatted);
+                  setQuestionsToAdd(formatted);
                 }}
               >
                 {filteredQuestions.map((question) => (
@@ -200,8 +199,8 @@ const LevelDisplay = ({ name, questions, otherQuestions, SubmitButton }) => {
             paddingRight={"2%"}
             paddingBottom={"0.5%"}
             paddingLeft={"2%"}
-            onClick={() => addQuestion(questionToAdd)}
-            disabled={questionToAdd === ""}
+            onClick={() => addQuestion(questionsToAdd)}
+            disabled={questionsToAdd === ""}
           >
             Add Question
           </StyledButton>
