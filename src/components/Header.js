@@ -1,97 +1,19 @@
-import React, { useContext } from "react";
+import React from "react";
 import styled from "styled-components";
-import { Link as GatsbyLink } from "gatsby";
-import BootstrapNavbar from "react-bootstrap/Navbar";
-import Nav from "react-bootstrap/Nav";
 
-import { AuthUserContext, withFirebase } from "upe-react-components";
-import {
-  isNonMember,
-  isApplicantOrRecruitmentTeam,
-  isAdmin,
-} from "../util/conditions";
+import Background from "../images/main-background.png";
 
-const Navbar = styled(BootstrapNavbar)`
-  background: #333333;
-  border-top: 3px solid ${(props) => props.theme.palette.mainBrand};
-  color: white;
-  padding: 1rem 1rem;
+const MastHead = styled.div`
+  margin-bottom: 60px;
+  background: no-repeat center center;
+  background-color: #868e96;
+  background-attachment: scroll;
+  position: relative;
+  background-size: cover;
+  background-image: url(${Background});
+  padding: 325px 0 325px;
 `;
 
-const Link = styled(GatsbyLink)`
-  color: white;
-  margin: 0 10px;
-  width: fit-content;
+const Header = () => <MastHead />;
 
-  &:hover {
-    color: white;
-    text-decoration: none;
-  }
-`;
-
-const Header = ({ firebase }) => {
-  const authUser = useContext(AuthUserContext);
-
-  return (
-    <Navbar expand="lg">
-      <Link to="/" className="hvr-underline-from-center">
-        <Navbar.Brand style={{ padding: 0, marginRight: 0, color: "white" }}>
-          Inquisitor
-        </Navbar.Brand>
-      </Link>
-      <Navbar.Toggle aria-controls="basic-navbar-nav" />
-      <Navbar.Collapse id="basic-navbar-nav">
-        <Nav className="ml-auto" style={{ height: "100%" }}>
-          {isNonMember(authUser) && (
-            <>
-              <Link to="/interest-form" className="hvr-underline-from-center">
-                Interest Form
-              </Link>
-              <Link to="/apply" className="hvr-underline-from-center">
-                Apply
-              </Link>
-            </>
-          )}
-
-          {/* TODO: make this appear based on whether timeslots are open (make a settings context first) */}
-          {isApplicantOrRecruitmentTeam(authUser) && (
-            <Link to="/timeslots" className="hvr-underline-from-center">
-              Timeslots
-            </Link>
-          )}
-
-          {isApplicantOrRecruitmentTeam(authUser) && (
-            <Link to="/room" className="hvr-underline-from-center">
-              Interview
-            </Link>
-          )}
-
-          {isApplicantOrRecruitmentTeam(authUser) && (
-            <Link to="/deliberation" className="hvr-underline-from-center">
-              Deliberation
-            </Link>
-          )}
-
-          {isAdmin(authUser) && (
-            <Link to="/admin" className="hvr-underline-from-center">
-              Admin
-            </Link>
-          )}
-
-          {!authUser && (
-            <Link to="/login" className="hvr-underline-from-center">
-              Login
-            </Link>
-          )}
-          {authUser && (
-            <Link to="/logout" className="hvr-underline-from-center">
-              Logout
-            </Link>
-          )}
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
-  );
-};
-
-export default withFirebase(Header);
+export default Header;

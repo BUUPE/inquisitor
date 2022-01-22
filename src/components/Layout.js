@@ -1,25 +1,19 @@
-import React from "react";
+import React, { Fragment } from "react";
 
 import { Layout } from "upe-react-components";
 
-import { Centered } from "../styles/global";
-import Logo from "./Logo";
+import ErrorComponent from "./Error";
+import { withSettingsProvider } from "./API/SettingsContext";
 
-const ErrorComponent = ({ error, errorInfo }) => (
-  <Centered>
-    <Logo size="medium" />
-    <h1>Uh oh!</h1>
-    <p>Something went wrong!</p>
-    <details
-      style={{ whiteSpace: "pre-wrap", maxHeight: "50%", overflowY: "auto" }}
-    >
-      {error && error.toString()}
-      <br />
-      {errorInfo.componentStack}
-    </details>
-  </Centered>
+// Needs to make use of Inner Layout to get the proper Firebase Provider
+const InnerLayout = withSettingsProvider((object) => (
+  <Fragment>{object.children}</Fragment>
+));
+
+const InquisitorLayout = ({ children }) => (
+  <Layout errorComponent={ErrorComponent}>
+    <InnerLayout children={children} />
+  </Layout>
 );
 
-export default ({ children }) => (
-  <Layout errorComponent={ErrorComponent}>{children}</Layout>
-);
+export default InquisitorLayout;

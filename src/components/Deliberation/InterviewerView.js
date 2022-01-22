@@ -12,6 +12,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import { isMember, isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
@@ -19,19 +20,23 @@ import Error from "../Error";
 import SecondRound from "./SecondRound";
 import FeedbackPage from "./FeedbackPage";
 import ApplicationDisplay from "./ApplicationDisplay";
-import { Container, FullSizeContainer } from "../../styles/global";
+import { FullSizeContainer, Title, Text } from "../../styles/global";
+import TextDisplay, { BackIcon } from "../TextDisplay";
 
-// TODO: use this to constrcut a Sidebar base in global styles
 const SidebarBase = styled.ul`
+  font-family: Georgia;
   text-align: center;
-  width: 100%;
-  height: 100%;
+  max-width: 300px;
   padding: 15px;
-  background: ${(props) => props.theme.palette.darkShades};
+  background: #333333;
   list-style: none;
+  margin-left: 1%;
+  margin-right: 1%;
+  border-radius: 25px;
 
   h1 {
     color: white;
+    font-style: italic;
     font-weight: bold;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -45,48 +50,59 @@ const SidebarBase = styled.ul`
 `;
 
 const SidebarItem = styled.li`
-  color: ${(props) =>
-    props.selected ? props.theme.palette.mainBrand : "white"};
+  color: ${(props) => (props.selected ? "#f21131" : "white")};
   font-weight: bold;
   padding-top: 10px;
   padding-bottom: 10px;
   cursor: pointer;
 
   &:hover {
-    color: ${(props) => props.theme.palette.mainBrand};
+    color: #f21131;
     text-decoration: underline;
   }
 `;
 
 const DetailsDisplay = () => (
   <div>
-    <h1> Welcome to Deliberations! </h1>
-    <p>
-      {" "}
-      Please read the instructions bellow carefully before proceeding to
-      deliberate on all the candidates.{" "}
-    </p>
+    <BackIcon />
+    <Title>
+      <h1> Welcome to Deliberations! </h1>
+    </Title>
+    <Text
+      paddingLeft={"7%"}
+      paddingRight={"7%"}
+      pFontSize={"15px"}
+      pTextAlign={"left"}
+      pMaxWidth={"50%"}
+      position={"left"}
+    >
+      <p>
+        {" "}
+        Please read the instructions bellow carefully before proceeding to
+        deliberate on all the candidates.{" "}
+      </p>
 
-    <h3> How to Vote </h3>
-    <p>
-      {" "}
-      In order to vote, select one of the candidates from the sidebar, and
-      proceed to review their application, in it, you'll be able to see not only
-      their general application, but also the details of their interview.{" "}
-    </p>
-    <p>
-      {" "}
-      After reviewing their application, you'll find two buttons at the bottom,
-      approve & deny, you only get 1 vote per candidate, although you will be
-      able to switch your vote until the deliberations close.{" "}
-    </p>
+      <h3> How to Vote </h3>
+      <p>
+        {" "}
+        In order to vote, select one of the candidates from the sidebar, and
+        proceed to review their application, in it, you'll be able to see not
+        only their general application, but also the details of their interview.{" "}
+      </p>
+      <p>
+        {" "}
+        After reviewing their application, you'll find two buttons at the
+        bottom, approve & deny, you only get 1 vote per candidate, although you
+        will be able to switch your vote until the deliberations close.{" "}
+      </p>
 
-    <h3> Final Details </h3>
-    <p>
-      {" "}
-      You will not be able to see anyone else's votes of the final results until
-      the EBoard announces them.{" "}
-    </p>
+      <h3> Final Details </h3>
+      <p>
+        {" "}
+        You will not be able to see anyone else's votes of the final results
+        until the EBoard announces them.{" "}
+      </p>
+    </Text>
   </div>
 );
 
@@ -96,13 +112,11 @@ class InterviewerView extends Component {
     applications: [],
     currentApplicationID: "details",
     currentApplication: null,
-    settings: null,
     loading: true,
     error: null,
     display: null,
   };
   static contextType = AuthUserContext;
-  unsubSettings = null;
   unsubApplications = null;
 
   componentDidMount() {
@@ -114,7 +128,6 @@ class InterviewerView extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.unsubSettings === "function") this.unsubSettings();
     if (typeof this.unsubApplications === "function") this.unsubApplications();
   }
 
@@ -134,7 +147,7 @@ class InterviewerView extends Component {
       .then((querySnapshot) =>
         querySnapshot.docs.map((doc) => ({
           ...doc.data(),
-          id: doc.id,
+          uid: doc.id,
         }))
       );
 
@@ -149,23 +162,6 @@ class InterviewerView extends Component {
         return doc.data();
       });
 
-    const settings = await new Promise((resolve, reject) => {
-      let resolveOnce = (doc) => {
-        resolveOnce = () => null;
-        resolve(doc);
-      };
-      this.unsubSettings = this.props.firebase
-        .generalSettings()
-        .onSnapshot((doc) => {
-          if (!doc.exists) this.setState({ error: "Failed to load settings!" });
-          else {
-            const settings = doc.data();
-            this.setState({ settings });
-            resolveOnce(settings);
-          }
-        }, reject);
-    });
-
     const applications = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
         resolveOnce = () => null;
@@ -177,9 +173,9 @@ class InterviewerView extends Component {
           const applications = querySnapshot.docs.map((doc) => {
             const application = doc.data();
             return {
-              id: doc.id,
+              uid: doc.id,
               ...application,
-              name: application.responses.find((r) => r.id === 1).value,
+              name: application.responses.find((r) => r.uid === "name").value,
             };
           });
           this.setState({ applications });
@@ -195,7 +191,7 @@ class InterviewerView extends Component {
                 ? currentApplicationID
                 : "details";
             this.setCurrentApplication(
-              applications.find((a) => a.id === currentApplicationID) ||
+              applications.find((a) => a.uid === currentApplicationID) ||
                 fallBack
             );
           }
@@ -203,7 +199,6 @@ class InterviewerView extends Component {
     });
 
     this.setState({
-      settings,
       applications,
       questions,
       levelConfig,
@@ -215,7 +210,7 @@ class InterviewerView extends Component {
   setCurrentApplication = (currentApplication) => {
     const currentApplicationID =
       typeof currentApplication === "object" && currentApplication !== null
-        ? currentApplication.id
+        ? currentApplication.uid
         : currentApplication;
     window.localStorage.setItem(
       "currentApplicationDeliberation",
@@ -227,11 +222,11 @@ class InterviewerView extends Component {
   voteApplicant = (decision) => {
     const { currentApplication } = this.state;
     const updatedApplication = cloneDeep(currentApplication);
-    delete updatedApplication.id;
+    delete updatedApplication.uid;
     updatedApplication.deliberation.votes[this.context.uid] = decision;
 
     this.props.firebase
-      .application(currentApplication.id)
+      .application(currentApplication.uid)
       .update(updatedApplication)
       .then(() =>
         swal(
@@ -261,8 +256,7 @@ class InterviewerView extends Component {
   readyRoundTwo = () =>
     swal({
       title: "Hold up!",
-      text:
-        "If you press Yes, you're going to open the second round of deliberation, which will commit significant changes to the database! Are you sure?",
+      text: "If you press Yes, you're going to open the second round of deliberation, which will commit significant changes to the database! Are you sure?",
       icon: "warning",
       buttons: {
         cancel: {
@@ -280,7 +274,7 @@ class InterviewerView extends Component {
       if (confirm) {
         const batch = this.props.firebase.firestore.batch();
         this.state.applications.forEach((application) => {
-          const ref = this.props.firebase.application(application.id);
+          const ref = this.props.firebase.application(application.uid);
           batch.update(ref, {
             "deliberation.accepted": false,
             "deliberation.confirmed": false,
@@ -294,8 +288,7 @@ class InterviewerView extends Component {
   sendResults = () =>
     swal({
       title: "Hold up!",
-      text:
-        "If you press Yes, you're going to send emails to all the applicants with their results. If you haven't filled out feedback for everyone, this will be bad!",
+      text: "If you press Yes, you're going to send emails to all the applicants with their results. If you haven't filled out feedback for everyone, this will be bad!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -326,7 +319,7 @@ class InterviewerView extends Component {
           const batch = this.props.firebase.firestore.batch();
           const appsWithResult = this.state.applications.map((application) => {
             const {
-              id,
+              uid,
               deliberation: { votes },
             } = application;
             const allVotes = Object.values(votes);
@@ -338,14 +331,14 @@ class InterviewerView extends Component {
                 "deliberation.votes": {},
               };
 
-              if (this.state.settings.useTwoRoundDeliberations) {
+              if (this.props.settings.useTwoRoundDeliberations) {
                 updateData.provisional = {
                   meetings: false,
                   contribution: false,
                 };
               }
 
-              const ref = this.props.firebase.application(id);
+              const ref = this.props.firebase.application(uid);
               batch.update(ref, updateData);
             }
 
@@ -382,7 +375,6 @@ class InterviewerView extends Component {
     const {
       loading,
       error,
-      settings,
       applications,
       currentApplication,
       currentApplicationID,
@@ -393,15 +385,17 @@ class InterviewerView extends Component {
     if (error) return <Error message={error} />;
     if (loading) return <Loader />;
 
-    const { deliberationsOpen } = this.state.settings;
+    const { deliberationsOpen } = this.props.settings;
 
     const authUser = this.context;
 
     if (!deliberationsOpen && !isAdmin(authUser))
       return (
-        <Container flexdirection="column">
-          <h1>Deliberations are closed!</h1>
-        </Container>
+        <TextDisplay
+          name={"Deliberations Menu"}
+          text={"Deliberations are currently closed!"}
+          displayBack={true}
+        />
       );
 
     let Content;
@@ -409,7 +403,7 @@ class InterviewerView extends Component {
     else if (currentApplicationID === "admin") {
       Content = () => (
         <FeedbackPage
-          settings={settings}
+          settings={this.props.settings}
           applications={applications}
           saveFeedback={this.saveFeedback}
           sendResults={this.sendResults}
@@ -418,7 +412,7 @@ class InterviewerView extends Component {
     } else if (currentApplicationID === "secondRound") {
       Content = () => (
         <SecondRound
-          settings={settings}
+          settings={this.props.settings}
           applications={applications}
           saveSecondRoundStatus={this.saveSecondRoundStatus}
           readyRoundTwo={this.readyRoundTwo}
@@ -437,51 +431,49 @@ class InterviewerView extends Component {
     } else Content = () => <DetailsDisplay />;
 
     const Sidebar = () => (
-      <Col className="flex-column" md={3} style={{ padding: 0 }}>
-        <SidebarBase>
-          <h1>Applications</h1>
+      <SidebarBase>
+        <h1>Applications</h1>
+        <SidebarItem
+          selected={currentApplication === "details"}
+          onClick={() => this.setCurrentApplication("details")}
+        >
+          Voting Instructions
+        </SidebarItem>
+        {isAdmin(authUser) && (
           <SidebarItem
-            selected={currentApplication === "details"}
-            onClick={() => this.setCurrentApplication("details")}
+            selected={currentApplication === "admin"}
+            onClick={() => this.setCurrentApplication("admin")}
           >
-            Voting Instructions
+            Add Feedback
           </SidebarItem>
-          {isAdmin(authUser) && (
+        )}
+        {isAdmin(authUser) && (
+          <SidebarItem
+            selected={currentApplication === "secondRound"}
+            onClick={() => this.setCurrentApplication("secondRound")}
+          >
+            Second Round Status
+          </SidebarItem>
+        )}
+        <hr />
+        {applications
+          .sort((a, b) => (a.name > b.name ? 1 : -1))
+          .map((application) => (
             <SidebarItem
-              selected={currentApplication === "admin"}
-              onClick={() => this.setCurrentApplication("admin")}
+              selected={currentApplication.uid === application.uid}
+              key={application.uid}
+              onClick={() => this.setCurrentApplication(application)}
             >
-              Add Feedback
+              {application.name}
             </SidebarItem>
-          )}
-          {isAdmin(authUser) && (
-            <SidebarItem
-              selected={currentApplication === "secondRound"}
-              onClick={() => this.setCurrentApplication("secondRound")}
-            >
-              Second Round Status
-            </SidebarItem>
-          )}
-          <hr />
-          {applications
-            .sort((a, b) => (a.name > b.name ? 1 : -1))
-            .map((application) => (
-              <SidebarItem
-                selected={currentApplication.id === application.id}
-                key={application.id}
-                onClick={() => this.setCurrentApplication(application)}
-              >
-                {application.name}
-              </SidebarItem>
-            ))}
-        </SidebarBase>
-      </Col>
+          ))}
+      </SidebarBase>
     );
 
     return (
       <FullSizeContainer fluid flexdirection="row">
         <Sidebar />
-        <Col md={9} style={{ padding: 15 }}>
+        <Col style={{ padding: 25 }}>
           <Content />
         </Col>
       </FullSizeContainer>
@@ -490,6 +482,7 @@ class InterviewerView extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isMember),
   withFirebase
 )(InterviewerView);

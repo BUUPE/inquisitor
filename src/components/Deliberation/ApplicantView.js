@@ -2,11 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import swal from "@sweetalert/with-react";
 import { compose } from "recompose";
 import cloneDeep from "lodash.clonedeep";
-import { Link, navigate } from "gatsby";
+import { navigate } from "gatsby";
 import update from "immutability-helper";
 
 import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 
 import { isApplicant } from "../../util/conditions";
 import {
@@ -14,53 +13,38 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
-import { Container, RequiredAsterisk } from "../../styles/global";
+import { RequiredAsterisk } from "../../styles/global";
 import Loader from "../Loader";
-import Error from "../Error";
+import TextDisplay, { BackIcon } from "../TextDisplay";
 
-const ApplicantView = ({ firebase }) => {
-  const [settings, setSettings] = useState({});
+import { StyledButton, Title, Text } from "../../styles/global";
+
+const ApplicantView = ({ firebase, settings }) => {
   const [application, setApplication] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [loadedApplication, setLoadedApplication] = useState(false);
-  const [loadedSettings, setLoadedSettings] = useState(false);
-  const [error, setError] = useState(null);
+  const [loadedApplication, setLoadedApplication] = useState(true);
 
   const authUser = useContext(AuthUserContext);
 
   useEffect(() => {
     if (firebase && !!authUser) {
-      const settingsUnsub = firebase
-        .generalSettings()
-        .onSnapshot((docSnapshot) => {
-          if (docSnapshot.exists) setSettings(docSnapshot.data());
-          else setError("No Settings!");
-          setLoadedSettings(true);
-        });
-
       const applicationUnsub = firebase
         .application(authUser.uid)
         .onSnapshot((docSnapshot) => {
           if (docSnapshot.exists) {
             setApplication(docSnapshot.data());
-          } else setError("No Application!");
-          setLoadedApplication(true);
+          } else console.log("No Application!");
+          setLoadedApplication(false);
         });
 
       return () => {
-        settingsUnsub();
         applicationUnsub();
       };
     }
   }, [firebase, authUser]);
 
-  useEffect(() => {
-    if (loadedSettings && loadedApplication) setLoading(false);
-  }, [loadedApplication, loadedSettings]);
-
-  if (error) return <Error error={error} />;
-  if (loading) return <Loader />;
+  if (loadedApplication) return <Loader />;
 
   const confirm = async () => {
     const roles = cloneDeep(authUser.roles);
@@ -80,7 +64,9 @@ const ApplicantView = ({ firebase }) => {
       delete roles.applicant;
       roles.upemember = true;
 
-      const gradYear = application.responses.find((r) => r.id === 5).value;
+      const gradYear = application.responses.find(
+        (r) => r.uid === "year"
+      ).value;
 
       await firebase.user(authUser.uid).update({ roles, gradYear });
       await firebase.application(authUser.uid).delete();
@@ -113,14 +99,14 @@ const ApplicantView = ({ firebase }) => {
       .uploadProfile("Provisional", formData.profileIMG)
       .put(formData.file)
       .catch((error) => {
-        setError(error);
+        console.log(error);
       });
 
     await firebase
       .user(authUser.uid)
       .update(data)
       .catch((error) => {
-        setError(error);
+        console.log(error);
       });
 
     await swal("All set!", "We got your info!", "success");
@@ -130,20 +116,27 @@ const ApplicantView = ({ firebase }) => {
   // Hasn't applied yet
   if (!authUser.roles.applicant)
     return (
-      <Container flexdirection="column">
-        <h1>You have not yet applied this semester.</h1>
-        <Link to="/apply">
-          <Button>Apply!</Button>
-        </Link>
-      </Container>
+      <TextDisplay
+        name={"Deliberation Results"}
+        text={"You have yet to apply this Semester."}
+        displayBack={true}
+      />
     );
 
   // Hasn't interviewed yet
   if (!application.interview.interviewed)
     return (
-      <Container flexdirection="column">
-        <h1>You must first complete your interview!</h1>
-      </Container>
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={
+            "You must complete your interview before getting any deliberation results."
+          }
+          displayBack={true}
+        />
+        <br />
+        <br />
+      </>
     );
 
   // Deliberations are incomplete or feedback hasn't been given
@@ -154,9 +147,17 @@ const ApplicantView = ({ firebase }) => {
   )
     // TODO: make this centered, prettier
     return (
-      <Container flexdirection="column">
-        <h1>Deliberations are still underway!</h1>
-      </Container>
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={"Deliberations are still underway."}
+          displayBack={true}
+        />
+        <br />
+        <br />
+        <br />
+        <br />
+      </>
     );
 
   // Denied but waiting for emails to go out
@@ -165,9 +166,17 @@ const ApplicantView = ({ firebase }) => {
     application.deliberation.feedback !== ""
   )
     return (
-      <Container flexdirection="column">
-        <h1>Keep an eye on your inbox for an update on your deliberation!</h1>
-      </Container>
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={"Keep an eye on your inbox for an update on your deliberation!"}
+          displayBack={true}
+        />
+        <br />
+        <br />
+        <br />
+        <br />
+      </>
     );
 
   // Theyre accepted and need to confirm
@@ -176,8 +185,7 @@ const ApplicantView = ({ firebase }) => {
     const ResultText = () =>
       settings.useTwoRoundDeliberations && !authUser.roles.provisionalMember ? (
         <>
-          <h2>You have been provisionally accepted into UPE!</h2>
-          <br />
+          <h3>You have been provisionally accepted into UPE!</h3>
           <p>
             We are pleased to extend to you provisional membership to UPE. This
             means that you are now on the way to becoming a fully fledged member
@@ -189,8 +197,7 @@ const ApplicantView = ({ firebase }) => {
         </>
       ) : (
         <>
-          <h2>You have been officially accepted into UPE!</h2>
-          <br />
+          <h3>You have been officially accepted into UPE!</h3>
           <p>
             We are pleased to announce that you have been officially accepted
             into UPE. In order for us to complete this process, we require that
@@ -200,31 +207,67 @@ const ApplicantView = ({ firebase }) => {
       );
 
     return (
-      <Container flexdirection="column">
-        <div>
-          <h1>Your Results</h1>
-        </div>
-        <br />
-        <div>
+      <>
+        <BackIcon />
+        <Title>
+          <h1> Deliberation Results </h1>
+        </Title>
+        <Text
+          pFontSize={"15px"}
+          pTextAlign={"left"}
+          pMaxWidth={"50%"}
+          position={"left"}
+          h2MarginTop={"2%"}
+          paddingLeft={"7%"}
+          paddingRight={"7%"}
+        >
           <ResultText />
-          <Button onClick={confirm}>Confirm</Button>
-        </div>
-      </Container>
+          <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
+            onClick={confirm}
+          >
+            Confirm
+          </StyledButton>
+        </Text>
+      </>
     );
   }
 
   // make this pretty
   if (authUser.profileIMG !== "")
     return (
-      <Container flexdirection="column">
-        <h1>You're all set!</h1>
-      </Container>
+      <>
+        <TextDisplay
+          name={"Deliberation Results"}
+          text={"You're all set!"}
+          displayBack={true}
+        />
+        <br />
+        <br />
+        <br />
+        <br />
+      </>
     );
 
   return (
-    <Container flexdirection="column">
-      <div>
-        <h1>Next Steps</h1>
+    <>
+      <BackIcon />
+      <Title>
+        <h1> Deliberation Results </h1>
+      </Title>
+      <Text
+        pFontSize={"15px"}
+        pTextAlign={"left"}
+        pMaxWidth={"50%"}
+        position={"left"}
+        h2MarginTop={"2%"}
+        paddingLeft={"7%"}
+        paddingRight={"7%"}
+      >
+        <h2>Next Steps</h2>
         <p>
           Now that you've accepted to join UPE, you will continue on with the
           onboarding period, during this time, and has mentioned during the Info
@@ -237,14 +280,14 @@ const ApplicantView = ({ firebase }) => {
           so that once onboarding is over, we can induct you and add you to our
           database & website in a timely manner.
         </p>
-      </div>
-      <br />
-      <h2> Data Form </h2>
-      <DataForm
-        submitFunction={submitData}
-        firstName={authUser.name.split(" ")[0]}
-      />
-    </Container>
+        <br />
+        <h2> Data Form </h2>
+        <DataForm
+          submitFunction={submitData}
+          firstName={authUser.name.split(" ")[0]}
+        />
+      </Text>
+    </>
   );
 };
 
@@ -285,7 +328,7 @@ const DataForm = ({ submitFunction, firstName }) => {
       setValidated(true);
       swal(
         "Missing photo!",
-        "Please provide a headshot for your profile photo.",
+        "Please provide a headshot for your profile photo of size less than 5MB.",
         "error"
       );
     } else {
@@ -323,7 +366,7 @@ const DataForm = ({ submitFunction, firstName }) => {
 
   // TODO: Look into custom form issue
   return (
-    <Container flexdirection="column">
+    <Text>
       <Form noValidate validated={validated} onSubmit={saveData}>
         <Form.Row>
           <Form.Group>
@@ -407,13 +450,22 @@ const DataForm = ({ submitFunction, firstName }) => {
           </Form.Group>
         </Form.Row>
 
-        <Button type="submit">Submit</Button>
+        <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
+          type="submit"
+        >
+          Submit
+        </StyledButton>
       </Form>
-    </Container>
+    </Text>
   );
 };
 
 export default compose(
+  withSettings,
   withAuthorization(isApplicant),
   withFirebase
 )(ApplicantView);

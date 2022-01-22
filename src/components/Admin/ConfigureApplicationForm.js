@@ -8,7 +8,6 @@ import { compose } from "recompose";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Toast from "react-bootstrap/Toast";
 
@@ -18,7 +17,14 @@ import { withFirebase } from "upe-react-components";
 import { isAdmin } from "../../util/conditions";
 import AdminLayout from "./AdminLayout";
 import Loader from "../Loader";
-import { FlexDiv, RequiredAsterisk } from "../../styles/global";
+import {
+  FlexDiv,
+  RequiredAsterisk,
+  Title,
+  StyledButton,
+  Text,
+} from "../../styles/global";
+import { BackIcon } from "../TextDisplay";
 
 // assumes this is run before the coming recruitment season
 const estimateSemester = () => {
@@ -40,10 +46,11 @@ const estimateSemester = () => {
 };
 
 const DEFAULT_APPLICATION_FORM_CONFIG = {
+  maxId: 10,
   semester: estimateSemester(),
   questions: [
     {
-      id: 1,
+      uid: "name",
       order: 1,
       name: "Full Name",
       type: "text",
@@ -51,7 +58,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 2,
+      uid: "email",
       order: 2,
       name: "Email",
       type: "email",
@@ -59,7 +66,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 3,
+      uid: "major",
       order: 3,
       name: "Major",
       type: "text",
@@ -67,7 +74,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 4,
+      uid: "minor",
       order: 4,
       name: "Minor",
       type: "text",
@@ -75,7 +82,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 5,
+      uid: "year",
       order: 5,
       name: "Class Year",
       type: "number",
@@ -83,7 +90,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
       default: true,
     },
     {
-      id: 6,
+      uid: "resume",
       order: 6,
       name: "Resume",
       type: "file",
@@ -95,7 +102,7 @@ const DEFAULT_APPLICATION_FORM_CONFIG = {
 
 const UnderlinedLabel = styled(Form.Label)`
   text-decoration: underline;
-  text-decoration-color: ${(props) => props.theme.palette.mainBrand};
+  text-decoration-color: #f21131;
 `;
 
 const ConfigureApplicationForm = ({ firebase }) => {
@@ -136,9 +143,11 @@ const ConfigureApplicationForm = ({ firebase }) => {
       const doUpdate = () => {
         const semester = form.querySelector("#semester").value;
         const year = form.querySelector("#year").value;
+        const maxId = applicationFormConfig.maxId;
         const newApplicationFormConfig = {
           ...applicationFormConfig,
           semester: `${semester}-${year}`,
+          maxId,
         };
 
         firebase
@@ -157,8 +166,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
           if (snapshot.size > 0) {
             swal({
               title: "Applications already exist!",
-              text:
-                "If you edit the application form configuration now, some applications will have different questions than others! Are you sure you want to do this?",
+              text: "If you edit the application form configuration now, some applications will have different questions than others! Are you sure you want to do this?",
               icon: "warning",
               buttons: {
                 cancel: {
@@ -183,8 +191,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const resetApplicationFormConfig = () => {
     swal({
       title: "Are you sure?",
-      text:
-        "This will reset the application form configuration to its default state! If applications have already been sent, new applications will have different questions!",
+      text: "This will reset the application form configuration to its default state! If applications have already been sent, new applications will have different questions!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -219,13 +226,12 @@ const ConfigureApplicationForm = ({ firebase }) => {
       event.stopPropagation();
     } else {
       const questions = [...applicationFormConfig.questions];
-      const nextId =
-        Math.max(...applicationFormConfig.questions.map((q) => q.id)) + 1;
+      const nextId = applicationFormConfig.maxId + 1;
       const nextOrder =
         Math.max(...applicationFormConfig.questions.map((q) => q.order)) + 1;
 
       questions.push({
-        id: nextId,
+        uid: nextId,
         order: nextOrder,
         name: form.querySelector("#newQuestionName").value,
         type: form.querySelector("#newQuestionType").value,
@@ -235,6 +241,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
       setApplicationFormConfig({
         ...applicationFormConfig,
         questions,
+        maxId: nextId,
       });
       closeModal();
     }
@@ -242,7 +249,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
   const removeQuestion = (questionId) => {
     const questions = applicationFormConfig.questions.filter(
-      (q) => q.id !== questionId
+      (q) => q.uid !== questionId
     );
     setApplicationFormConfig({
       ...applicationFormConfig,
@@ -287,7 +294,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
   const updateQuestionRequired = (e, questionId) => {
     const questions = [...applicationFormConfig.questions].map((q) => {
-      if (q.id === questionId) {
+      if (q.uid === questionId) {
         return {
           ...q,
           required: e.target.checked,
@@ -306,7 +313,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const QuestionSlot = ({ isdefault, order, children }) => {
     const [{ isOver }, drop] = useDrop({
       accept: "question",
-      drop: (item) => updateQuestionOrder(item.id, item.order, order),
+      drop: (item) => updateQuestionOrder(item.uid, item.order, order),
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),
       }),
@@ -339,7 +346,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
     const [, dragRef] = useDrag({
       item: {
         type: "question",
-        id: questionId,
+        uid: questionId,
         order,
       },
     });
@@ -388,7 +395,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
       case "file":
         questionComponent = (
           <Form.File
-            id={`custom-file-${question.id}`}
+            id={`custom-file-${question.uid}`}
             label="Upload file"
             custom
             disabled
@@ -405,8 +412,8 @@ const ConfigureApplicationForm = ({ firebase }) => {
               value="true"
               label="Yes"
               type="radio"
-              name={question.id}
-              id={`${question.id}-1`}
+              name={question.uid}
+              id={`${question.uid}-1`}
             />
             <Form.Check
               custom
@@ -415,8 +422,8 @@ const ConfigureApplicationForm = ({ firebase }) => {
               value="false"
               label="No"
               type="radio"
-              name={question.id}
-              id={`${question.id}-2`}
+              name={question.uid}
+              id={`${question.uid}-2`}
             />
           </div>
         );
@@ -434,12 +441,12 @@ const ConfigureApplicationForm = ({ firebase }) => {
 
     return (
       <QuestionSlot
-        key={question.id}
+        key={question.uid}
         isdefault={question.default}
         order={question.order}
       >
         <QuestionWrapper
-          questionId={question.id}
+          questionId={question.uid}
           isdefault={question.default}
           order={question.order}
         >
@@ -454,8 +461,8 @@ const ConfigureApplicationForm = ({ firebase }) => {
               checked={question.required}
               type="switch"
               label="Required?"
-              id={`${question.id}-required`}
-              onChange={(e) => updateQuestionRequired(e, question.id)}
+              id={`${question.uid}-required`}
+              onChange={(e) => updateQuestionRequired(e, question.uid)}
             />
             <div
               style={{
@@ -468,7 +475,7 @@ const ConfigureApplicationForm = ({ firebase }) => {
               <button
                 type="button"
                 className="close ml-2 mb-1"
-                onClick={() => removeQuestion(question.id)}
+                onClick={() => removeQuestion(question.uid)}
               >
                 <span aria-hidden="true">×</span>
                 <span className="sr-only">Close</span>
@@ -483,86 +490,118 @@ const ConfigureApplicationForm = ({ firebase }) => {
   const year = new Date().getFullYear();
   return (
     <AdminLayout>
-      <h1>Configure Application</h1>
+      <BackIcon />
+      <Title>
+        <h1>Configure Application</h1>
+      </Title>
+      <Text
+        paddingTop={"20px"}
+        paddingLeft={"7%"}
+        paddingRight={"10%"}
+        pFontSize={"15px"}
+        pMaxWidth={"100%"}
+        pTextAlign={"left"}
+      >
+        <Form onSubmit={saveApplicationFormConfig}>
+          <Row>
+            <Col md="6">
+              <p>
+                This sets the semester-year for the coming recruitment season.
+                Make sure to set this before starting the season.
+              </p>
+              <Form.Row>
+                <Form.Group controlId="semester">
+                  <Form.Label>Semester</Form.Label>
+                  <Form.Control
+                    as="select"
+                    defaultValue={applicationFormConfig.semester.split("-")[0]}
+                  >
+                    <option value="Fall">Fall</option>
+                    <option value="Spring">Spring</option>
+                  </Form.Control>
+                </Form.Group>
+              </Form.Row>
+              <Form.Row>
+                <Form.Group controlId="year">
+                  <Form.Label>Year</Form.Label>
+                  <Form.Control
+                    as="select"
+                    defaultValue={applicationFormConfig.semester.split("-")[1]}
+                  >
+                    <option value={year}>{year}</option>
+                    <option value={year + 1}>{year + 1}</option>
+                  </Form.Control>
+                </Form.Group>
+              </Form.Row>
+            </Col>
+            <Col md="6">
+              <p>
+                These are the questions that applicants will see (in this
+                order). Default questions are underlined in red and can't be
+                re-ordered. Required questions will have an asterisk.
+              </p>
+              <DndProvider backend={HTML5Backend}>
+                {applicationFormConfig.questions
+                  .sort((a, b) => (a.order > b.order ? 1 : -1))
+                  .map((question) => renderQuestion(question))}
+              </DndProvider>
 
-      <Form onSubmit={saveApplicationFormConfig}>
-        <Row>
-          <Col md="6">
-            <p>
-              This sets the semester-year for the coming recruitment season.
-              Make sure to set this before starting the season.
-            </p>
-            <Form.Row>
-              <Form.Group controlId="semester">
-                <Form.Label>Semester</Form.Label>
-                <Form.Control
-                  as="select"
-                  defaultValue={applicationFormConfig.semester.split("-")[0]}
-                >
-                  <option value="Fall">Fall</option>
-                  <option value="Spring">Spring</option>
-                </Form.Control>
-              </Form.Group>
-            </Form.Row>
-            <Form.Row>
-              <Form.Group controlId="year">
-                <Form.Label>Year</Form.Label>
-                <Form.Control
-                  as="select"
-                  defaultValue={applicationFormConfig.semester.split("-")[1]}
-                >
-                  <option value={year}>{year}</option>
-                  <option value={year + 1}>{year + 1}</option>
-                </Form.Control>
-              </Form.Group>
-            </Form.Row>
-          </Col>
-          <Col md="6">
-            <p>
-              These are the questions that applicants will see (in this order).
-              Default questions are underlined in red and can't be re-ordered.
-              Required questions will have an asterisk.
-            </p>
-            <DndProvider backend={HTML5Backend}>
-              {applicationFormConfig.questions
-                .sort((a, b) => (a.order > b.order ? 1 : -1))
-                .map((question) => renderQuestion(question))}
-            </DndProvider>
-
-            <Button onClick={openModal}>Add Question</Button>
-          </Col>
-        </Row>
-        <hr />
-        <FlexDiv>
-          <FlexDiv
-            style={{
-              flexGrow: 1,
-            }}
-          >
-            <Button type="submit" disabled={showToast}>
-              Save Config
-            </Button>
-            <Toast
-              onClose={() => setShowToast(false)}
-              show={showToast}
-              delay={3000}
-              autohide
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={openModal}
+              >
+                Add Question
+              </StyledButton>
+            </Col>
+          </Row>
+          <hr />
+          <FlexDiv>
+            <FlexDiv
               style={{
-                width: "fit-content",
-                marginLeft: 25,
+                flexGrow: 1,
               }}
             >
-              <Toast.Header>
-                <strong className="mr-auto">Config Saved!</strong>
-              </Toast.Header>
-            </Toast>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                type="submit"
+                disabled={showToast}
+              >
+                Save Config
+              </StyledButton>
+              <Toast
+                onClose={() => setShowToast(false)}
+                show={showToast}
+                delay={3000}
+                autohide
+                style={{
+                  width: "fit-content",
+                  marginLeft: 25,
+                }}
+              >
+                <Toast.Header>
+                  <strong className="mr-auto">Config Saved!</strong>
+                </Toast.Header>
+              </Toast>
+            </FlexDiv>
+            <StyledButton
+              paddingTop={"0.5%"}
+              paddingRight={"2%"}
+              paddingBottom={"0.5%"}
+              paddingLeft={"2%"}
+              variant="danger"
+              onClick={resetApplicationFormConfig}
+            >
+              Reset
+            </StyledButton>
           </FlexDiv>
-          <Button variant="danger" onClick={resetApplicationFormConfig}>
-            Reset
-          </Button>
-        </FlexDiv>
-      </Form>
-
+        </Form>
+      </Text>
       <Modal show={showModal} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>Add New Question</Modal.Title>
@@ -601,10 +640,26 @@ const ConfigureApplicationForm = ({ firebase }) => {
                 justifyContent: "space-between",
               }}
             >
-              <Button variant="secondary" onClick={closeModal}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                variant="secondary"
+                onClick={closeModal}
+              >
                 Cancel
-              </Button>
-              <Button type="submit">Add</Button>
+              </StyledButton>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                green
+                type="submit"
+              >
+                Add
+              </StyledButton>
             </div>
           </Form>
         </Modal.Body>

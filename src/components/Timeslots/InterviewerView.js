@@ -1,9 +1,11 @@
 import React, { Component } from "react";
+import styled from "styled-components";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 import cloneDeep from "lodash.clonedeep";
 
 import Button from "react-bootstrap/Button";
+import Row from "react-bootstrap/Row";
 import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
 
@@ -12,16 +14,23 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import { isRecruitmentTeam } from "../../util/conditions";
 import { formatTime, setStateAsync } from "../../util/helper";
 import Loader from "../Loader";
-import { Container } from "../../styles/global";
 
 import ScrollableRow from "./ScrollableRow";
 import ScheduleColumn from "./ScheduleColumn";
+import TextDisplay from "../TextDisplay";
 
 import moment from "moment-timezone";
+
+const TimeslotDiv = styled.div`
+  font-family: Georgia;
+  padding-left: 15%;
+  padding-right: 15%;
+`;
 
 class InterviewerView extends Component {
   _initFirebase = false;
@@ -29,7 +38,6 @@ class InterviewerView extends Component {
     super(props);
     this.state = {
       loading: true,
-      error: null,
       settings: null,
       timeslots: {}, // TODO: this needs a better name
       timeslotOptions: [],
@@ -56,31 +64,26 @@ class InterviewerView extends Component {
 
   loadData = async () => {
     this._initFirebase = true;
-    const doc = await this.props.firebase.generalSettings().get();
 
-    if (!doc.exists)
-      return this.setState({ error: "Failed to load settings!" });
-    else {
-      const now = moment();
-      const localOffset = now.utcOffset();
-      now.tz("America/New_York"); // BU timezone, normalize to this
-      const centralOffset = now.utcOffset();
-      const diffInMinutes = localOffset - centralOffset;
-      const offsetHours = diffInMinutes / 60;
+    const now = moment();
+    const localOffset = now.utcOffset();
+    now.tz("America/New_York"); // BU timezone, normalize to this
+    const centralOffset = now.utcOffset();
+    const diffInMinutes = localOffset - centralOffset;
+    const offsetHours = diffInMinutes / 60;
 
-      const settings = doc.data();
-      const timeslots = {};
-      settings.timeslotStart = (settings.timeslotStart + offsetHours) % 24;
-      settings.timeslotEnd = (settings.timeslotEnd + offsetHours) % 24;
-      settings.timeslotDays = settings.timeslotDays.map((day) => {
-        const date = day.toDate();
-        timeslots[date.toDateString()] = [];
-        return date;
-      });
-      await this.setStateAsync({ settings, timeslots, offsetHours });
-    }
+    const settings = this.props.settings;
+    const timeslots = {};
+    settings.timeslotStart = (settings.timeslotStart + offsetHours) % 24;
+    settings.timeslotEnd = (settings.timeslotEnd + offsetHours) % 24;
+    settings.timeslotDays = settings.timeslotDays.map((day) => {
+      const date = day.toDate();
+      timeslots[date.toDateString()] = [];
+      return date;
+    });
+    await this.setStateAsync({ settings, timeslots, offsetHours });
 
-    const timeslots = await new Promise((resolve, reject) => {
+    const timeslotsOne = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
@@ -93,7 +96,7 @@ class InterviewerView extends Component {
             return {
               ...doc.data(),
               time: new Date(doc.data().time), // make sure to convert timestamp objects to date objects
-              id: doc.id,
+              uid: doc.id,
             };
           });
           // add new data from listener
@@ -109,7 +112,7 @@ class InterviewerView extends Component {
               // if data for day exists, add to it, otherwise create new field
               if (timeslots.hasOwnProperty(day)) {
                 const index = timeslots[day].findIndex(
-                  (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                  (timeslot) => timeslot.uid === ts.uid // check if existing timeslot matches the update (ts)
                 );
 
                 // if timeslot exists, update the value, otherwise push it
@@ -124,31 +127,31 @@ class InterviewerView extends Component {
             });
 
           // remove timeslots that no longer exist
-          const validIds = listenerData.map((ts) => ts.id);
+          const validIds = listenerData.map((ts) => ts.uid);
           for (const day in timeslots)
             timeslots[day] = timeslots[day].filter((ts) =>
-              validIds.includes(ts.id)
+              validIds.includes(ts.uid)
             );
           this.setState({ timeslots });
           resolveOnce(timeslots);
         }, reject);
     });
 
-    this.setState({ timeslots, loading: false });
+    this.setState({ timeslots: timeslotsOne, loading: false });
   };
 
-  // selects a timeslot by its id. if someone else fills the slot first, shows an error
+  // selects a timeslot by its uid. if someone else fills the slot first, shows an error
   selectTimeslot = async (ts) => {
     const authUser = this.context;
     const { firebase } = this.props;
 
     try {
       await firebase.firestore.runTransaction(async (transaction) => {
-        const doc = await transaction.get(firebase.timeslot(ts.id));
+        const doc = await transaction.get(firebase.timeslot(ts.uid));
         const timeslot = { ...doc.data() };
         if (Object.keys(timeslot.interviewers).length < 2) {
           timeslot.interviewers[authUser.uid] = authUser.name;
-          transaction.update(firebase.timeslot(ts.id), timeslot);
+          transaction.update(firebase.timeslot(ts.uid), timeslot);
         } else {
           swal(
             "Uh oh!",
@@ -215,15 +218,15 @@ class InterviewerView extends Component {
           ts.time.getTime() === date.getTime()
       )
     );
-    const { id, interviewers } = timeslot;
+    const { uid, interviewers } = timeslot;
     delete interviewers[authUser.uid];
     if (
       Object.keys(interviewers).length === 0 &&
       !timeslot.hasOwnProperty("applicant")
     )
-      await this.props.firebase.timeslot(id).delete();
+      await this.props.firebase.timeslot(uid).delete();
     // TODO: notify admins if an timeslot with an applicant loses interviewers
-    else await this.props.firebase.timeslot(id).update({ interviewers });
+    else await this.props.firebase.timeslot(uid).update({ interviewers });
   };
 
   timeslotsToSlots = (timeslots) => {
@@ -243,19 +246,12 @@ class InterviewerView extends Component {
     const {
       loading,
       runningTransaction,
-      error,
       timeslots,
       showModal,
       timeslotOptions,
       offsetHours,
     } = this.state;
 
-    if (error)
-      return (
-        <Container flexdirection="column">
-          <h1>{error}</h1>
-        </Container>
-      );
     if (loading || runningTransaction) return <Loader />;
 
     const {
@@ -270,137 +266,157 @@ class InterviewerView extends Component {
 
     if (!timeslotsOpen)
       return (
-        <Container flexdirection="column">
-          <h1>Timeslot selection is closed!</h1>
-        </Container>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={"Timeslot selection is currently closed."}
+          displayBack={true}
+        />
       );
 
     return (
-      <Container flexdirection="column">
-        <h1>Interviewer Timeslot Selection</h1>
-        <p>
-          The times below are in your local timezone, but map to 9 AM - 10 PM
-          Boston time.
-        </p>
-        <ScrollableRow>
-          {timeslotDays
-            .sort((a, b) => a - b)
-            .map((date, i) => {
-              // TODO: explain this data structure in depth, good place for docz
-              // selectedSlots is an object/hashmap for performance reasons
-              const timeslotsForDay = timeslots[date.toDateString()];
-              const userSelectedSlots = timeslotsForDay
-                ? this.timeslotsToSlots(
-                    timeslotsForDay.filter((ts) =>
-                      ts.interviewers.hasOwnProperty(authUser.uid)
-                    )
-                  )
-                : {};
-              const slotsWithOpening = timeslotsForDay
-                ? this.timeslotsToSlots(
-                    timeslotsForDay.filter(
-                      (ts) =>
-                        !ts.interviewers.hasOwnProperty(authUser.uid) &&
-                        Object.keys(ts.interviewers).length === 1
-                    )
-                  )
-                : {};
-              const orphanedApplicants = timeslotsForDay
-                ? this.timeslotsToSlots(
-                    timeslotsForDay.filter(
-                      (ts) =>
-                        ts.hasOwnProperty("applicant") &&
-                        Object.keys(ts.interviewers).length === 0
-                    )
-                  )
-                : {};
-              return (
-                <ScheduleColumn
-                  key={i}
-                  date={date}
-                  timeslotLength={timeslotLength}
-                  userSelectedSlots={userSelectedSlots}
-                  slotsWithOpening={slotsWithOpening}
-                  orphanedApplicants={orphanedApplicants}
-                  selectTimeslot={this.selectTimeslotByDate}
-                  unselectTimeslot={this.unselectTimeslot}
-                  startHour={timeslotStart}
-                  endHour={timeslotEnd}
-                  offsetHours={offsetHours}
-                />
-              );
-            })}
-        </ScrollableRow>
-
-        <Modal
-          show={showModal}
-          onHide={() => this.setState({ showModal: false })}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Choose a timeslot</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
+      <>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={
+            "Green slots are slots you occupy, Blue slots are slots that only have 1 Interviewer, Red slots are slots with an Applicant but without Interviewers."
+          }
+          displayBack={true}
+        />
+        <TimeslotDiv>
+          <Row
+            lg={2}
+            md={2}
+            sm={1}
+            xl={2}
+            xs={1}
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              paddingBottom: "5%",
+            }}
+          >
             <ScrollableRow>
-              {timeslotOptions.map((ts) => (
-                <Card
-                  key={ts.id}
-                  style={{
-                    minWidth: "15rem",
-                    margin: "0 10px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => this.selectTimeslot(ts)}
-                >
-                  <Card.Body>
-                    <Card.Title>
-                      Interviewer: {Object.values(ts.interviewers).join(", ")}
-                    </Card.Title>
-                    {ts.applicant && (
-                      <Card.Subtitle className="mb-2 text-muted">
-                        Applicant: {ts.applicant.name}
-                      </Card.Subtitle>
-                    )}
-                    <Card.Subtitle className="mb-2 text-muted">
-                      {formatTime(ts.time)}
-                    </Card.Subtitle>
-                  </Card.Body>
-                </Card>
-              ))}
-
-              {timeslotOptions.length > 0 && (
-                <Card
-                  style={{
-                    minWidth: "15rem",
-                    margin: "0 10px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => this.addNewTimeslot(timeslotOptions[0].time)}
-                >
-                  <Card.Body>
-                    <Card.Title>Create new slot</Card.Title>
-                    <Card.Subtitle className="mb-2 text-muted">
-                      {formatTime(timeslotOptions[0].time)}
-                    </Card.Subtitle>
-                  </Card.Body>
-                </Card>
-              )}
+              {timeslotDays
+                .sort((a, b) => a - b)
+                .map((date, i) => {
+                  // TODO: explain this data structure in depth, good place for docz
+                  // selectedSlots is an object/hashmap for performance reasons
+                  const timeslotsForDay = timeslots[date.toDateString()];
+                  const userSelectedSlots = timeslotsForDay
+                    ? this.timeslotsToSlots(
+                        timeslotsForDay.filter((ts) =>
+                          ts.interviewers.hasOwnProperty(authUser.uid)
+                        )
+                      )
+                    : {};
+                  const slotsWithOpening = timeslotsForDay
+                    ? this.timeslotsToSlots(
+                        timeslotsForDay.filter(
+                          (ts) =>
+                            !ts.interviewers.hasOwnProperty(authUser.uid) &&
+                            Object.keys(ts.interviewers).length === 1
+                        )
+                      )
+                    : {};
+                  const orphanedApplicants = timeslotsForDay
+                    ? this.timeslotsToSlots(
+                        timeslotsForDay.filter(
+                          (ts) =>
+                            ts.hasOwnProperty("applicant") &&
+                            Object.keys(ts.interviewers).length === 0
+                        )
+                      )
+                    : {};
+                  return (
+                    <ScheduleColumn
+                      key={i}
+                      date={date}
+                      timeslotLength={timeslotLength}
+                      userSelectedSlots={userSelectedSlots}
+                      slotsWithOpening={slotsWithOpening}
+                      orphanedApplicants={orphanedApplicants}
+                      selectTimeslot={this.selectTimeslotByDate}
+                      unselectTimeslot={this.unselectTimeslot}
+                      startHour={timeslotStart}
+                      endHour={timeslotEnd}
+                      offsetHours={offsetHours}
+                    />
+                  );
+                })}
             </ScrollableRow>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => this.setState({ showModal: false })}
-            >
-              Cancel
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </Container>
+          </Row>
+
+          <Modal
+            show={showModal}
+            onHide={() => this.setState({ showModal: false })}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Choose a timeslot</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <ScrollableRow>
+                {timeslotOptions.map((ts) => (
+                  <Card
+                    key={ts.uid}
+                    style={{
+                      minWidth: "15rem",
+                      margin: "0 10px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => this.selectTimeslot(ts)}
+                  >
+                    <Card.Body>
+                      <Card.Title>
+                        Interviewer: {Object.values(ts.interviewers).join(", ")}
+                      </Card.Title>
+                      {ts.applicant && (
+                        <Card.Subtitle className="mb-2 text-muted">
+                          Applicant: {ts.applicant.name}
+                        </Card.Subtitle>
+                      )}
+                      <Card.Subtitle className="mb-2 text-muted">
+                        {formatTime(ts.time)}
+                      </Card.Subtitle>
+                    </Card.Body>
+                  </Card>
+                ))}
+
+                {timeslotOptions.length > 0 && (
+                  <Card
+                    style={{
+                      minWidth: "15rem",
+                      margin: "0 10px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => this.addNewTimeslot(timeslotOptions[0].time)}
+                  >
+                    <Card.Body>
+                      <Card.Title>Create new slot</Card.Title>
+                      <Card.Subtitle className="mb-2 text-muted">
+                        {formatTime(timeslotOptions[0].time)}
+                      </Card.Subtitle>
+                    </Card.Body>
+                  </Card>
+                )}
+              </ScrollableRow>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => this.setState({ showModal: false })}
+              >
+                Cancel
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </TimeslotDiv>
+      </>
     );
   }
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isRecruitmentTeam),
   withFirebase
 )(InterviewerView);

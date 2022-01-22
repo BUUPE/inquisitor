@@ -6,27 +6,50 @@ import cloneDeep from "lodash.clonedeep";
 
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
 
 import {
   AuthUserContext,
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import ScrollableRow from "./ScrollableRow";
 import Loader from "../Loader";
 import { Container } from "../../styles/global";
 import { isApplicant } from "../../util/conditions";
 import { formatTime, setStateAsync } from "../../util/helper";
+import TextDisplay from "../TextDisplay";
 
 const TimeslotCard = styled(Card)`
+  font-family: Georgia;
   width: 18rem;
   margin: 10px;
   cursor: pointer;
   background: ${(props) => (props.selected ? "#87fb87" : "white")};
-
   &:hover {
     background: ${(props) => (props.selected ? "#fb8787" : "#87fb87")};
+  }
+`;
+
+const TimeslotDiv = styled.div`
+  font-family: Georgia;
+  padding-left: 15%;
+  padding-right: 15%;
+  width: 100%;
+  h1 {
+    font-family: Georgia;
+    font-size: 40px;
+    font-style: italic;
+    padding-bottom: 5%;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
   }
 `;
 
@@ -37,7 +60,6 @@ class ApplicantView extends Component {
     this.state = {
       loading: true,
       error: null,
-      settings: null,
       timeslots: {},
       selectedTimeslot: {},
       selecting: false,
@@ -64,12 +86,6 @@ class ApplicantView extends Component {
   loadData = async () => {
     this._initFirebase = true;
     const authUser = this.context;
-    const doc = await this.props.firebase.generalSettings().get();
-
-    let settings;
-    if (!doc.exists)
-      return this.setState({ error: "Failed to load settings!" });
-    else settings = doc.data();
 
     const timeslots = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
@@ -85,7 +101,7 @@ class ApplicantView extends Component {
               return {
                 ...doc.data(),
                 time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
-                id: doc.id,
+                uid: doc.id,
               };
             })
             .filter(
@@ -107,7 +123,7 @@ class ApplicantView extends Component {
             // if data for day exists, add to it, otherwise create new field
             if (timeslots.hasOwnProperty(day)) {
               const index = timeslots[day].findIndex(
-                (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                (timeslot) => timeslot.uid === ts.uid // check if existing timeslot matches the update (ts)
               );
 
               // if timeslot exists, update the value, otherwise push it
@@ -122,10 +138,10 @@ class ApplicantView extends Component {
           });
 
           // remove timeslots that no longer exist
-          const validIds = listenerData.map((ts) => ts.id);
+          const validIds = listenerData.map((ts) => ts.uid);
           for (const day in timeslots)
             timeslots[day] = timeslots[day].filter((ts) =>
-              validIds.includes(ts.id)
+              validIds.includes(ts.uid)
             );
 
           const clonedTimeslots = cloneDeep(timeslots);
@@ -134,7 +150,7 @@ class ApplicantView extends Component {
         }, reject);
     });
 
-    this.setState({ settings, timeslots, loading: false });
+    this.setState({ timeslots, loading: false });
   };
 
   selectTimeslot = async (timeslot) => {
@@ -142,7 +158,7 @@ class ApplicantView extends Component {
     const { selectedTimeslot } = this.state;
     const { firebase } = this.props;
     const authUser = this.context;
-    const timeslotId = timeslot.id;
+    const timeslotId = timeslot.uid;
     let action = "schedule";
 
     // TODO: add firebase rules to ensure that applicants dont change other peoples data
@@ -162,9 +178,9 @@ class ApplicantView extends Component {
             uid: authUser.uid,
           };
           transaction.update(ref, timeslot);
-          this.setState({ selectedTimeslot: { ...timeslot, id: doc.id } });
+          this.setState({ selectedTimeslot: { ...timeslot, uid: doc.id } });
         } else {
-          if (timeslotId === selectedTimeslot.id) {
+          if (timeslotId === selectedTimeslot.uid) {
             const ref = firebase.timeslot(timeslotId);
             const doc = await transaction.get(ref);
             const timeslot = { ...doc.data() };
@@ -175,7 +191,7 @@ class ApplicantView extends Component {
             this.setState({ selectedTimeslot: {} });
             action = "unschedule";
           } else {
-            const oldRef = firebase.timeslot(selectedTimeslot.id);
+            const oldRef = firebase.timeslot(selectedTimeslot.uid);
             const oldDoc = await transaction.get(oldRef);
             const oldTimeslot = { ...oldDoc.data() };
             if (oldTimeslot.applicant?.uid !== authUser.uid)
@@ -195,7 +211,7 @@ class ApplicantView extends Component {
             transaction.set(oldRef, oldTimeslot);
             transaction.update(newRef, newTimeslot);
             this.setState({
-              selectedTimeslot: { ...newTimeslot, id: newDoc.id },
+              selectedTimeslot: { ...newTimeslot, uid: newDoc.id },
             });
           }
         }
@@ -248,14 +264,8 @@ class ApplicantView extends Component {
   };
 
   render() {
-    const {
-      error,
-      loading,
-      settings,
-      timeslots,
-      selectedTimeslot,
-      selecting,
-    } = this.state;
+    const { error, loading, timeslots, selectedTimeslot, selecting } =
+      this.state;
 
     if (error)
       return (
@@ -266,28 +276,29 @@ class ApplicantView extends Component {
 
     if (loading) return <Loader />;
 
-    if (!settings.timeslotsOpenForApplicants)
+    if (!this.props.settings.timeslotsOpenForApplicants)
       return (
-        <Container flexdirection="column">
-          <h1>Timeslot selection isn't open yet!</h1>
-        </Container>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={"Timeslot selection is currently closed."}
+          displayBack={true}
+        />
       );
 
     const TimeslotColumn = ({ date, slots }) => (
-      <Col style={{ width: 300, flex: "none" }}>
-        <h1>{date}</h1>
-
+      <Col>
+        <h1> {date} </h1>
         {slots
           .sort((a, b) => {
             if (a.time.getTime() === b.time.getTime())
-              return a.id > b.id ? 1 : -1;
+              return a.uid > b.uid ? 1 : -1;
             else return a.time > b.time ? 1 : -1;
           })
           .map((slot) => (
             <TimeslotCard
-              key={slot.id}
+              key={slot.uid}
               onClick={() => this.selectTimeslot(slot)}
-              selected={slot.id === selectedTimeslot.id}
+              selected={slot.uid === selectedTimeslot.uid}
             >
               <Card.Body>
                 <Card.Title>{formatTime(slot.time)}</Card.Title>
@@ -305,29 +316,44 @@ class ApplicantView extends Component {
     );
 
     return (
-      <Container flexdirection="column">
-        {selecting && <Loader opacity={0.75} />}
-        <h1>Applicant Timeslot Selection</h1>
-        <p>
-          The timeslots below show start times, length, and interviewers. Please
-          don't select a timeslot with interviewers that you know as that could
-          introduce bias (admins will review these selections to enforce this).
-          Note that the times below are in your local timezone, but map to 9 AM
-          - 10 PM Boston time.
-        </p>
-        <ScrollableRow>
-          {Object.entries(timeslots)
-            .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
-            .map(([date, slots]) => (
-              <TimeslotColumn key={date} date={date} slots={slots} />
-            ))}
-        </ScrollableRow>
-      </Container>
+      <>
+        <TextDisplay
+          name={"Timeslot Selection"}
+          text={
+            "The timeslots below show start times, length, and the number of interviewers. You should receive a confirmation email, but in case you don't, please refer back to this page."
+          }
+          displayBack={true}
+        />
+        <TimeslotDiv>
+          <Row
+            lg={2}
+            md={2}
+            sm={1}
+            xl={2}
+            xs={1}
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              paddingBottom: "5%",
+            }}
+          >
+            {selecting && <Loader opacity={0.75} />}
+            <ScrollableRow>
+              {Object.entries(timeslots)
+                .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
+                .map(([date, slots]) => (
+                  <TimeslotColumn key={date} date={date} slots={slots} />
+                ))}
+            </ScrollableRow>
+          </Row>
+        </TimeslotDiv>
+      </>
     );
   }
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isApplicant),
   withFirebase
 )(ApplicantView);

@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from "react";
+import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 import cloneDeep from "lodash.clonedeep";
 
-import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
 import Toast from "react-bootstrap/Toast";
 
-import { withFirebase } from "upe-react-components";
+import { withFirebase, withAuthorization } from "upe-react-components";
 
+import { isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
 import AdminLayout from "./AdminLayout";
 import LevelDisplay from "./LevelDisplay";
-import { Container } from "../../styles/global";
+
+import { BackIcon } from "../TextDisplay";
+
+import { StyledButton, Title, Text } from "../../styles/global";
 
 const ManageLevels = ({ firebase }) => {
   const [levelConfig, setLevelConfig] = useState(null);
@@ -40,7 +44,7 @@ const ManageLevels = ({ firebase }) => {
         .questions()
         .onSnapshot((querySnapshot) => {
           const allQuestions = querySnapshot.docs.map((doc) => {
-            return { id: doc.id, ...doc.data() };
+            return { uid: doc.id, ...doc.data() };
           });
 
           setAllQuestions(allQuestions);
@@ -62,8 +66,8 @@ const ManageLevels = ({ firebase }) => {
     const newLevelConfig = cloneDeep(levelConfig);
 
     if (oldName !== newName) delete newLevelConfig[oldName];
-    newLevelConfig[newName] = newQuestions.map(({ id, order }) => ({
-      id,
+    newLevelConfig[newName] = newQuestions.map(({ uid, order }) => ({
+      uid,
       order,
     }));
 
@@ -82,8 +86,7 @@ const ManageLevels = ({ firebase }) => {
   const deleteLevel = (levelName) =>
     swal({
       title: "Are you sure?",
-      text:
-        "Once you delete a level, you can't undo! Make sure you really want this!",
+      text: "Once you delete a level, you can't undo! Make sure you really want this!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -119,39 +122,71 @@ const ManageLevels = ({ firebase }) => {
 
   const LevelDisplaySubmit = ({ oldName, newName, questions }) => (
     <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <Button
+      <StyledButton
+        paddingTop={"0.5%"}
+        paddingRight={"2%"}
+        paddingBottom={"0.5%"}
+        paddingLeft={"2%"}
         onClick={() => saveLevel(oldName, newName, questions)}
         disabled={newName === "" || questions.length === 0}
       >
         Save
-      </Button>
+      </StyledButton>
 
-      <Button onClick={() => deleteLevel(oldName)} variant="danger">
+      <StyledButton
+        paddingTop={"0.5%"}
+        paddingRight={"2%"}
+        paddingBottom={"0.5%"}
+        paddingLeft={"2%"}
+        onClick={() => deleteLevel(oldName)}
+        variant="danger"
+      >
         Delete
-      </Button>
+      </StyledButton>
     </div>
   );
 
   const LevelAddSubmit = ({ oldName, newName, questions }) => (
-    <Button
+    <StyledButton
+      paddingTop={"0.5%"}
+      paddingRight={"2%"}
+      paddingBottom={"0.5%"}
+      paddingLeft={"2%"}
       onClick={() => saveLevel(oldName, newName, questions)}
       disabled={newName === "" || questions.length === 0}
     >
       Submit
-    </Button>
+    </StyledButton>
   );
 
   return (
     <AdminLayout>
-      <Container flexdirection="column">
+      <BackIcon />
+      <Title>
+        <h1> Interview Levels </h1>
+      </Title>
+      <Text
+        paddingTop={"20px"}
+        paddingLeft={"7%"}
+        paddingRight={"7%"}
+        pFontSize={"15px"}
+        pTextAlign={"left"}
+        pMaxWidth={"100%"}
+        position={"left"}
+        h2MarginTop={"2%"}
+        flexdirection="column"
+      >
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <h1>Interview Levels</h1>
-          <Button
+          <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
             onClick={() => setShowModal(true)}
             style={{ height: "fit-content" }}
           >
             Add Interview Level
-          </Button>
+          </StyledButton>
         </div>
         <br />
         <Row>
@@ -160,7 +195,7 @@ const ManageLevels = ({ firebase }) => {
             .map(([name, questions]) => {
               const populatedQuestions = questions.map((question) => {
                 const fullQuestion = allQuestions.find(
-                  (q) => q.id === question.id
+                  (q) => q.uid === question.uid
                 );
                 return {
                   ...fullQuestion,
@@ -184,7 +219,7 @@ const ManageLevels = ({ firebase }) => {
               );
             })}
         </Row>
-      </Container>
+      </Text>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -217,4 +252,4 @@ const ManageLevels = ({ firebase }) => {
   );
 };
 
-export default withFirebase(ManageLevels);
+export default compose(withAuthorization(isAdmin), withFirebase)(ManageLevels);

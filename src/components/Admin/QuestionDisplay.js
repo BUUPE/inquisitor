@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import update from "immutability-helper";
 import cloneDeep from "lodash.clonedeep";
 
-import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 
@@ -10,10 +9,11 @@ import {
   FullWidthFormRow,
   FullWidthFormGroup,
   CenteredForm,
+  StyledButton,
 } from "../../styles/global";
 
 const QuestionDisplay = ({
-  id,
+  uid,
   name,
   answer,
   description,
@@ -39,10 +39,25 @@ const QuestionDisplay = ({
         width: "100%",
       }}
     >
-      <Button type="submit">Save</Button>
-      <Button variant="danger" onClick={() => deleteQuestion(id, imageName)}>
+      <StyledButton
+        paddingTop={"0.5%"}
+        paddingRight={"2%"}
+        paddingBottom={"0.5%"}
+        paddingLeft={"2%"}
+        type="submit"
+      >
+        Save
+      </StyledButton>
+      <StyledButton
+        paddingTop={"0.5%"}
+        paddingRight={"2%"}
+        paddingBottom={"0.5%"}
+        paddingLeft={"2%"}
+        variant="danger"
+        onClick={() => deleteQuestion(uid, imageName)}
+      >
         Delete
-      </Button>
+      </StyledButton>
     </div>
   );
 
@@ -56,10 +71,10 @@ const QuestionDisplay = ({
             description,
             image: "",
             imagePreview: image,
-            id,
+            uid,
           }}
           submitFunction={updateQuestion}
-          imageClearFunc={() => removeQuestionImage(id, imageName)}
+          imageClearFunc={() => removeQuestionImage(uid, imageName)}
           SubmitButton={FormSubmit}
         />
       </Card.Body>
@@ -178,7 +193,12 @@ export const QuestionForm = ({
             accept=".png,.jpg"
             onChange={updateImage}
           />
-          <Button
+          <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
+            style={{ marginTop: "1%" }}
             onClick={() => {
               setFormData(
                 update(formData, {
@@ -191,7 +211,7 @@ export const QuestionForm = ({
             }}
           >
             Clear
-          </Button>
+          </StyledButton>
         </FullWidthFormGroup>
       </FullWidthFormRow>
 

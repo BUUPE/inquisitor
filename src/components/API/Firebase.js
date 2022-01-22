@@ -37,9 +37,8 @@ class Firebase extends FirebaseSuper {
       "interviewerTimeslotsOpen"
     );
     this.timeslotSelected = this.functions.httpsCallable("timeslotSelected");
-    this.timeslotUnselected = this.functions.httpsCallable(
-      "timeslotUnselected"
-    );
+    this.timeslotUnselected =
+      this.functions.httpsCallable("timeslotUnselected");
     this.sendAcceptedEmail = this.functions.httpsCallable("applicantAccepted");
     this.sendDeniedEmail = this.functions.httpsCallable("applicantDenied");
 
@@ -69,9 +68,18 @@ class Firebase extends FirebaseSuper {
   timeslot = (uid) => this.inquisitorData.collection("timeslots").doc(uid);
   timeslots = () => this.inquisitorData.collection("timeslots");
 
+  recruitmentEvent = (uid) => this.inquisitorData.collection("events").doc(uid);
+  recruitmentEvents = () => this.inquisitorData.collection("events");
+
+  event = (uid) =>
+    this.firestore.collection("website/events/eventData").doc(uid);
+  events = () => this.firestore.collection("website/events/eventData");
+  getIndex = () => this.firestore.collection("website").doc("eventIndex").get();
+
   applicationFormConfig = () =>
     this.firestore.doc("inquisitor/applicationFormConfig");
   generalSettings = () => this.firestore.doc("inquisitor/generalSettings");
+  textSettings = () => this.firestore.doc("inquisitor/textSettings");
   levelConfig = () => this.firestore.doc("inquisitor/levelConfig");
 
   allRoles = () => this.firestore.doc("config/roles");

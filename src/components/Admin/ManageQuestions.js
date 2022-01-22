@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 
-import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Modal from "react-bootstrap/Modal";
@@ -10,12 +10,15 @@ import Toast from "react-bootstrap/Toast";
 import AdminLayout from "./AdminLayout";
 import QuestionDisplay, { QuestionForm } from "./QuestionDisplay";
 
-import { withFirebase } from "upe-react-components";
+import { withFirebase, withAuthorization } from "upe-react-components";
 
+import { isAdmin } from "../../util/conditions";
 import Loader from "../Loader";
 import Error from "../Error";
-import { Container } from "../../styles/global";
 import { objectMap } from "../../util/helper";
+import { BackIcon } from "../TextDisplay";
+
+import { StyledButton, Title, Text } from "../../styles/global";
 
 const ManageQuestions = ({ firebase }) => {
   const [questionList, setQuestionList] = useState([]);
@@ -29,7 +32,7 @@ const ManageQuestions = ({ firebase }) => {
       const unsub = firebase.questions().onSnapshot(
         (querySnapshot) => {
           const questionList = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
+            uid: doc.id,
             ...doc.data(),
           }));
 
@@ -76,11 +79,11 @@ const ManageQuestions = ({ firebase }) => {
   };
 
   const updateQuestion = async (question) => {
-    const uid = question.id;
-    delete question.id;
+    const uid = question.uid;
+    delete question.uid;
     delete question.imagePreview;
 
-    const originalQuestion = questionList.find((q) => q.id === uid);
+    const originalQuestion = questionList.find((q) => q.uid === uid);
     let imageURL = originalQuestion.image;
     let filename = originalQuestion.imageName;
 
@@ -125,8 +128,7 @@ const ManageQuestions = ({ firebase }) => {
   const deleteQuestion = (uid, filename) =>
     swal({
       title: "Are you sure?",
-      text:
-        "Once you delete a question, you can't undo! Make sure you really want this!",
+      text: "Once you delete a question, you can't undo! Make sure you really want this!",
       icon: "warning",
       buttons: {
         cancel: {
@@ -159,7 +161,7 @@ const ManageQuestions = ({ firebase }) => {
         const updatedLevelConfig = objectMap(levelConfig, (questions) => {
           let order = 0;
           const updatedQuestions = questions
-            .filter((question) => question.id !== uid)
+            .filter((question) => question.uid !== uid)
             .map((question) => {
               question.order = order++;
               return question;
@@ -179,17 +181,34 @@ const ManageQuestions = ({ firebase }) => {
 
   return (
     <AdminLayout>
-      <Container>
+      <BackIcon />
+      <Title>
+        <h1> Interview Questions </h1>
+      </Title>
+      <Text
+        paddingTop={"20px"}
+        paddingLeft={"7%"}
+        paddingRight={"7%"}
+        pFontSize={"15px"}
+        pTextAlign={"left"}
+        pMaxWidth={"100%"}
+        position={"left"}
+        h2MarginTop={"2%"}
+        h5LineWidth={"10%"}
+      >
         <Row style={{ width: "100%" }}>
           <Col>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <h1>Interview Questions</h1>
-              <Button
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
                 onClick={() => setShowModal(true)}
                 style={{ height: "fit-content" }}
               >
                 Add Question
-              </Button>
+              </StyledButton>
             </div>
             <br />
             <Row>
@@ -197,7 +216,7 @@ const ManageQuestions = ({ firebase }) => {
                 .sort((a, b) => (a.name > b.name ? 1 : -1))
                 .map((question) => (
                   <QuestionDisplay
-                    key={question.id}
+                    key={question.uid}
                     updateQuestion={updateQuestion}
                     removeQuestionImage={removeQuestionImage}
                     deleteQuestion={deleteQuestion}
@@ -207,7 +226,7 @@ const ManageQuestions = ({ firebase }) => {
             </Row>
           </Col>
         </Row>
-      </Container>
+      </Text>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -224,7 +243,17 @@ const ManageQuestions = ({ firebase }) => {
               scores: {},
             }}
             submitFunction={addQuestion}
-            SubmitButton={() => <Button type="submit">Submit</Button>}
+            SubmitButton={() => (
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                type="submit"
+              >
+                Submit
+              </StyledButton>
+            )}
           />
         </Modal.Body>
       </Modal>
@@ -246,4 +275,7 @@ const ManageQuestions = ({ firebase }) => {
   );
 };
 
-export default withFirebase(ManageQuestions);
+export default compose(
+  withAuthorization(isAdmin),
+  withFirebase
+)(ManageQuestions);

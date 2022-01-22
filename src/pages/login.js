@@ -27,9 +27,18 @@ const Login = ({ firebase }) => {
   return (
     <>
       <SEO title="Login" route="/login" />
-      <Centered>
-        <Logo size="medium" />
-        <h1>Authenticating...</h1>
+      <Centered style={{ paddingTop: "5%", paddingBottom: "5%" }}>
+        <Logo size="large" />
+        <h1
+          style={{
+            paddingTop: "3%",
+            fontFamily: "Georgia",
+            fontSize: "50px",
+            fontStyle: "italic",
+          }}
+        >
+          Authenticating...
+        </h1>
       </Centered>
     </>
   );

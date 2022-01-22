@@ -19,9 +19,18 @@ const Logout = ({ firebase }) => {
   return (
     <>
       <SEO title="Logout" route="/logout" />
-      <Centered>
-        <Logo size="medium" />
-        <h1>Signing Out...</h1>
+      <Centered style={{ paddingTop: "5%", paddingBottom: "5%" }}>
+        <Logo size="large" />
+        <h1
+          style={{
+            paddingTop: "3%",
+            fontFamily: "Georgia",
+            fontSize: "50px",
+            fontStyle: "italic",
+          }}
+        >
+          Signing Out...
+        </h1>
       </Centered>
     </>
   );

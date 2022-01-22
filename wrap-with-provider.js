@@ -1,7 +1,6 @@
 import React, { Fragment } from "react";
 import { navigate } from "gatsby";
 import { useLocation } from "@reach/router";
-import { withTheme } from "styled-components";
 
 import {
   setLayoutBase,
@@ -10,11 +9,12 @@ import {
   WithAuthorizationClass,
 } from "upe-react-components";
 
-import Firebase from "./src/components/Firebase";
+import Firebase from "./src/components/API/Firebase";
 import Header from "./src/components/Header";
 import Footer from "./src/components/Footer";
 import Logo from "./src/components/Logo";
-import GlobalStyle, { Centered } from "./src/styles/global";
+import TextDisplay from "./src/components/TextDisplay";
+import GlobalStyle from "./src/styles/global";
 
 import { pathPrefix } from "./gatsby-config";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -31,14 +31,6 @@ export default ({ element }) => {
         location.pathname.replace(pathPrefix, "")
       );
 
-    const AuthorizationFailed = () => (
-      <Centered>
-        <Logo size="medium" />
-        <h3>You don't have permission to view this page!</h3>
-        <p>If you believe you should have access, please contact an admin.</p>
-      </Centered>
-    );
-
     return (
       <WithAuthorizationClass
         firebaseAuthNext={(authUser) => {
@@ -51,7 +43,13 @@ export default ({ element }) => {
           savePathname();
           navigate("/login");
         }}
-        authorizationFailed={<AuthorizationFailed />}
+        authorizationFailed=
+				{<div style={{width: "100%"}}>
+					<TextDisplay
+						name={"No Permissions"}
+						text={"If you believe you should have access, please contact an admin."}
+						displayBack={true} />
+				</div>}
         {...props}
       />
     );
@@ -59,14 +57,14 @@ export default ({ element }) => {
   // would've preferred to call this in gatsby-browser onClientEntry, but can't do Queries in there
   setWithAuthorizationWrapper(WithAuthorizationWrapper);
 
-  const LayoutBase = withTheme(({ theme, children }) => (
+  const LayoutBase = ({ children }) => (
     <Fragment>
-      <GlobalStyle theme={theme} />
+      <GlobalStyle />
       <Header />
       {children}
       <Footer />
     </Fragment>
-  ));
+  );
   LayoutBase.displayName = "LayoutBase";
   setLayoutBase(LayoutBase);
 

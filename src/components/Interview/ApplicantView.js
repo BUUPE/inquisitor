@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
-import styled from "styled-components";
 import update from "immutability-helper";
 
 import {
@@ -8,29 +7,28 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import InterviewRoom from "./InterviewRoom";
 
 import Loader from "../Loader";
 import Logo from "../Logo";
-import Error from "../Error";
+import { BackIcon } from "../TextDisplay";
 import { isApplicant } from "../../util/conditions";
-import { Container, Centered } from "../../styles/global";
+import { Container } from "../../styles/global";
 
-const StyledP = styled.p`
-  white-space: pre-wrap;
-`;
+import { Wrapper, Title, Text } from "../../styles/global";
 
 class ApplicantView extends Component {
   _initFirebase = false;
   state = {
-    error: null,
     loading: true,
     questions: [],
     currentApplication: { interview: {} },
     levelConfig: {},
+    textSettings: {},
   };
-  unsubSettings = null;
+  unsubTextSettings = null;
   unsubCurrentApplication = null;
 
   static contextType = AuthUserContext;
@@ -44,7 +42,7 @@ class ApplicantView extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.unsubSettings === "function") this.unsubSettings();
+    if (typeof this.unsubTextSettings === "function") this.unsubTextSettings();
     if (typeof this.unsubCurrentApplication === "function")
       this.unsubCurrentApplication();
   }
@@ -75,7 +73,7 @@ class ApplicantView extends Component {
             name,
             image,
             description,
-            id: doc.id,
+            uid: doc.id,
           };
         })
       );
@@ -85,25 +83,25 @@ class ApplicantView extends Component {
       .get()
       .then((doc) => {
         if (!doc.exists) {
-          this.setState({ error: "LevelConfig does not exist!" });
+          console.log("LevelConfig does not exist!");
           return {};
         }
         return doc.data();
       });
 
-    const settings = await new Promise((resolve, reject) => {
+    const textSettings = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
       };
-      this.unsubSettings = this.props.firebase
-        .generalSettings()
+      this.unsubTextSettings = this.props.firebase
+        .textSettings()
         .onSnapshot((doc) => {
-          if (!doc.exists) this.setState({ error: "Failed to load settings!" });
+          if (!doc.exists) console.log("Failed to load textSettings!");
           else {
-            const settings = doc.data();
-            this.setState({ settings });
-            resolveOnce(settings);
+            const textSettings = doc.data();
+            this.setState({ textSettings });
+            resolveOnce(textSettings);
           }
         }, reject);
     });
@@ -113,11 +111,10 @@ class ApplicantView extends Component {
         resolveOnce = () => null;
         resolve(doc);
       };
-      this.unsubSettings = this.props.firebase
+      this.unsubCurrentApplication = this.props.firebase
         .application(authUser.uid)
         .onSnapshot((doc) => {
-          if (!doc.exists)
-            this.setState({ error: "Failed to load currentApplication!" });
+          if (!doc.exists) console.log("Failed to load currentApplication!");
           else {
             const currentApplication = doc.data();
             this.setState({ currentApplication });
@@ -125,10 +122,11 @@ class ApplicantView extends Component {
           }
         }, reject);
     });
+
     this.setState({
       questions,
       levelConfig,
-      settings,
+      textSettings,
       currentApplication,
       loading: false,
     });
@@ -147,8 +145,7 @@ class ApplicantView extends Component {
 
   render() {
     const {
-      settings,
-      error,
+      textSettings,
       loading,
       currentApplication,
       levelConfig,
@@ -158,76 +155,97 @@ class ApplicantView extends Component {
     if (loading) return <Loader />;
 
     const Content = () => {
-      if (error) return <Error message={error} />;
-
       if (currentApplication?.interview?.interviewed) {
         window.localStorage.removeItem("currentApplication");
         window.localStorage.removeItem("current-tab-key");
         return (
-          <Centered style={{ maxWidth: 500, margin: "0 auto" }}>
-            <Logo size="medium" />
-            <h1>Congratulations!</h1>
-            <StyledP>{settings.interviewFinalNotesApplicantText}</StyledP>
-          </Centered>
+          <Text>
+            <Logo size="large" />
+            <p> {textSettings.interviewFinalNotesApplicantText} </p>
+          </Text>
         );
       } else if (!currentApplication.interview.hasOwnProperty("level")) {
         return (
-          <Centered style={{ maxWidth: 500, margin: "0 auto" }}>
-            <Logo size="medium" />
-            <h1>Welcome!</h1>
-            <StyledP>{settings.interviewWelcomeText}</StyledP>
-            <p>
-              Join the Zoom <a href={settings.zoomlink}>here</a>!
+          <Text>
+            <Logo size="large" />
+            <p style={{ marginTop: "5%" }}>
+              {" "}
+              {textSettings.interviewWelcomeText}{" "}
             </p>
-          </Centered>
+            {this.props.settings.remoteInterview && (
+              <p>
+                {" "}
+                Join the Zoom <a href={this.props.settings.zoomlink}>
+                  here
+                </a>!{" "}
+              </p>
+            )}
+          </Text>
         );
       } else {
         const questionMap = {};
         levelConfig[currentApplication.interview.level].forEach((question) => {
-          questionMap[question.id] = question.order;
+          questionMap[question.uid] = question.order;
         });
 
         const filteredQuestions = questions
-          .filter((question) => questionMap.hasOwnProperty(question.id))
+          .filter((question) => questionMap.hasOwnProperty(question.uid))
           .map((question) => ({
             ...question,
-            order: questionMap[question.id] + 1,
+            order: questionMap[question.uid] + 1,
           }))
           .concat([
             {
-              id: "overview",
+              uid: "overview",
               order: -1,
-              overview: settings.interviewOverviewText,
-              interviewerNotes: settings.interviewInterviewerNotesText,
+              overview: textSettings.interviewOverviewText,
+              interviewerNotes: textSettings.interviewInterviewerNotesText,
             },
             {
-              id: "resume",
+              uid: "resume",
               order: 0,
-              url: currentApplication.responses.find((r) => r.id === 6).value,
-              notes: settings.interviewResumeNotesText,
+              url: currentApplication.responses.find((r) => r.uid === "resume")
+                .value,
+              notes: textSettings.interviewResumeNotesText,
             },
           ])
           .sort((a, b) => (a.order > b.order ? 1 : -1));
 
         return (
-          <InterviewRoom
-            questions={filteredQuestions}
-            isApplicant={true}
-            saveApplication={this.setIntervieweeOn}
-          />
+          <>
+            <InterviewRoom
+              questions={filteredQuestions}
+              isApplicant={true}
+              saveApplication={this.setIntervieweeOn}
+            />
+          </>
         );
       }
     };
 
     return (
-      <Container fluid flexdirection="column">
-        <Content />
-      </Container>
+      <>
+        <BackIcon />
+        <Title>
+          <h1>Interview Room</h1>
+        </Title>
+        <Wrapper
+          paddingRight={"15%"}
+          paddingLeft={"15%"}
+          paddingTop={"80px"}
+          paddingBottom={"100px"}
+        >
+          <Container fluid flexdirection="column">
+            <Content />
+          </Container>
+        </Wrapper>
+      </>
     );
   }
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isApplicant),
   withFirebase
 )(ApplicantView);

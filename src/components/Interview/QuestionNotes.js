@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import styled from "styled-components";
 
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Toast from "react-bootstrap/Toast";
 import RangeSlider from "react-bootstrap-range-slider";
 
+import { StyledButton } from "../../styles/global";
+
 const StyledP = styled.p`
   white-space: pre-wrap;
+  font-family: Georgia;
 `;
 
 const QuestionNotes = ({
@@ -27,7 +29,7 @@ const QuestionNotes = ({
     await saveApplication({
       note,
       score,
-      id: question.id,
+      uid: question.uid,
     });
     await submitApplication();
   };
@@ -36,7 +38,7 @@ const QuestionNotes = ({
     saveApplication({
       note,
       score,
-      id: question.id,
+      uid: question.uid,
     });
 
   return (
@@ -47,7 +49,7 @@ const QuestionNotes = ({
           <Col sm={9}>
             <Form.Group controlId="formBasicEmail">
               <Form.Label>
-                <strong>Notes</strong>
+                <strong style={{ fontFamily: "Georgia" }}>Notes</strong>
               </Form.Label>
               <Form.Control
                 as="textarea"
@@ -61,9 +63,10 @@ const QuestionNotes = ({
             </Form.Group>
           </Col>
           <Col sm={3}>
-            <strong>Score</strong>
+            <strong style={{ fontFamily: "Georgia" }}>Score</strong>
 
             <RangeSlider
+              variant={"danger"}
               value={score}
               onChange={(e) => setScore(parseFloat(e.target.value))}
               onAfterChange={handleSave}
@@ -74,7 +77,18 @@ const QuestionNotes = ({
           </Col>
         </div>
 
-        {submitApplication && <Button type="submit">Submit</Button>}
+        {submitApplication && (
+          <StyledButton
+            paddingTop={"0.5%"}
+            paddingRight={"2%"}
+            paddingBottom={"0.5%"}
+            paddingLeft={"2%"}
+            style={{ marginTop: "2%", marginBottom: "2%" }}
+            type="submit"
+          >
+            Submit
+          </StyledButton>
+        )}
 
         <Toast
           onClose={() => setShowToast(false)}
@@ -83,11 +97,11 @@ const QuestionNotes = ({
           autohide
         >
           <Toast.Body>
-            <strong>Saved!</strong>
+            <strong style={{ fontFamily: "Georgia" }}>Saved!</strong>
           </Toast.Body>
         </Toast>
       </Form>
-      <hr />
+      <hr style={{ marginTop: "3%", marginBottom: "3%" }} />
     </>
   );
 };

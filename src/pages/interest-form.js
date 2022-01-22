@@ -5,9 +5,9 @@ import { compose } from "recompose";
 import { withFirebase, withAuthorization } from "upe-react-components";
 
 import { isLoggedIn } from "../util/conditions";
-import Logo from "../components/Logo";
 import SEO from "../components/SEO";
-import { Container } from "../styles/global";
+import { Container, Title } from "../styles/global";
+import { BackIcon } from "../components/TextDisplay";
 
 const StyledContainer = styled(Container)`
   display: flex;
@@ -17,6 +17,7 @@ const StyledContainer = styled(Container)`
   margin: 0 auto;
   margin-bottom: 25px;
   margin-top: 25px;
+  font-family: Georgia;
 
   /* Mailchimp overrides */
   #mc_embed_signup {
@@ -61,10 +62,11 @@ const InterestForm = () => {
   return (
     <>
       <SEO title="Interest Form" route="/interest-form" />
+      <BackIcon />
+      <Title>
+        <h1> Interest Form </h1>
+      </Title>
       <StyledContainer flexdirection="column">
-        <Logo size="medium" />
-        <h1>BU UPE Interest Form</h1>
-
         <div id="mc_embed_signup">
           <form
             action="https://upe.us19.list-manage.com/subscribe/post?u=e926ed9c6e5e27338c6e5452c&amp;id=ffa7b765f8"

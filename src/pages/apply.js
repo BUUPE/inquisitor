@@ -1,10 +1,8 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 import { compose } from "recompose";
 import swal from "@sweetalert/with-react";
 
 import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 
 import {
   AuthUserContext,
@@ -12,20 +10,19 @@ import {
   withAuthorization,
 } from "upe-react-components";
 
+import { withSettings } from "../components/API/SettingsContext";
+
 import { isLoggedIn } from "../util/conditions";
 import Loader from "../components/Loader";
-import Logo from "../components/Logo";
+import TextDisplay, { BackIcon } from "../components/TextDisplay";
 import SEO from "../components/SEO";
-import { Container, RequiredAsterisk } from "../styles/global";
-
-const CenteredForm = styled(Form)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 500px;
-  flex: auto;
-  margin-bottom: 25px;
-`;
+import {
+  Container,
+  RequiredAsterisk,
+  Title,
+  CenteredForm,
+  StyledButton,
+} from "../styles/global";
 
 const setFileValidity = (fileUpload) => {
   if (fileUpload.files.length === 0) {
@@ -48,14 +45,10 @@ class ApplicationForm extends Component {
   state = {
     applicationFormConfig: null,
     initialApplicationData: null,
-    generalSettings: null,
     loading: true,
     validated: false,
     sending: false,
     submitted: false,
-    alreadyApplied: false,
-    blackListed: false,
-    errorMsg: "",
   };
   static contextType = AuthUserContext;
 
@@ -80,22 +73,6 @@ class ApplicationForm extends Component {
       .then((snapshot) => snapshot.data())
       .catch(() =>
         this.setState({
-          errorMsg: "Application Form Config doesn't exist!",
-          loading: false,
-        })
-      );
-    const loadUserData = this.props.firebase
-      .user(this.context.uid)
-      .get()
-      .then((snapshot) => snapshot.data())
-      .catch(console.error);
-    const loadGeneralSettings = this.props.firebase
-      .generalSettings()
-      .get()
-      .then((snapshot) => snapshot.data())
-      .catch(() =>
-        this.setState({
-          errorMsg: "General settings doesn't exist!",
           loading: false,
         })
       );
@@ -103,94 +80,60 @@ class ApplicationForm extends Component {
       .application(this.context.uid)
       .get()
       .then((snapshot) => (snapshot.exists ? snapshot.data() : null))
-      .catch(console.error);
+      .catch(() =>
+        this.setState({
+          loading: false,
+        })
+      );
 
-    Promise.all([
-      loadApplicationFormConfig,
-      loadUserData,
-      loadGeneralSettings,
-      loadUserApplication,
-    ]).then((values) =>
-      this.setState({
-        loading: false,
-        applicationFormConfig: values[0],
-        alreadyApplied:
-          values[1].roles.hasOwnProperty("applicant") &&
-          values[1].roles.applicant,
-        blackListed:
-          (values[1].roles.hasOwnProperty("blacklisted") &&
-            values[1].roles.blacklisted) ||
-          (values[1].roles.hasOwnProperty("upemember") &&
-            values[1].roles.upemember) ||
-          (values[1].roles.hasOwnProperty("provisionalMember") &&
-            values[1].roles.provisionalMember),
-        generalSettings: values[2],
-        initialApplicationData: values[3],
-      })
+    Promise.all([loadApplicationFormConfig, loadUserApplication]).then(
+      ([applicationFormConfig, initialApplicationData]) =>
+        this.setState({
+          loading: false,
+          applicationFormConfig,
+          initialApplicationData,
+        })
     );
   };
 
   render() {
-    const {
-      loading,
-      errorMsg,
-      submitted,
-      validated,
-      applicationFormConfig,
-      sending,
-      alreadyApplied,
-      blackListed,
-      generalSettings,
-    } = this.state;
+    const { loading, submitted, validated, applicationFormConfig, sending } =
+      this.state;
 
     if (loading) return <Loader />;
 
-    if (blackListed)
+    if (
+      (this.context.roles.hasOwnProperty("denyListed") &&
+        this.context.roles.denyListed) ||
+      (this.context.roles.hasOwnProperty("upemember") &&
+        this.context.roles.upemember) ||
+      (this.context.roles.hasOwnProperty("provisionalMember") &&
+        this.context.roles.provisionalMember)
+    )
       return (
-        <Container
-          flexdirection="column"
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            maxWidth: 700,
-          }}
-        >
-          <Logo size="medium" />
-          <h1>You are not allowed to apply!</h1>
-          <p>
-            Unfortunately you are not eligible to apply. If you think this is a
-            mistake, or want further information on this, please contact
-            upe@bu.edu.
-          </p>
-        </Container>
+        <>
+          <TextDisplay
+            name={"Your Application"}
+            text={
+              "Unfortunately you are not eligible to apply to Upsilon PI Epsilon. If you think this is a mistake, or want further information on the situation, please contact our EBoard at upe@bu.edu."
+            }
+            displayBack={true}
+          />
+        </>
       );
 
-    if (!generalSettings.applicationsOpen)
+    if (!this.props.settings.applicationsOpen)
       return (
-        <Container
-          flexdirection="column"
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            maxWidth: 700,
-          }}
-        >
-          <Logo size="medium" />
-          <h1>Applications are closed!</h1>
-          <p>
-            Unfortunately, the application for the{" "}
-            {applicationFormConfig.semester} season has closed. If you're
-            interesting in joining BU UPE, please come back next semester and
-            apply, we'd love to have you! In the meantime, feel free to check
-            out the public events on{" "}
-            <a href="https://upe.bu.edu/events">our calendar</a>.
-          </p>
-        </Container>
+        <TextDisplay
+          name={"Your Application"}
+          text={`Unfortunately, the application for the ${applicationFormConfig.semester} season has closed. If you're interesting in joining BU UPE, please come back next semester and apply, we'd love to have you!`}
+          displayBack={true}
+        />
       );
 
     const onSubmit = async (event) => {
       event.preventDefault();
-      if (!generalSettings.applicationsOpen) {
+      if (!this.props.settings.applicationsOpen) {
         swal(
           "Uh oh!",
           "Applications are closed! Not sure how you got here, but unfortunately we can't submit this for you as applications have closed.",
@@ -219,16 +162,16 @@ class ApplicationForm extends Component {
 
         let firstName, email, newName;
         let responses = inputs.map(({ id: inputId, value }) => {
-          const id = parseInt(inputId);
+          const qUID = inputId;
 
-          if (id === 1) {
+          if (qUID === "name") {
             firstName = value.split(" ")[0];
             newName = value;
-          } else if (id === 2) email = value;
+          } else if (qUID === "email") email = value;
 
-          const { name, order, type } = questions.find((q) => q.id === id);
+          const { name, order, type } = questions.find((q) => q.uid === qUID);
           return {
-            id,
+            uid: qUID,
             value,
             name,
             order,
@@ -238,12 +181,12 @@ class ApplicationForm extends Component {
 
         const radioResponses = radios.map(
           ({ name: inputId, value: inputValue }) => {
-            const id = parseInt(inputId);
+            const qUID = inputId;
             // eslint-disable-next-line eqeqeq
             const value = inputValue == "true";
-            const { name, order, type } = questions.find((q) => q.id === id);
+            const { name, order, type } = questions.find((q) => q.uid === qUID);
             return {
-              id,
+              uid: qUID,
               value,
               name,
               order,
@@ -255,17 +198,17 @@ class ApplicationForm extends Component {
         const uploadFiles = fileUploads.map(
           (fileUpload) =>
             new Promise((resolve, reject) => {
-              const id = parseInt(fileUpload.id.split("-").pop());
+              const qUID = fileUpload.id.split("-").pop();
               this.props.firebase
-                .file(uid, id)
+                .file(uid, qUID)
                 .put(fileUpload.files[0])
                 .then((snapshot) => snapshot.ref.getDownloadURL())
                 .then((value) => {
                   const { name, order, type } = questions.find(
-                    (q) => q.id === id
+                    (q) => q.uid === qUID
                   );
                   return resolve({
-                    id,
+                    uid: qUID,
                     value,
                     name,
                     order,
@@ -311,29 +254,14 @@ class ApplicationForm extends Component {
     };
 
     const successMessage = (
-      <Container flexdirection="column">
-        <div style={{ alignSelf: "center" }}>
-          <Logo size="medium" />
-        </div>
-
-        <h1>Application Submitted!</h1>
-        <p>
-          Thank you for applying to join BU UPE. Please check your email for a
-          confirmation of your submission. Further details, such as interview
-          timeslots, will be prompted via email and can be entered in this
-          application. If you'd like to edit your submission, simply refresh
-          this page and re-apply.
-        </p>
-      </Container>
+      <TextDisplay
+        name={"Your Application"}
+        text={
+          "Your application has been submitted! Thank you for applying to join BU UPE. Please check your email for a confirmation of your submission. Further details, such as interview timeslots, will be prompted via email and can be entered in this application. If you'd like to edit your submission, simply refresh this page and re-apply."
+        }
+        displayBack={true}
+      />
     );
-
-    if (errorMsg)
-      return (
-        <Container flexdirection="column">
-          <h1>Uh oh!</h1>
-          <p>{errorMsg}</p>
-        </Container>
-      );
 
     if (submitted) return successMessage;
 
@@ -342,10 +270,10 @@ class ApplicationForm extends Component {
       let defaultValue = "";
       if (initialApplicationData !== null) {
         defaultValue = initialApplicationData.responses.find(
-          (r) => r.id === question.id
+          (r) => r.uid === question.uid
         ).value;
-      } else if (question.id === 1) defaultValue = this.context.name;
-      else if (question.id === 2) defaultValue = this.context.email;
+      } else if (question.uid === "name") defaultValue = this.context.name;
+      else if (question.uid === "email") defaultValue = this.context.email;
 
       let questionComponent;
       switch (question.type) {
@@ -362,7 +290,7 @@ class ApplicationForm extends Component {
         case "file":
           questionComponent = (
             <Form.File
-              id={`custom-file-${question.id}`}
+              id={`custom-file-${question.uid}`}
               label="Upload file"
               custom
               accept=".pdf"
@@ -381,8 +309,8 @@ class ApplicationForm extends Component {
                 value="true"
                 label="Yes"
                 type="radio"
-                name={question.id}
-                id={`${question.id}-1`}
+                name={question.uid}
+                id={`${question.uid}-1`}
               />
               <Form.Check
                 custom
@@ -392,8 +320,8 @@ class ApplicationForm extends Component {
                 value="false"
                 label="No"
                 type="radio"
-                name={question.id}
-                id={`${question.id}-2`}
+                name={question.uid}
+                id={`${question.uid}-2`}
               />
             </div>
           );
@@ -410,8 +338,8 @@ class ApplicationForm extends Component {
       }
 
       return (
-        <Form.Row style={{ width: "100%" }} key={question.id}>
-          <Form.Group controlId={question.id} style={{ width: "100%" }}>
+        <Form.Row style={{ width: "100%" }} key={question.uid}>
+          <Form.Group controlId={question.uid} style={{ width: "100%" }}>
             <Form.Label>
               {question.name} {question.required && <RequiredAsterisk />}
             </Form.Label>
@@ -424,40 +352,41 @@ class ApplicationForm extends Component {
     return (
       <>
         <SEO title="Apply" route="/apply" />
+        <BackIcon />
+        <Title>
+          <h1> Your Application </h1>
+        </Title>
         <Container flexdirection="row" style={{ justifyContent: "center" }}>
           <CenteredForm noValidate validated={validated} onSubmit={onSubmit}>
-            <Logo size="medium" />
-            <h1>Apply to BU UPE</h1>
-            {/* Pre application welcome message, perhaps make this configurable in admin settings
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
-            fringilla, dui vitae maximus luctus, magna urna convallis purus,
-            condimentum ullamcorper velit dui eu dolor. Pellentesque et
-            tincidunt tellus. Fusce venenatis magna sed elit bibendum, sed
-            scelerisque augue placerat. Vestibulum nec mi efficitur, posuere
-            nisl at, pretium ex. Quisque quam dui, pulvinar a pellentesque eu,
-            cursus et elit. Ut volutpat imperdiet ex, id commodo nulla pretium
-            id. Proin accumsan dignissim tortor, id pulvinar urna euismod ac.
-            Morbi suscipit massa id dui feugiat ultrices. Nulla ac faucibus
-            tortor, quis pharetra leo.
-          </p>
-          */}
-
-            {alreadyApplied && (
-              <p style={{ color: "red" }}>
-                Look's like you've already applied! Feel free to reapply
-                however, just note that it will overwrite your previous
-                submission.
-              </p>
-            )}
+            {this.context.roles.hasOwnProperty("applicant") &&
+              this.context.roles.applicant && (
+                <p
+                  style={{
+                    color: "red",
+                    paddingTop: "10px",
+                    paddingBottom: "10px",
+                  }}
+                >
+                  Look's like you've already applied! Feel free to reapply
+                  however, just note that it will overwrite your previous
+                  submission.
+                </p>
+              )}
 
             {applicationFormConfig.questions
               .sort((a, b) => (a.order > b.order ? 1 : -1))
               .map((question) => renderQuestion(question))}
 
-            <Button type="submit" disabled={sending}>
+            <StyledButton
+              paddingRight={"10%"}
+              paddingLeft={"10%"}
+              paddingTop={"2%"}
+              paddingBottom={"2%"}
+              type="submit"
+              disabled={sending}
+            >
               {sending ? "Submitting..." : "Submit"}
-            </Button>
+            </StyledButton>
           </CenteredForm>
         </Container>
       </>
@@ -466,6 +395,7 @@ class ApplicationForm extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isLoggedIn),
   withFirebase
 )(ApplicationForm);

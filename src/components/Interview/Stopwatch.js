@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { withSettings } from "../API/SettingsContext";
 
 const Wrapper = styled.div`
+  font-family: Georgia;
   font-size: 2rem;
   display: flex;
   top: 10px;
@@ -12,9 +14,10 @@ const Wrapper = styled.div`
 
 const TimeDisplay = styled.p`
   padding: 5px;
-  color: ${(props) => (props.overtime ? "red" : "black")};
-  border: ${(props) => (props.overtime ? "2px solid red" : "none")};
-  text-decoration: ${(props) => (props.overtime ? "underline" : "none")};
+  color: ${(props) => (props.overtime ? "red" : "black")} !important;
+  border: ${(props) => (props.overtime ? "2px solid red" : "none")} !important;
+  text-decoration: ${(props) =>
+    props.overtime ? "underline" : "none"} !important;
 `;
 
 const formatTimeSegment = (segment) => segment.toString().padStart(2, 0);
@@ -32,13 +35,15 @@ const msToHMS = (ms) => {
 
 const getMinutes = (ms) => {
   let seconds = Math.round(ms / 1000);
-  seconds = seconds % 3600;
   let minutes = parseInt(seconds / 60);
   return minutes;
 };
 
-const Stopwatch = ({ startTime, limit }) => {
+const Stopwatch = ({ startTime, limit, settings }) => {
   const [time, setTime] = useState(Date.now() - startTime);
+
+  let actualLimit = limit;
+  if (!!!limit) actualLimit = settings.timeslotLength;
 
   useEffect(() => {
     const timer = setInterval(() => setTime(Date.now() - startTime), 1000);
@@ -46,12 +51,12 @@ const Stopwatch = ({ startTime, limit }) => {
   }, [startTime]);
 
   return (
-    <Wrapper>
-      <TimeDisplay overtime={getMinutes(time) >= limit}>
+    <Wrapper style={{ paddingLeft: "7%" }}>
+      <TimeDisplay overtime={getMinutes(time) >= actualLimit}>
         Time Elapsed: {msToHMS(time)}
       </TimeDisplay>
     </Wrapper>
   );
 };
 
-export default Stopwatch;
+export default withSettings(Stopwatch);

@@ -11,6 +11,7 @@ import {
   withFirebase,
   withAuthorization,
 } from "upe-react-components";
+import { withSettings } from "../API/SettingsContext";
 
 import LevelSelector from "./LevelSelector";
 import InterviewRoom from "./InterviewRoom";
@@ -19,33 +20,36 @@ import Stopwatch from "./Stopwatch";
 import Loader from "../Loader";
 import { isRecruitmentTeam } from "../../util/conditions";
 import { formatTime } from "../../util/helper";
-import { FullSizeContainer } from "../../styles/global";
+import { FullSizeContainer, Title } from "../../styles/global";
+import TextDisplay, { BackIcon } from "../TextDisplay";
 
 const Sidebar = styled.ul`
+  font-family: Georgia;
   max-width: 300px;
   padding: 15px;
-  background: ${(props) => props.theme.palette.darkShades};
-  margin: 0;
+  background: #333333;
+  margin-left: 1%;
+  margin-right: 1%;
   list-style-type: none;
-
+  border-radius: 25px;
   h1 {
     color: white;
     text-align: center;
+    font-style: italic;
     border-bottom: 1px solid grey;
   }
 `;
 
 const StyledLi = styled.li`
   cursor: pointer;
-  color: ${(props) =>
-    props.selected ? props.theme.palette.mainBrand : "white"};
+  color: #f21131;
   font-weight: bold;
   padding-top: 10px;
   padding-bottom: 10px;
   border-bottom: 1px solid grey;
 
   &:hover {
-    color: ${(props) => props.theme.palette.mainBrand};
+    color: #f21131;
     text-decoration: underline;
   }
 `;
@@ -53,14 +57,14 @@ const StyledLi = styled.li`
 class InterviewerView extends Component {
   _initFirebase = false;
   state = {
-    error: null,
     loading: true,
     timeslots: [],
     questions: [],
     currentApplication: null,
     levelConfig: {},
+    textSettings: {},
   };
-  unsubSettings = null;
+  unsubTextSettings = null;
   unsubTimeslots = null;
   unsubCurrentApplication = null;
 
@@ -75,7 +79,7 @@ class InterviewerView extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.unsubSettings === "function") this.unsubSettings();
+    if (typeof this.unsubTextSettings === "function") this.unsubTextSettings();
     if (typeof this.unsubTimeslots === "function") this.unsubTimeslots();
     if (typeof this.unsubCurrentApplication === "function")
       this.unsubCurrentApplication();
@@ -89,7 +93,7 @@ class InterviewerView extends Component {
       localStorage.getItem("currentApplication")
     );
     if (currentApplication !== null)
-      this.fetchApplication(currentApplication.id);
+      this.fetchApplication(currentApplication.uid);
 
     const questions = await this.props.firebase
       .questions()
@@ -97,7 +101,7 @@ class InterviewerView extends Component {
       .then((querySnapshot) =>
         querySnapshot.docs.map((doc) => ({
           ...doc.data(),
-          id: doc.id,
+          uid: doc.id,
         }))
       );
 
@@ -106,25 +110,25 @@ class InterviewerView extends Component {
       .get()
       .then((doc) => {
         if (!doc.exists) {
-          this.setState({ error: "LevelConfig does not exist!" });
+          console.log("LevelConfig does not exist!");
           return {};
         }
         return doc.data();
       });
 
-    const settings = await new Promise((resolve, reject) => {
+    const textSettings = await new Promise((resolve, reject) => {
       let resolveOnce = (doc) => {
         resolveOnce = () => null;
         resolve(doc);
       };
-      this.unsubSettings = this.props.firebase
-        .generalSettings()
+      this.unsubTextSettings = this.props.firebase
+        .textSettings()
         .onSnapshot((doc) => {
-          if (!doc.exists) this.setState({ error: "Failed to load settings!" });
+          if (!doc.exists) console.log("Failed to load textSettings!");
           else {
-            const settings = doc.data();
-            this.setState({ settings });
-            resolveOnce(settings);
+            const textSettings = doc.data();
+            this.setState({ textSettings });
+            resolveOnce(textSettings);
           }
         }, reject);
     });
@@ -142,7 +146,7 @@ class InterviewerView extends Component {
               return {
                 ...doc.data(),
                 time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
-                id: doc.id,
+                uid: doc.id,
               };
             })
             .filter((ts) => ts.interviewers.hasOwnProperty(authUser.uid));
@@ -155,30 +159,35 @@ class InterviewerView extends Component {
     this.setState({
       questions,
       levelConfig,
-      settings,
+      textSettings,
       timeslots,
       loading: false,
     });
   };
 
-  fetchApplication = (id) => {
-    if (!id) return;
+  fetchApplication = (uid) => {
+    if (!uid) return;
 
     if (typeof this.unsubCurrentApplication === "function")
       this.unsubCurrentApplication();
     this.unsubCurrentApplication = this.props.firebase
-      .application(id)
+      .application(uid)
       .onSnapshot((doc) => {
-        if (!doc.exists)
-          return this.setState({ error: "Application not found!" });
-        const fetchedApplication = { ...doc.data(), id: doc.id };
+        if (!doc.exists) return console.log("Application not found!");
+        const fetchedApplication = { ...doc.data(), uid: doc.id };
 
         if (
           !this.state.currentApplication ||
-          this.state.currentApplication.id !== fetchedApplication.id ||
+          this.state.currentApplication.uid !== fetchedApplication.uid ||
           !isEqual(
             this.state.currentApplication?.interview?.notes?.[this.context.uid],
             fetchedApplication?.interview?.notes?.[this.context.uid]
+          ) ||
+          !isEqual(
+            this.state.currentApplication?.interview?.scores?.[
+              this.context.uid
+            ],
+            fetchedApplication?.interview?.scores?.[this.context.uid]
           )
         ) {
           this.setState({ currentApplication: fetchedApplication });
@@ -193,7 +202,7 @@ class InterviewerView extends Component {
 
   saveLevel = async (level) => {
     await this.props.firebase
-      .application(this.state.currentApplication.id)
+      .application(this.state.currentApplication.uid)
       .update({
         interview: {
           ...this.state.currentApplication.interview,
@@ -208,7 +217,7 @@ class InterviewerView extends Component {
       await this.props.firebase.firestore.runTransaction(
         async (transaction) => {
           const ref = this.props.firebase.application(
-            this.state.currentApplication.id
+            this.state.currentApplication.uid
           );
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
@@ -231,7 +240,7 @@ class InterviewerView extends Component {
       await this.props.firebase.firestore.runTransaction(
         async (transaction) => {
           const ref = this.props.firebase.application(
-            this.state.currentApplication.id
+            this.state.currentApplication.uid
           );
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
@@ -271,9 +280,8 @@ class InterviewerView extends Component {
 
   render() {
     const {
-      settings,
+      textSettings,
       timeslots,
-      error,
       loading,
       currentApplication,
       levelConfig,
@@ -283,8 +291,6 @@ class InterviewerView extends Component {
     if (loading) return <Loader />;
 
     const Content = ({ questions }) => {
-      if (error) return <h1>{error}</h1>;
-
       if (currentApplication) {
         if (!currentApplication.interview.hasOwnProperty("level"))
           return (
@@ -296,53 +302,57 @@ class InterviewerView extends Component {
 
         const questionMap = {};
         levelConfig[currentApplication.interview.level].forEach((question) => {
-          questionMap[question.id] = question.order;
+          questionMap[question.uid] = question.order;
         });
-        const lastOrder = Math.max(Object.values(questionMap));
+        const lastOrder = Math.max(...Object.values(questionMap));
 
         const filteredQuestions = questions
-          .filter((question) => questionMap.hasOwnProperty(question.id))
+          .filter((question) => questionMap.hasOwnProperty(question.uid))
           .map((question) => ({
             ...question,
-            order: questionMap[question.id] + 1,
+            order: questionMap[question.uid] + 1,
           }))
           .concat([
             {
-              id: "overview",
+              uid: "overview",
               order: -1,
-              overview: settings.interviewOverviewText,
-              interviewerNotes: settings.interviewInterviewerNotesText,
+              overview: textSettings.interviewOverviewText,
+              interviewerNotes: textSettings.interviewInterviewerNotesText,
             },
             {
-              id: "resume",
+              uid: "resume",
               order: 0,
-              url: currentApplication.responses.find((r) => r.id === 6).value,
-              notes: settings.interviewResumeNotesText,
+              url: currentApplication.responses.find((r) => r.uid === "resume")
+                .value,
+              notes: textSettings.interviewResumeNotesText,
             },
             {
-              id: "finalNotes",
+              uid: "finalNotes",
               order: lastOrder + 2,
               title: "Submit Interview",
-              text: settings.interviewFinalNotesInterviewerText,
+              text: textSettings.interviewFinalNotesInterviewerText,
             }, // TODO: explain why + 2 in comment
           ])
           .sort((a, b) => (a.order > b.order ? 1 : -1));
 
         return (
           <>
+            <BackIcon />
+            <Title>
+              <h1>Interview Room</h1>
+            </Title>
             {!currentApplication.interview.interviewed && (
               <Stopwatch
                 startTime={currentApplication.interview.startedAt}
                 limit={
                   timeslots.find(
-                    (ts) =>
-                      ts.applicant?.uid === currentApplication?.id ||
-                      ts.applicant?.id === currentApplication?.id
+                    (ts) => ts.applicant?.uid === currentApplication?.uid
                   ).timeslotLength
                 }
               />
             )}
             <InterviewRoom
+              style={{ marginLeft: "7%" }}
               currentApplication={currentApplication}
               questions={filteredQuestions}
               saveApplication={this.saveApplication}
@@ -352,7 +362,13 @@ class InterviewerView extends Component {
         );
       }
 
-      return <h1>Please select an interview timeslot.</h1>;
+      return (
+        <TextDisplay
+          name={"Interview Room"}
+          text={"Please select an interview timeslot."}
+          displayBack={true}
+        />
+      );
     };
 
     // TODO: remove the uid || id and stick to uid
@@ -369,16 +385,9 @@ class InterviewerView extends Component {
             .map((timeslot) => {
               return (
                 <StyledLi
-                  key={timeslot.id}
-                  selected={
-                    timeslot.applicant?.id === currentApplication?.id ||
-                    timeslot.applicant?.uid === currentApplication?.id
-                  }
-                  onClick={() =>
-                    this.fetchApplication(
-                      timeslot.applicant?.id || timeslot.applicant?.uid
-                    )
-                  }
+                  key={timeslot.uid}
+                  selected={timeslot.applicant?.uid === currentApplication?.uid}
+                  onClick={() => this.fetchApplication(timeslot.applicant?.uid)}
                 >
                   <strong>{timeslot.applicant?.name || "No applicant"}</strong>
                   <br />
@@ -388,7 +397,11 @@ class InterviewerView extends Component {
             })}
         </Sidebar>
         <Col style={{ padding: 25 }}>
-          <Content questions={questions} settings={settings} />
+          <Content
+            questions={questions}
+            settings={this.props.settings}
+            textSettings={textSettings}
+          />
         </Col>
       </FullSizeContainer>
     );
@@ -396,6 +409,7 @@ class InterviewerView extends Component {
 }
 
 export default compose(
+  withSettings,
   withAuthorization(isRecruitmentTeam),
   withFirebase
 )(InterviewerView);

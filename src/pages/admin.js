@@ -9,12 +9,11 @@ import {
   GeneralSettings,
   ConfigureApplicationForm,
   ViewApplications,
-  ManageUsers,
-  ManageRoles,
   ManageTimeslots,
-  ImportExport,
   ManageQuestions,
   ManageLevels,
+  ManageInterviews,
+  ManageEvents,
 } from "../components/Admin";
 
 const FullSizeRouter = styled(Router)`
@@ -28,12 +27,11 @@ export default () => (
     <FullSizeRouter basepath={withPrefix("/admin")}>
       <ConfigureApplicationForm path="/configure-application" />
       <ViewApplications path="/view-applications" />
-      <ManageUsers path="/manage-users" />
-      <ManageRoles path="/manage-roles" />
       <ManageTimeslots path="/manage-timeslots" />
-      <ImportExport path="/import-export" />
       <ManageQuestions path="/manage-questions" />
       <ManageLevels path="/manage-levels" />
+      <ManageInterviews path="/manage-interviews" />
+      <ManageEvents path="/manage-events" />
       <GeneralSettings path="/" />
     </FullSizeRouter>
   </>

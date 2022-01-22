@@ -11,8 +11,29 @@ const StyledP = styled.p`
   white-space: pre-wrap;
 `;
 
+const StyledButton = styled(Button)`
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #f21131;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 0.5% 25% 0.5% 25%;
+  margin-top: 1%;
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited,
+  &:disabled {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #600613;
+    border: none;
+  }
+`;
+
 const QuestionDisplay = ({
-  id,
+  uid,
   name,
   description,
   answer,
@@ -45,12 +66,12 @@ const QuestionDisplay = ({
     return (
       <>
         <Col style={{ padding: 0 }}>
-          <h4>Description</h4>
+          <h5>Description</h5>
           {hasIMG && <img src={image} alt={name} />}
           <StyledP>{description}</StyledP>
         </Col>
         <Col style={{ padding: 0 }}>
-          <h4>Answer</h4>
+          <h5>Answer</h5>
           <StyledP>{answer}</StyledP>
         </Col>
       </>
@@ -58,7 +79,7 @@ const QuestionDisplay = ({
   };
 
   let Content = () => null;
-  if (id !== "resume" && id !== "finalNotes") {
+  if (uid !== "resume" && uid !== "finalNotes") {
     Content = () => (
       <>
         <Row>
@@ -76,12 +97,14 @@ const QuestionDisplay = ({
           </Col>
         </Row>
 
-        <Button
+        <StyledButton
+          paddingTop={"0.5%"}
+          paddingBottom={"0.5%"}
           style={{ marginBottom: 20 }}
           onClick={() => setShowDetails(!showDetails)}
         >
           {showDetails ? "▲ Hide" : "▼ Show"} Details
-        </Button>
+        </StyledButton>
         {showDetails && <QuestionDetails />}
       </>
     );

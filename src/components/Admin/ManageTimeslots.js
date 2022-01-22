@@ -5,11 +5,11 @@ import cloneDeep from "lodash.clonedeep";
 import swal from "@sweetalert/with-react";
 
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 
+import { withSettings } from "../API/SettingsContext";
 import { withFirebase, withAuthorization } from "upe-react-components";
 
 import { isAdmin } from "../../util/conditions";
@@ -18,6 +18,10 @@ import Loader from "../Loader";
 import ScrollableRow from "../Timeslots/ScrollableRow";
 import { formatTime } from "../../util/helper";
 
+import { BackIcon } from "../TextDisplay";
+
+import { StyledButton, Title, Text } from "../../styles/global";
+
 const TimeslotCard = styled(Card)`
   width: 18rem;
   margin: 10px;
@@ -25,14 +29,33 @@ const TimeslotCard = styled(Card)`
   background: white;
 
   &:hover {
-    border: 2px solid #87fb87;
+    border: 2px solid #fb8787;
+  }
+`;
+
+const TimeslotDiv = styled.div`
+  font-family: Georgia;
+  padding-left: 15%;
+  padding-right: 15%;
+  width: 100%;
+  h1 {
+    font-family: Georgia;
+    font-size: 40px;
+    font-style: italic;
+    padding-bottom: 5%;
+  }
+  h1:after {
+    content: "";
+    display: block;
+    width: 4%;
+    padding-top: 3px;
+    border-bottom: 2px solid #f21131;
   }
 `;
 
 // TODO: this needs refactoring into a class to remove the multiple loadings
-const ManageTimeslots = ({ firebase }) => {
+const ManageTimeslots = ({ firebase, settings }) => {
   const [timeslots, setTimeslots] = useState({});
-  const [settings, setSettings] = useState({});
   const [currentTimeslot, setCurrentTimeslot] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [interviewers, setInterviewers] = useState([]);
@@ -40,18 +63,12 @@ const ManageTimeslots = ({ firebase }) => {
   const [loadingTimeslots, setLoadingTimeslots] = useState(true);
   const [loadingApplicants, setLoadingApplicants] = useState(true);
   const [loadingInterviewers, setLoadingInterviewers] = useState(true);
-  const [loadingSettings, setLoadingSettings] = useState(true);
   const [loading, setLoading] = useState(true);
   const tzoffset = new Date().getTimezoneOffset() * 60000;
 
   useEffect(
     () => {
       if (firebase) {
-        const unsubSettings = firebase.generalSettings().onSnapshot((doc) => {
-          setSettings(doc.data());
-          setLoadingSettings(false);
-        }, console.error);
-
         const unsubTimeslots = firebase
           .timeslots()
           .onSnapshot((querySnapshot) => {
@@ -59,7 +76,7 @@ const ManageTimeslots = ({ firebase }) => {
               return {
                 ...doc.data(),
                 time: new Date(doc.data().time), // make sure to convert timestamp objects to Date objects
-                id: doc.id,
+                uid: doc.id,
               };
             });
 
@@ -70,7 +87,7 @@ const ManageTimeslots = ({ firebase }) => {
               // if data for day exists, add to it, otherwise create new field
               if (timeslots.hasOwnProperty(day)) {
                 const index = timeslots[day].findIndex(
-                  (timeslot) => timeslot.id === ts.id // check if existing timeslot matches the update (ts)
+                  (timeslot) => timeslot.uid === ts.uid // check if existing timeslot matches the update (ts)
                 );
 
                 // if timeslot exists, update the value, otherwise push it
@@ -85,10 +102,10 @@ const ManageTimeslots = ({ firebase }) => {
             });
 
             // remove timeslots that no longer exist
-            const validIds = listenerData.map((ts) => ts.id);
+            const validIds = listenerData.map((ts) => ts.uid);
             for (const day in timeslots) {
               timeslots[day] = timeslots[day].filter((ts) =>
-                validIds.includes(ts.id)
+                validIds.includes(ts.uid)
               );
               if (timeslots[day].length === 0) delete timeslots[day];
             }
@@ -104,7 +121,7 @@ const ManageTimeslots = ({ firebase }) => {
             const listenerData = querySnapshot.docs.map((doc) => {
               return {
                 ...doc.data(),
-                id: doc.id,
+                uid: doc.id,
               };
             });
 
@@ -119,7 +136,7 @@ const ManageTimeslots = ({ firebase }) => {
             const listenerData = querySnapshot.docs.map((doc) => {
               return {
                 ...doc.data(),
-                id: doc.id,
+                uid: doc.id,
               };
             });
 
@@ -131,7 +148,6 @@ const ManageTimeslots = ({ firebase }) => {
           unsubTimeslots();
           unsubApplicants();
           unsubInterviewers();
-          unsubSettings();
         };
       }
     },
@@ -140,19 +156,9 @@ const ManageTimeslots = ({ firebase }) => {
   );
 
   useEffect(() => {
-    if (
-      !loadingTimeslots &&
-      !loadingInterviewers &&
-      !loadingApplicants &&
-      !loadingSettings
-    )
+    if (!loadingTimeslots && !loadingInterviewers && !loadingApplicants)
       setLoading(false);
-  }, [
-    loadingInterviewers,
-    loadingApplicants,
-    loadingTimeslots,
-    loadingSettings,
-  ]);
+  }, [loadingInterviewers, loadingApplicants, loadingTimeslots]);
 
   if (loading) return <Loader />;
 
@@ -164,14 +170,14 @@ const ManageTimeslots = ({ firebase }) => {
   const saveTimeslotChanges = async () => {
     const newTimeslot = cloneDeep(currentTimeslot);
     newTimeslot.time = newTimeslot.time.getTime() + tzoffset;
-    if (newTimeslot.hasOwnProperty("id")) {
+    if (newTimeslot.hasOwnProperty("uid")) {
       try {
         await firebase.firestore.runTransaction(async (transaction) => {
-          const ref = firebase.timeslot(newTimeslot.id);
+          const ref = firebase.timeslot(newTimeslot.uid);
           const doc = await transaction.get(ref);
           // eslint-disable-next-line no-unused-vars
           const timeslot = { ...doc.data() };
-          delete newTimeslot.id;
+          delete newTimeslot.uid;
           transaction.set(ref, newTimeslot);
         });
       } catch (e) {
@@ -208,7 +214,7 @@ const ManageTimeslots = ({ firebase }) => {
       },
     }).then(async (confirm) => {
       if (confirm) {
-        await firebase.timeslot(currentTimeslot.id).delete();
+        await firebase.timeslot(currentTimeslot.uid).delete();
         closeModal();
       }
     });
@@ -219,7 +225,7 @@ const ManageTimeslots = ({ firebase }) => {
     delete updatedTimeslot.interviewers[oldId];
     if (newId !== "")
       updatedTimeslot.interviewers[newId] = interviewers.find(
-        (interviewer) => interviewer.id === newId
+        (interviewer) => interviewer.uid === newId
       ).name;
     setCurrentTimeslot(updatedTimeslot);
   };
@@ -230,7 +236,7 @@ const ManageTimeslots = ({ firebase }) => {
     if (newId !== "") {
       updatedTimeslot.applicant = {
         uid: newId,
-        name: applicants.find((applicant) => applicant.id === newId).name,
+        name: applicants.find((applicant) => applicant.uid === newId).name,
       };
     }
     setCurrentTimeslot(updatedTimeslot);
@@ -243,14 +249,14 @@ const ManageTimeslots = ({ firebase }) => {
       {timeslots
         .sort((a, b) => {
           if (a.time.getTime() === b.time.getTime())
-            return a.id > b.id ? 1 : -1;
+            return a.uid > b.uid ? 1 : -1;
           else return a.time > b.time ? 1 : -1;
         })
         .map((timeslot) => {
           const interviewers = Object.values(timeslot.interviewers);
           return (
             <TimeslotCard
-              key={timeslot.id}
+              key={timeslot.uid}
               onClick={() => {
                 setCurrentTimeslot(timeslot);
                 setShowModal(true);
@@ -279,62 +285,95 @@ const ManageTimeslots = ({ firebase }) => {
 
   return (
     <AdminLayout>
-      <h1>Manage Timeslots</h1>
-      <p>
-        Click a timeslot below to edit the associated interviewers, applicant,
-        and time. Be careful as there is nothing stopping you from
-        double-booking people; make sure that the people you swap in actually
-        have availability. You can also create a new timeslot, use this for edge
-        cases where someone needs a special time/date for their interview.
-      </p>
-      <Button
-        style={{ marginBottom: 25 }}
-        onClick={() => {
-          const coeff = 1000 * 60;
-          const date = new Date();
-          const rounded = new Date(Math.round(date.getTime() / coeff) * coeff);
-          setCurrentTimeslot({
-            interviewers: {},
-            timeslotLength: settings.timeslotLength,
-            time: new Date(rounded - tzoffset),
-          });
-          setShowModal(true);
-        }}
+      <BackIcon />
+      <Title>
+        <h1> Manage Timeslots </h1>
+      </Title>
+      <Text
+        paddingTop={"20px"}
+        paddingLeft={"7%"}
+        paddingRight={"7%"}
+        pFontSize={"15px"}
+        pMaxWidth={"100%"}
+        pTextAlign={"left"}
+        position={"left"}
+        h2MarginTop={"2%"}
       >
-        Add New Timeslot
-      </Button>
-      <Button
-        style={{ marginBottom: 25, marginLeft: 10 }}
-        onClick={() => {
-          firebase
-            .interviewerTimeslotsOpen()
-            .catch((err) => console.error(err));
-        }}
-      >
-        Alert Interviewers
-      </Button>
-      <Button
-        style={{ marginBottom: 25, marginLeft: 10 }}
-        onClick={() => {
-          firebase.applicantTimeslotsOpen().catch((err) => console.error(err));
-        }}
-      >
-        Alert Interviewees
-      </Button>
-      <ScrollableRow>
-        {Object.entries(timeslots)
-          .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
-          .map(([date, timeslots]) => (
-            <TimeslotColumn key={date} date={date} timeslots={timeslots} />
-          ))}
-      </ScrollableRow>
+        <p>
+          Click a timeslot below to edit the associated interviewers, applicant,
+          and time. Be careful as there is nothing stopping you from
+          double-booking people; make sure that the people you swap in actually
+          have availability. You can also create a new timeslot, use this for
+          edge cases where someone needs a special time/date for their
+          interview.
+        </p>
+        <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
+          style={{ marginBottom: 25 }}
+          onClick={() => {
+            const coeff = 1000 * 60;
+            const date = new Date();
+            const rounded = new Date(
+              Math.round(date.getTime() / coeff) * coeff
+            );
+            setCurrentTimeslot({
+              interviewers: {},
+              timeslotLength: settings.timeslotLength,
+              time: new Date(rounded - tzoffset),
+            });
+            setShowModal(true);
+          }}
+        >
+          Add New Timeslot
+        </StyledButton>
+        <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
+          style={{ marginBottom: 25 }}
+          onClick={() => {
+            firebase
+              .interviewerTimeslotsOpen()
+              .catch((err) => console.error(err));
+          }}
+        >
+          Alert Interviewers
+        </StyledButton>
+        <StyledButton
+          paddingTop={"0.5%"}
+          paddingRight={"2%"}
+          paddingBottom={"0.5%"}
+          paddingLeft={"2%"}
+          style={{ marginBottom: 25 }}
+          onClick={() => {
+            firebase
+              .applicantTimeslotsOpen()
+              .catch((err) => console.error(err));
+          }}
+        >
+          Alert Interviewees
+        </StyledButton>
+      </Text>
+      <TimeslotDiv>
+        <ScrollableRow>
+          {Object.entries(timeslots)
+            .sort((a, b) => (new Date(a[0]) > new Date(b[0]) ? 1 : -1))
+            .map(([date, timeslots]) => (
+              <TimeslotColumn key={date} date={date} timeslots={timeslots} />
+            ))}
+        </ScrollableRow>
+      </TimeslotDiv>
 
       <Modal show={showModal} onHide={closeModal}>
         {currentTimeslot && (
           <>
             <Modal.Header closeButton>
               <Modal.Title>
-                {currentTimeslot.hasOwnProperty("id") ? "Edit" : "Add new"}{" "}
+                {currentTimeslot.hasOwnProperty("uid") ? "Edit" : "Add new"}{" "}
                 timeslot
               </Modal.Title>
             </Modal.Header>
@@ -357,7 +396,7 @@ const ManageTimeslots = ({ firebase }) => {
                     {interviewers
                       .sort((a, b) => (a.name > b.name ? 1 : -1))
                       .map((interviewer) => (
-                        <option value={interviewer.id} key={interviewer.id}>
+                        <option value={interviewer.uid} key={interviewer.uid}>
                           {interviewer.name}
                         </option>
                       ))}
@@ -381,7 +420,7 @@ const ManageTimeslots = ({ firebase }) => {
                     {interviewers
                       .sort((a, b) => (a.name > b.name ? 1 : -1))
                       .map((interviewer) => (
-                        <option value={interviewer.id} key={interviewer.id}>
+                        <option value={interviewer.uid} key={interviewer.uid}>
                           {interviewer.name}
                         </option>
                       ))}
@@ -392,7 +431,7 @@ const ManageTimeslots = ({ firebase }) => {
                   <Form.Label>Applicant</Form.Label>
                   <Form.Control
                     as="select"
-                    value={currentTimeslot.applicant?.id}
+                    value={currentTimeslot.applicant?.uid}
                     onChange={(e) => updateApplicant(e.target.value)}
                     custom
                   >
@@ -400,7 +439,7 @@ const ManageTimeslots = ({ firebase }) => {
                     {applicants
                       .sort((a, b) => (a.name > b.name ? 1 : -1))
                       .map((applicant) => (
-                        <option value={applicant.id} key={applicant.id}>
+                        <option value={applicant.uid} key={applicant.uid}>
                           {applicant.name}
                         </option>
                       ))}
@@ -423,17 +462,36 @@ const ManageTimeslots = ({ firebase }) => {
               </Form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={closeModal}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={closeModal}
+              >
                 Cancel
-              </Button>
-              {currentTimeslot.hasOwnProperty("id") && (
-                <Button variant="danger" onClick={deleteTimeslot}>
+              </StyledButton>
+              {currentTimeslot.hasOwnProperty("uid") && (
+                <StyledButton
+                  paddingTop={"0.5%"}
+                  paddingRight={"2%"}
+                  paddingBottom={"0.5%"}
+                  paddingLeft={"2%"}
+                  onClick={deleteTimeslot}
+                >
                   Delete
-                </Button>
+                </StyledButton>
               )}
-              <Button variant="primary" onClick={saveTimeslotChanges}>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                green
+                onClick={saveTimeslotChanges}
+              >
                 Save
-              </Button>
+              </StyledButton>
             </Modal.Footer>
           </>
         )}
@@ -443,6 +501,7 @@ const ManageTimeslots = ({ firebase }) => {
 };
 
 export default compose(
+  withSettings,
   withAuthorization(isAdmin),
   withFirebase
 )(ManageTimeslots);

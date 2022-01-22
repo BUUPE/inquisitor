@@ -1,14 +1,14 @@
 import React, { Component } from "react";
 
-import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 
 import { withAuthorization } from "upe-react-components";
 
-import { Container } from "../../styles/global";
 import { isAdmin } from "../../util/conditions";
+import { BackIcon } from "../TextDisplay";
+import { Wrapper, Title, StyledButton } from "../../styles/global";
 
 class SecondRound extends Component {
   state = {
@@ -37,18 +37,34 @@ class SecondRound extends Component {
     const ApplicantStatus = ({
       provisional: { contribution, meetings },
       name,
-      id,
+      uid,
     }) => (
       <tr>
         <td>{name}</td>
-        <td>{contribution ? "Complete" : "Not Complete"}</td>
-        <td>{meetings ? "Complete" : "Not Complete"}</td>
+        <td
+          style={{
+            color: contribution ? "green" : "red",
+            fontStyle: contribution ? "none" : "italic",
+            fontWeight: contribution ? "bold" : "none",
+          }}
+        >
+          {contribution ? "Complete" : "Not Complete"}
+        </td>
+        <td
+          style={{
+            color: meetings ? "green" : "red",
+            fontStyle: meetings ? "none" : "italic",
+            fontWeight: meetings ? "bold" : "none",
+          }}
+        >
+          {meetings ? "Complete" : "Not Complete"}
+        </td>
         {!settings.deliberationsOpen && (
           <td
             onClick={() =>
               this.setState({
                 showModal: true,
-                currentApplicationId: id,
+                currentApplicationId: uid,
                 currentContributionStatus: contribution,
                 currentMeetingStatus: meetings,
                 currentName: name,
@@ -63,106 +79,124 @@ class SecondRound extends Component {
     );
 
     return (
-      <Container flexdirection="column">
-        <Table bordered hover>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Contribution Status</th>
-              <th>Meetings Status</th>
-              {!settings.deliberationsOpen && <th>Edit</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {provisionalMemberApplications.map((application) => (
-              <ApplicantStatus key={application.id} {...application} />
-            ))}
-          </tbody>
-        </Table>
+      <>
+        <BackIcon />
+        <Title>
+          <h1> Second Round Status </h1>
+        </Title>
+        <Wrapper>
+          <Table bordered hover>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Contribution Status</th>
+                <th>Meetings Status</th>
+                {!settings.deliberationsOpen && <th>Edit</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {provisionalMemberApplications.map((application) => (
+                <ApplicantStatus key={application.uid} {...application} />
+              ))}
+            </tbody>
+          </Table>
 
-        {!settings.deliberationsOpen && (
-          <Button variant="danger" onClick={this.props.readyRoundTwo}>
-            Open Round Two
-          </Button>
-        )}
+          {!settings.deliberationsOpen && (
+            <StyledButton
+              paddingTop={"0.5%"}
+              paddingRight={"2%"}
+              paddingBottom={"0.5%"}
+              paddingLeft={"2%"}
+              onClick={this.props.readyRoundTwo}
+            >
+              Open Round Two
+            </StyledButton>
+          )}
 
-        <Modal
-          show={showModal}
-          onHide={() => this.setState({ showModal: false })}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>{currentName}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group>
-                <Form.Label>Contribution</Form.Label>
-                <Form.Check
-                  custom
-                  checked={currentContributionStatus}
-                  type="switch"
-                  label={
-                    <span>
-                      Applicant has{" "}
-                      {currentContributionStatus
-                        ? "completed"
-                        : "not completed"}{" "}
-                      their contribution
-                    </span>
-                  }
-                  id="contributionToggle"
-                  onChange={(e) =>
-                    this.setState({
-                      currentContributionStatus: e.target.checked,
-                    })
-                  }
-                />
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Meetings</Form.Label>
-                <Form.Check
-                  custom
-                  checked={currentMeetingStatus}
-                  type="switch"
-                  label={
-                    <span>
-                      Applicant has{" "}
-                      {currentMeetingStatus ? "completed" : "not completed"}{" "}
-                      their meetings
-                    </span>
-                  }
-                  id="meetingToggle"
-                  onChange={(e) =>
-                    this.setState({
-                      currentMeetingStatus: e.target.checked,
-                    })
-                  }
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => this.setState({ showModal: false })}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() =>
-                this.props.saveSecondRoundStatus(
-                  currentApplicationId,
-                  currentMeetingStatus,
-                  currentContributionStatus
-                )
-              }
-            >
-              Save
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </Container>
+          <Modal
+            show={showModal}
+            onHide={() => this.setState({ showModal: false })}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>{currentName}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group>
+                  <Form.Label>Contribution</Form.Label>
+                  <Form.Check
+                    custom
+                    checked={currentContributionStatus}
+                    type="switch"
+                    label={
+                      <span>
+                        Applicant has{" "}
+                        {currentContributionStatus
+                          ? "completed"
+                          : "not completed"}{" "}
+                        their contribution
+                      </span>
+                    }
+                    id="contributionToggle"
+                    onChange={(e) =>
+                      this.setState({
+                        currentContributionStatus: e.target.checked,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Meetings</Form.Label>
+                  <Form.Check
+                    custom
+                    checked={currentMeetingStatus}
+                    type="switch"
+                    label={
+                      <span>
+                        Applicant has{" "}
+                        {currentMeetingStatus ? "completed" : "not completed"}{" "}
+                        their meetings
+                      </span>
+                    }
+                    id="meetingToggle"
+                    onChange={(e) =>
+                      this.setState({
+                        currentMeetingStatus: e.target.checked,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={() => this.setState({ showModal: false })}
+              >
+                Cancel
+              </StyledButton>
+              <StyledButton
+                paddingTop={"0.5%"}
+                paddingRight={"2%"}
+                paddingBottom={"0.5%"}
+                paddingLeft={"2%"}
+                onClick={() =>
+                  this.props.saveSecondRoundStatus(
+                    currentApplicationId,
+                    currentMeetingStatus,
+                    currentContributionStatus
+                  )
+                }
+              >
+                Save
+              </StyledButton>
+            </Modal.Footer>
+          </Modal>
+        </Wrapper>
+      </>
     );
   }
 }

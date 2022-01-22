@@ -6,6 +6,9 @@
   "homepage": "https://upe.bu.edu/interview",
   "author": "Rudhra Raveendran <rooday@bu.edu> (https://rooday.com)",
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/react-fontawesome": "^0.1.16",
     "@sweetalert/with-react": "^0.1.1",
     "babel-loader": "^8.0.6",
     "babel-plugin-styled-components": "^1.10.7",
@@ -28,6 +31,7 @@
     "lodash.isequal": "^4.5.0",
     "lodash.omit": "^4.5.0",
     "moment-timezone": "^0.5.31",
+    "qrcode.react": "^1.0.1",
     "react": "^16.9.0",
     "react-bootstrap": "^1.2.2",
     "react-bootstrap-range-slider": "^1.2.2",

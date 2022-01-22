@@ -6,7 +6,3 @@ export const isApplicant = (authUser) => !!authUser?.roles?.applicant;
 export const isLoggedIn = (authUser) => !!authUser;
 export const isNonMember = (authUser) => !!authUser?.roles?.nonmember;
 export const isMember = (authUser) => !!authUser?.roles?.upemember;
-
-// TODO: Do we need functions for this? Why not compose existing functions
-export const isApplicantOrRecruitmentTeam = (authUser) =>
-  !!authUser?.roles?.applicant || !!authUser?.roles?.recruitmentteam;

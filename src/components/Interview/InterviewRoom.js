@@ -15,11 +15,15 @@ import { isRecruitmentTeam } from "../../util/conditions";
 
 const StyledLink = styled(Nav.Link)`
   font-size: 1.5rem;
+  color: #f21131;
 
   &[aria-selected="true"] {
     font-weight: bold;
   }
-
+  &:hover {
+    color: #600613;
+    text-decoration: underline;
+  }
   &::before {
     content: "${(props) => (props.intervieweeon === 1 ? "👁️ " : "")}";
   }
@@ -75,7 +79,7 @@ const InterviewRoom = memo(
       allNotes?.[authUser.uid] ||
       questions.reduce(
         (map, question) => {
-          map[question.id] = "";
+          map[question.uid] = "";
           return map;
         },
         {
@@ -88,7 +92,7 @@ const InterviewRoom = memo(
       allScores?.[authUser.uid] ||
       questions.reduce(
         (map, question) => {
-          map[question.id] = 0;
+          map[question.uid] = 0;
           return map;
         },
         {
@@ -97,12 +101,12 @@ const InterviewRoom = memo(
         }
       );
 
-    const mergeNotesAndScores = async ({ note, score, id }) => {
+    const mergeNotesAndScores = async ({ note, score, uid }) => {
       const newNotes = update(notes, {
-        [id]: { $set: note },
+        [uid]: { $set: note },
       });
       const newScores = update(scores, {
-        [id]: { $set: score },
+        [uid]: { $set: score },
       });
       const mergedNotes = update(allNotes || {}, {
         $merge: {
@@ -126,7 +130,7 @@ const InterviewRoom = memo(
     const NavItem = ({ question }) => {
       let linkText = `Problem ${question.order}`;
       // eslint-disable-next-line default-case
-      switch (question.id) {
+      switch (question.uid) {
         case "overview":
           linkText = "Overview";
           break;
@@ -151,6 +155,8 @@ const InterviewRoom = memo(
       );
     };
 
+    const value = !!authUser.roles.applicant ? "0%" : "7%";
+
     // TODO: explain why -2 for finalQuestionId
     return (
       <Tab.Container activeKey={tabKey} onSelect={handleChangTab}>
@@ -158,13 +164,14 @@ const InterviewRoom = memo(
           <Nav
             style={{
               width: "100%",
+              paddingLeft: value,
               alignItems: "center",
               justifyContent: "space-around",
             }}
             activeKey={tabKey}
           >
             {questions.map((question) => (
-              <Fragment key={question.id}>
+              <Fragment key={question.uid}>
                 <NavItem question={question} />
                 {question.order < questions.length - 2 && (
                   <span style={{ fontSize: "2rem" }}>></span>
@@ -172,16 +179,16 @@ const InterviewRoom = memo(
               </Fragment>
             ))}
           </Nav>
-          <hr style={{ width: "100%" }} />
+          <hr style={{ width: "100%", marginLeft: value }} />
         </Row>
-        <Row style={{ marginTop: 25, padding: 25 }}>
+        <Row style={{ marginTop: "0.5%", marginLeft: value, padding: 25 }}>
           <Tab.Content style={{ width: "100%" }}>
             {questions.map((question) => (
               <QuestionDisplay
-                key={question.id}
+                key={question.uid}
                 question={question}
-                note={notes[question.id]}
-                score={scores[question.id]}
+                note={notes[question.uid]}
+                score={scores[question.uid]}
                 isInterviewer={isRecruitmentTeam(authUser)}
                 saveApplication={mergeNotesAndScores}
                 submitApplication={submitApplication}

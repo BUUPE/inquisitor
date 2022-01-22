@@ -8,9 +8,13 @@ import Col from "react-bootstrap/Col";
 import { FullSizeContainer } from "../../styles/global";
 
 const StyledNav = styled(Nav)`
-  width: 200px;
+  font-family: Georgia;
+  max-width: 300px;
   padding: 15px;
-  background: ${(props) => props.theme.palette.darkShades};
+  background: #333333;
+  margin-left: 1%;
+  margin-right: 1%;
+  border-radius: 25px;
 
   a {
     color: white;
@@ -20,8 +24,13 @@ const StyledNav = styled(Nav)`
     border-bottom: 1px solid grey;
   }
 
+  a:hover {
+    color: #f21131;
+    text-decoration: underline;
+  }
+
   a[aria-current="page"] {
-    color: ${(props) => props.theme.palette.mainBrand};
+    color: #f21131;
   }
 `;
 
@@ -30,12 +39,11 @@ const Sidebar = () => (
     <Link to="/admin">General Settings</Link>
     <Link to="/admin/configure-application">Configure Application</Link>
     <Link to="/admin/view-applications">View Applications</Link>
-    <Link to="/admin/manage-roles">Manage Roles</Link>
-    <Link to="/admin/manage-users">Manage Users</Link>
     <Link to="/admin/manage-timeslots">Manage Timeslots</Link>
     <Link to="/admin/manage-questions">Manage Questions</Link>
     <Link to="/admin/manage-levels">Manage Levels</Link>
-    <Link to="/admin/import-export">Import/Export</Link>
+    <Link to="/admin/manage-interviews">Manage Interviews</Link>
+    <Link to="/admin/manage-events">Manage Events</Link>
   </StyledNav>
 );
 
