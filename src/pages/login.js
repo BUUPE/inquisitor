@@ -19,7 +19,8 @@ const Login = ({ firebase }) => {
           .then(() => navigate(pathname ? pathname : "/"))
           .catch(console.error);
       } else {
-        window.location.href = "http://localhost:3030/?url=inquisitor";
+        window.location.href =
+          "https://upe-authenticator.herokuapp.com/?url=inquisitor";
       }
     }
   }, [firebase]);
