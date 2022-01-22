@@ -3,9 +3,9 @@ module.exports = {
     title: `Inquisitor`,
     description: `BU UPE's Interview Tool.`,
     author: `BU UPE`,
-    siteUrl: `https://upe.bu.edu/inquisitor`,
+    siteUrl: `https://upe.bu.edu/interview`,
   },
-  pathPrefix: `/inquisitor`,
+  pathPrefix: `/interview`,
   plugins: [
     `gatsby-plugin-react-helmet`,
     `gatsby-transformer-sharp`,

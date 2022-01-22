@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "description": "BU UPE's Interview Tool.",
-  "homepage": "https://upe.bu.edu/inquisitor",
+  "homepage": "https://upe.bu.edu/interview",
   "author": "Rudhra Raveendran <rooday@bu.edu> (https://rooday.com)",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
