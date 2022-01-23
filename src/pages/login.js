@@ -20,7 +20,7 @@ const Login = ({ firebase }) => {
           .catch(console.error);
       } else {
         window.location.href =
-          "https://upe-authenticator.herokuapp.com/?url=inquisitor";
+          "https://upe-authenticator.herokuapp.com/?redirectUrl=https://upe.bu.edu/inquisitor/login";
       }
     }
   }, [firebase]);
