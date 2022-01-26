@@ -100,46 +100,32 @@ class GeneralSettings extends Component {
 
   loadSettings = async () => {
     this._initFirebase = true;
-    let loadedOne = false;
-    const doc = await this.props.firebase.generalSettings().get();
-    const docTwo = await this.props.firebase.textSettings().get();
+    const generalSettingsDoc = await this.props.firebase
+      .generalSettings()
+      .get();
+    const textSettingsDoc = await this.props.firebase.textSettings().get();
 
-    if (!doc.exists) {
+    if (!generalSettingsDoc.exists)
       await this.props.firebase.generalSettings().set(DEFAULT_GENERAL_SETTINGS);
-      this.setState({
-        settings: DEFAULT_GENERAL_SETTINGS,
-        preSaveSettings: DEFAULT_GENERAL_SETTINGS,
-        loading: !loadedOne,
-      });
-      loadedOne = true;
-    } else {
-      const settings = doc.data();
-      settings.timeslotDays = settings.timeslotDays.map((day) => day.toDate());
-      this.setState({
-        settings,
-        preSaveSettings: settings,
-        loading: !loadedOne,
-      });
-      loadedOne = true;
-    }
 
-    if (!docTwo.exists) {
+    if (!textSettingsDoc.exists)
       await this.props.firebase.textSettings().set(DEFAULT_TEXT_SETTINGS);
-      this.setState({
-        textSettings: DEFAULT_TEXT_SETTINGS,
-        preSaveTextSettings: DEFAULT_TEXT_SETTINGS,
-        loading: !loadedOne,
-      });
-      loadedOne = true;
-    } else {
-      const textSettings = docTwo.data();
-      this.setState({
-        textSettings,
-        preSaveTextSettings: textSettings,
-        loading: !loadedOne,
-      });
-      loadedOne = true;
-    }
+
+    this.setState({
+      settings: generalSettingsDoc.exists
+        ? generalSettingsDoc.data()
+        : DEFAULT_GENERAL_SETTINGS,
+      preSaveSettings: generalSettingsDoc.exists
+        ? generalSettingsDoc.data()
+        : DEFAULT_GENERAL_SETTINGS,
+      textSettings: textSettingsDoc.exists
+        ? textSettingsDoc.data()
+        : DEFAULT_TEXT_SETTINGS,
+      preSaveTextSettings: textSettingsDoc.exists
+        ? textSettingsDoc.data()
+        : DEFAULT_TEXT_SETTINGS,
+      loading: false,
+    });
   };
 
   resetSettings = () => {
