@@ -1,58 +1,87 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 
 import SettingsContext from "./context";
-import { withFirebase } from "upe-react-components";
+import Firebase, { withFirebase } from "upe-react-components";
 
 import Loader from "../../../components/Loader";
+
 import { DEFAULT_GENERAL_SETTINGS } from "../../../util/config";
 
-const withSettingsProvider =
-  (Component) =>
-  ({ firebase, children }) => {
-    const [generalSettings, setGeneralSettings] = useState(
-      DEFAULT_GENERAL_SETTINGS
-    );
-    const [loading, setLoading] = useState(true);
+const withSettingsProvider = (Component) => {
+  class WithSettingsProviderClass extends React.Component {
+    _initFirebase = false;
+    _isMounted = false;
+    state = {
+      generalSettings: null,
+      loading: true,
+    };
+    listener = null;
 
-    // Use refs for the following values so that they don't cause a re-render when updated
-    const _isListenerInitialized = useRef(false);
-    const _isMounted = useRef(false);
+    safeSetState = (state) => this._isMounted && this.setState(state);
 
-    // Keep track of whether the component is mounted
-    useEffect(() => {
-      _isMounted.current = true;
-      return () => {
-        _isMounted.current = false;
-      };
-    }, []);
+    firebaseInit = () => {
+      if (this.props.firebase && !this._initFirebase) {
+        this._initFirebase = true;
 
-    useEffect(() => {
-      // Only continue if firebase is present, listener isn't initialized, and we're still mounted
-      if (firebase && !_isListenerInitialized.current && _isMounted.current) {
-        const cleanupListener = firebase.generalSettings().onSnapshot(
+        this.listener = this.props.firebase.generalSettings().onSnapshot(
           (doc) => {
-            if (doc.exists) {
-              setGeneralSettings(doc.data());
+            if (!doc.exists) {
+              this.safeSetState({
+                generalSettings: DEFAULT_GENERAL_SETTINGS,
+                loading: false,
+              });
+            } else {
+              const generalSettings = doc.data();
+              this.safeSetState({ generalSettings, loading: false });
             }
-            setLoading(false);
           },
-          () => setLoading(false)
+          () => {
+            this.safeSetState({
+              generalSettings: DEFAULT_GENERAL_SETTINGS,
+              loading: false,
+            });
+          }
         );
-
-        _isListenerInitialized.current = true;
-
-        // Return a function that calls the cleanup function
-        return () => {
-          cleanupListener();
-        };
       }
-    }, [firebase]);
+    };
 
-    return (
-      <SettingsContext.Provider value={generalSettings}>
-        <Component> {loading ? <Loader /> : children} </Component>
-      </SettingsContext.Provider>
-    );
+    componentDidMount() {
+      this._isMounted = true;
+      this.firebaseInit();
+    }
+
+    componentDidUpdate() {
+      this.firebaseInit();
+    }
+
+    componentWillUnmount() {
+      this._isMounted = false;
+      this.listener && this.listener();
+    }
+
+    render() {
+      const { generalSettings, loading } = this.state;
+
+      return (
+        <SettingsContext.Provider value={generalSettings}>
+          <Component>
+            {" "}
+            {!!loading ? <Loader /> : this.props.children}{" "}
+          </Component>
+        </SettingsContext.Provider>
+      );
+    }
+  }
+
+  WithSettingsProviderClass.displayName = "WithSettingsProviderClass";
+
+  WithSettingsProviderClass.propTypes = {
+    children: PropTypes.node.isRequired,
+    firebase: PropTypes.instanceOf(Firebase),
   };
 
-export default withFirebase(withSettingsProvider);
+  return withFirebase(WithSettingsProviderClass);
+};
+
+export default withSettingsProvider;
