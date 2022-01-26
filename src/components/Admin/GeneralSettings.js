@@ -24,34 +24,14 @@ import {
 } from "../../styles/global";
 import { BackIcon } from "../TextDisplay";
 
+import {
+  DEFAULT_GENERAL_SETTINGS,
+  DEFAULT_TEXT_SETTINGS,
+} from "../../util/config";
+
 const StyledFormRow = styled(Form.Row)`
   margin: 0;
 `;
-
-// TODO: refactor settings to have sub sections
-const DEFAULT_GENERAL_SETTINGS = {
-  eventSeason: false,
-  deliberationsOpen: false,
-  useTwoRoundDeliberations: false,
-  applicationsOpen: false,
-  timeslotsOpen: false,
-  timeslotsOpenForApplicants: false,
-  remoteInterview: false,
-  timeslotLength: 45,
-  timeslotDays: [],
-  timeslotStart: 8,
-  timeslotEnd: 22,
-  zoomlink: "https://bostonu.zoom.us/s/96821681891",
-};
-
-const DEFAULT_TEXT_SETTINGS = {
-  interviewWelcomeText: "",
-  interviewOverviewText: "",
-  interviewInterviewerNotesText: "",
-  interviewResumeNotesText: "",
-  interviewFinalNotesInterviewerText: "",
-  interviewFinalNotesApplicantText: "",
-};
 
 const interceptAnchors = (interceptor) =>
   Array.from(document.querySelectorAll("a")).forEach((link) =>
