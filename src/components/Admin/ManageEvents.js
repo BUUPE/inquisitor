@@ -649,7 +649,7 @@ class ManageEvents extends Component {
       return (
         <QRCode
           size={"400"}
-          value={`https://upe.bu.edu/inquisitor/events?code=${currentEvent.id}`}
+          value={`https://upe.bu.edu/inquisitor/events?code=${currentEvent.uid}`}
         />
       );
     };
