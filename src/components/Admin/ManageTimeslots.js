@@ -450,7 +450,9 @@ const ManageTimeslots = ({ firebase, settings }) => {
                   <Form.Label>Time</Form.Label>
                   <Form.Control
                     type="datetime-local"
-                    value={currentTimeslot.time.toISOString().slice(0, -1)}
+                    value={new Date(currentTimeslot.time.getTime() - tzoffset)
+                      .toISOString()
+                      .slice(0, -1)}
                     onChange={(e) =>
                       setCurrentTimeslot({
                         ...currentTimeslot,
