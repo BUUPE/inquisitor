@@ -169,7 +169,7 @@ const ManageTimeslots = ({ firebase, settings }) => {
 
   const saveTimeslotChanges = async () => {
     const newTimeslot = cloneDeep(currentTimeslot);
-    newTimeslot.time = newTimeslot.time.getTime() + tzoffset;
+    newTimeslot.time = newTimeslot.time.getTime();
     if (newTimeslot.hasOwnProperty("uid")) {
       try {
         await firebase.firestore.runTransaction(async (transaction) => {
@@ -450,11 +450,13 @@ const ManageTimeslots = ({ firebase, settings }) => {
                   <Form.Label>Time</Form.Label>
                   <Form.Control
                     type="datetime-local"
-                    value={currentTimeslot.time.toISOString().slice(0, -1)}
+                    value={new Date(currentTimeslot.time.getTime() - tzoffset)
+                      .toISOString()
+                      .slice(0, -1)}
                     onChange={(e) =>
                       setCurrentTimeslot({
                         ...currentTimeslot,
-                        time: new Date(new Date(e.target.value) - tzoffset),
+                        time: new Date(new Date(e.target.value)),
                       })
                     }
                   />
