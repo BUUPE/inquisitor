@@ -30,7 +30,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.5.0",
     "lodash.omit": "^4.5.0",
-    "moment-timezone": "^0.5.31",
+    "moment-timezone": "^0.5.35",
     "qrcode.react": "^1.0.1",
     "react": "^16.9.0",
     "react-bootstrap": "^1.2.2",
